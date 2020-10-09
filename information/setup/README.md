@@ -100,7 +100,7 @@ XCode で、Runner > Flutter 配下の、
 
 についても同様にファイルを新規作成します。
 
-各 Configuration ファイルの内容は、[本プロジェクトの各ファイル]()のような内容にします。そこに実行環境ごとに別アプリ扱い、別アプリ名とするための設定に関わる内容 (`FLUTTER_FLAVOR`, `PRODUCT_BUNDLE_IDENTIFIER`, `DISPLAY_NAME`) が記述されています。
+各 Configuration ファイルの内容は、本プロジェクトの `ios/Flutter` 配下の[各ファイル](https://github.com/kboyflutteruniv/recipe-app/tree/main/ios/Flutter)のような内容にします。そこに実行環境ごとに別アプリ扱い、別アプリ名とするための設定に関わる内容 (`FLUTTER_FLAVOR`, `PRODUCT_BUNDLE_IDENTIFIER`, `DISPLAY_NAME`) が記述されています。
 
 少し内容を補足すると、
 
