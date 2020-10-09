@@ -1,0 +1,4 @@
+FLUTTER_FLAVOR=Development
+PRODUCT_BUNDLE_IDENTIFIER=com.kosukesaigusa.recipe.development
+DISPLAY_NAME=Dev Recipe
+FLUTTER_TARGET=lib/main.dart

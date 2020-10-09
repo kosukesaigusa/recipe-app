@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>830972403948-f8nmjo6a9ig7dgn9d3es0mvie757t9j1.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.830972403948-f8nmjo6a9ig7dgn9d3es0mvie757t9j1</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAcnLmtIVb9nrR_EMpEFFDJPpAFTvnas-s</string>
+	<key>GCM_SENDER_ID</key>
+	<string>830972403948</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.kosukesaigusa.recipe</string>
+	<key>PROJECT_ID</key>
+	<string>recipe-app-3b49d</string>
+	<key>STORAGE_BUCKET</key>
+	<string>recipe-app-3b49d.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:830972403948:ios:3ad7c6715d5ea0feee45c9</string>
+	<key>DATABASE_URL</key>
+	<string>https://recipe-app-3b49d.firebaseio.com</string>
+</dict>
+</plist>

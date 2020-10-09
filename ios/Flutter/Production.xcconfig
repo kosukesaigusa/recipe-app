@@ -1,0 +1,4 @@
+FLUTTER_FLAVOR=Production
+PRODUCT_BUNDLE_IDENTIFIER=com.kosukesaigusa.recipe
+DISPLAY_NAME=シンプルなレシピ
+FLUTTER_TARGET=lib/main.dart

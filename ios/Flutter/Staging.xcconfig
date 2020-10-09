@@ -1,0 +1,4 @@
+FLUTTER_FLAVOR=Staging
+PRODUCT_BUNDLE_IDENTIFIER=com.kosukesaigusa.recipe.staging
+DISPLAY_NAME=Staging Recipe
+FLUTTER_TARGET=lib/main.dart

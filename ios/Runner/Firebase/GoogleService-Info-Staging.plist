@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>614566121434-5mgisqc3flbphg8nuppqbaiknkva07nb.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.614566121434-5mgisqc3flbphg8nuppqbaiknkva07nb</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAtgZ-0mmhs8xGi6VRyHpxocFShP09QQjQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>614566121434</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.kosukesaigusa.recipe.staging</string>
+	<key>PROJECT_ID</key>
+	<string>staging-recipe-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>staging-recipe-app.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:614566121434:ios:5bc9db419cf46882f27ae3</string>
+	<key>DATABASE_URL</key>
+	<string>https://staging-recipe-app.firebaseio.com</string>
+</dict>
+</plist>

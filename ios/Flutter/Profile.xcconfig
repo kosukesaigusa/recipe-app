@@ -1,0 +1,3 @@
+#include "Release.xcconfig"
+FLUTTER_FLAVOR=Development
+PRODUCT_BUNDLE_IDENTIFIER=com.kosukesaigusa.recipe.development
