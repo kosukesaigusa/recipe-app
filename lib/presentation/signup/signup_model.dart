@@ -7,7 +7,7 @@ class SignUpModel extends ChangeNotifier {
   String mail = '';
   String password = '';
 
-  Future login() async {
+  Future signUp() async {
     if (mail.isEmpty) {
       throw ('メールアドレスを入力してください');
     }
@@ -20,7 +20,7 @@ class SignUpModel extends ChangeNotifier {
     }
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: mail,
         password: password,
       );

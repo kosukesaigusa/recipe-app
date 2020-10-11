@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
 import 'package:recipe/presentation/signup/signup_model.dart';
+import 'package:recipe/presentation/top/top_page.dart';
 
 class SignUpPage extends StatelessWidget {
   final mailController = TextEditingController();
@@ -77,7 +78,7 @@ class SignUpPage extends StatelessWidget {
                           textColor: Colors.white,
                           onPressed: () async {
                             try {
-                              await model.login();
+                              await model.signUp();
                             } catch (e) {
                               _showTextDialog(context, e.toString());
                             }
@@ -110,7 +111,7 @@ class SignUpPage extends StatelessWidget {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => SignInPage(),
+                              builder: (context) => TopPage(),
                             ),
                           );
                         },
