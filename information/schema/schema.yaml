@@ -1,0 +1,59 @@
+# ユーザー情報
+users:
+  documentId: userId = auth.uid
+  createdAt: timestamp
+  email: string
+
+  # 各ユーザーのレシピデータ
+  recipes:
+    documentId: auto
+    userId: userId = auth.uid
+    createdAt: timestamp
+    updatedAt: timestamp
+    name: string
+    thumbnailURL: string
+    imageURL: string
+    content: string
+    ingredients: list (string)
+    reference: string
+    isPublic: boolean
+
+  # 各ユーザーのレシピの材料データの蓄積
+  ingredients:
+    documentId: auto
+      createdAt: timestamp
+      name: string
+
+# 公開設定になったレシピ
+public_recipes:
+  documentId: auto (equal to the corresponding recipe's documentId)
+  userId: userId = auth.uid
+  publishedAt: timestamp
+  updatedAt: timestamp
+  name: string
+  thumbnailURL: string
+  imageURL: string
+  content: string
+  ingredients: list (string)
+  reference: string
+  isPublic: boolean
+
+# 公開設定になったレシピの材料データの蓄積
+ingredients:
+  documentId: auto
+  createdAt: timestamp
+  name: string
+
+# ユーザーから送信されたお問い合わせ
+contacts:
+  documentId: auto
+  userId: userId = auth.uid
+  email: string
+  createdAt: timestamp
+  category: string
+  content: string
+
+# その他の Firestore 内のデータとして管理できる各設定
+settings:
+  guest_mode:
+    isGuestAllow: boolean # AppStore の匿名認証の窓口は申請中のみ開いておく
