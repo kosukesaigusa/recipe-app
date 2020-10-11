@@ -52,6 +52,22 @@ class SignUpPage extends StatelessWidget {
                       SizedBox(
                         height: 20,
                       ),
+                      TextFormField(
+                        controller: passwordController,
+                        onChanged: (text) {
+                          model.password = text;
+                        },
+                        obscureText: true,
+                        maxLines: 1,
+                        decoration: InputDecoration(
+                          labelText: 'パスワード（確認用）',
+                          // errorText: '８文字以上20文字以内',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
                       SizedBox(
                         width: double.infinity,
                         height: 50,
@@ -68,11 +84,28 @@ class SignUpPage extends StatelessWidget {
                           },
                         ),
                       ),
+                      SizedBox(
+                        height: 20,
+                      ),
                       FlatButton(
                         child: Text(
                           'ログインはこちら',
                         ),
                         textColor: Colors.blue,
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SignInPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      FlatButton(
+                        child: Text(
+                          'ゲストとして利用',
+                        ),
+                        textColor: Colors.grey,
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,
