@@ -8,7 +8,7 @@ class SignUpModel extends ChangeNotifier {
 
   String mail = '';
   String password = '';
-  String confirm = ''; //パスワード（確認用）
+  String confirm = '';
 
   Future signUp() async {
     //バリデーション
@@ -28,16 +28,20 @@ class SignUpModel extends ChangeNotifier {
     }
 
     try {
-      //firebaseAuthにユーザーを登録する
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // Firebase Auth にユーザを登録する
+      final result = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: mail,
         password: password,
       );
-      // Firestore に users を作成する
-      await FirebaseFirestore.instance.collection('users').add(
+
+      //FireStoreにuserを作成する
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(result.user.uid)
+          .set(
         {
           'email': mail,
-          //TODO:uerIdの指定する
+          'userId': result.user.uid,
           'createdAt': DateTime.now(),
         },
       );
@@ -49,13 +53,17 @@ class SignUpModel extends ChangeNotifier {
   ///匿名ログイン
   Future signInAnonymous() async {
     try {
-      //firebaseAuthにユーザーを登録する
-      await FirebaseAuth.instance.signInAnonymously();
-      // Firestore に users を作成する
-      await FirebaseFirestore.instance.collection('users').add(
+      //firebaseAuthに匿名ユーザーを登録する
+      final result = await FirebaseAuth.instance.signInAnonymously();
+
+      //FireStoreにuserを作成する
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(result.user.uid)
+          .set(
         {
           'email': null,
-          //TODO:uerIdの指定する
+          'userId': result.user.uid,
           'createdAt': DateTime.now(),
         },
       );
