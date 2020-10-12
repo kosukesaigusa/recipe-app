@@ -1,5 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:recipe/presentation/password_update/password_update_model.dart';
 
-class PasswordUpdateModel extends ChangeNotifier {
-  Future fetchPasswordUpdate(context) async {}
+class PasswordUpdatePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<PasswordUpdateModel>(
+      create: (_) => PasswordUpdateModel()..fetchPasswordUpdate(context),
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text("パスワードの更新"),
+        ),
+        body: Text('パスワードの更新ページ'),
+      ),
+    );
+  }
 }
