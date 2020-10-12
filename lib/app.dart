@@ -38,8 +38,7 @@ class App extends StatelessWidget {
       case UserState.waiting:
         return SplashPage();
       case UserState.signedOut:
-        // return SignInPage(); ログイン機能未実装の間はコメントアウト
-        return TopPage();
+        return SignInPage();
       case UserState.signedIn:
         return TopPage();
       default:
