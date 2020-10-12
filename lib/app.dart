@@ -39,8 +39,7 @@ class App extends StatelessWidget {
       case UserState.waiting:
         return SplashPage();
       case UserState.signedOut:
-        return SignUpPage();
-
+        return SignInPage();
       case UserState.signedIn:
         return TopPage();
       default:
