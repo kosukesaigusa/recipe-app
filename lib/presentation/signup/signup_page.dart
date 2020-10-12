@@ -7,6 +7,8 @@ import 'package:recipe/presentation/top/top_page.dart';
 class SignUpPage extends StatelessWidget {
   final mailController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmController = TextEditingController(); //パスワード（確認用）
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<SignUpModel>(
@@ -54,9 +56,9 @@ class SignUpPage extends StatelessWidget {
                         height: 20,
                       ),
                       TextFormField(
-                        controller: passwordController,
+                        controller: confirmController,
                         onChanged: (text) {
-                          model.password = text;
+                          model.confirm = text;
                         },
                         obscureText: true,
                         maxLines: 1,
