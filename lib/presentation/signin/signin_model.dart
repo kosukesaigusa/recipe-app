@@ -34,12 +34,8 @@ String _errorMessage(e) {
   switch (e) {
     case 'invalid-email':
       return 'メールアドレスを正しい形式で入力してください';
-    case 'wrong-password':
-      return 'パスワードが間違っています';
-    case 'user-not-found':
-      return 'ユーザーが見つかりません';
-    case 'user-disabled':
-      return 'ユーザーが無効です';
+    case 'email-already-in-use':
+      return '既に登録済みです';
     default:
       return '不明なエラーです';
   }
