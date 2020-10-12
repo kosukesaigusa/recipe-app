@@ -3,6 +3,7 @@ users:
   documentId: userId = auth.uid
   createdAt: timestamp
   email: string
+  userId: string
 
   # 各ユーザーのレシピデータ
   recipes:
