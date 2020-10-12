@@ -1,46 +1,17 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:recipe/domain/contact.dart';
 
 class ContactModel extends ChangeNotifier {
-  // Future fetchContact(context) async {}
-  String mail = '';
-  String password = '';
+  String contactTitle = '';
 
-  Future login() async {
-    if (mail.isEmpty) {
-      throw ('メールアドレスを入力してください');
+  Future contactToFirebase() async {
+    if (contactTitle.isEmpty){
+      throw('タイトルを入力してください');
     }
-    if (password.isEmpty) {
-      throw ('パスワードを入力してください');
-    }
-
-    if (password.length < 8 || password.length > 20) {
-      throw ('パスワードは8文字以上20文字以内です');
-    }
-
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: mail,
-        password: password,
-      );
-    } catch (e) {
-      _errorMessage(e.code);
-    }
+    FirebaseFirestore.instance.collection('contacts').add({
+      'title':contactTitle,
+    });
+    print('AAAAA');
   }
-}
-
-String _errorMessage(e) {
-  switch (e) {
-    case 'invalid-email':
-      return 'メールアドレスを正しい形式で入力してください';
-    case 'wrong-password':
-      return 'パスワードが間違っています';
-    case 'user-not-found':
-      return 'ユーザーが見つかりません';
-    case 'user-disabled':
-      return 'ユーザーが無効です';
-    default:
-      return '不明なエラーです';
-  }
-
 }

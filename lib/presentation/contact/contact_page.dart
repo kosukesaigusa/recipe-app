@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/book_list_page.dart';
 import 'package:recipe/presentation/contact/contact_model.dart';
 import 'package:recipe/presentation/signup/signup_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ContactPage extends StatelessWidget {
+  CollectionReference users = FirebaseFirestore.instance.collection('contacts');
   final mailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final categoryController = TextEditingController();
+  final contactController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -23,31 +27,50 @@ class ContactPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Text(document.data()['title'][0]),
                 TextFormField(
                   controller: mailController,
+                  readOnly: true,
                   onChanged: (text) {
-                    model.mail = text.trim();
+                    // model.mail = text.trim();
                   },
                   maxLines: 1,
                   decoration: InputDecoration(
-                    labelText: 'メールアドレス',
+                    labelText: 'Eメール',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(
                   height: 20,
                 ),
-                //パスワード
                 TextFormField(
-                  controller: passwordController,
+                  // controller: categoryController,
                   onChanged: (text) {
-                    model.password = text;
+                    model.contactTitle = text;
                   },
-                  obscureText: true,
                   maxLines: 1,
                   decoration: InputDecoration(
-                    labelText: 'パスワード',
-                    // errorText: '８文字以上20文字以内',
+                    labelText: 'お問い合わせのカテゴリー',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                // TextField(
+                //   onChanged: (text){
+                //     model.contactTitle = text;
+                //   },
+                // ),
+                const SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  controller: contactController,
+                  onChanged: (text) {
+                    // model.contact = text;
+                  },
+                  minLines: 15,
+                  maxLines: 20,
+                  decoration: InputDecoration(
+                    labelText: '本文',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -58,31 +81,31 @@ class ContactPage extends StatelessWidget {
                   width: double.infinity,
                   height: 50,
                   child: RaisedButton(
-                    child: Text('ログイン'),
+                    child: Text('お問い合わせを送信'),
                     color: Colors.blue,
                     textColor: Colors.white,
                     onPressed: () async {
-                      try {
-                        await model.login();
-                      } catch (e) {
-                        _showTextDialog(context, e.toString());
-                      }
+                      await model.contactToFirebase();
                     },
                   ),
                 ),
-                FlatButton(
-                  child: Text(
-                    '新規登録はこちら',
+                SizedBox(
+                  height: 20,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: RaisedButton(
+                    child: Text('質問list'),
+                    color: Colors.blue,
+                    textColor: Colors.white,
+                    onPressed: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => BookList()),
+                      );
+                    },
                   ),
-                  textColor: Colors.blue,
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SignUpPage(),
-                      ),
-                    );
-                  },
                 ),
               ],
             ),
