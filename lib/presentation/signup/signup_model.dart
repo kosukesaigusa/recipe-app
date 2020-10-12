@@ -45,6 +45,24 @@ class SignUpModel extends ChangeNotifier {
       _errorMessage(e.code);
     }
   }
+
+  ///匿名ログイン
+  Future signInAnonymous() async {
+    try {
+      //firebaseAuthにユーザーを登録する
+      await FirebaseAuth.instance.signInAnonymously();
+      // Firestore に users を作成する
+      await FirebaseFirestore.instance.collection('users').add(
+        {
+          'email': null,
+          //TODO:uerIdの指定する
+          'createdAt': DateTime.now(),
+        },
+      );
+    } catch (e) {
+      _errorMessage(e.code);
+    }
+  }
 }
 
 String _errorMessage(e) {

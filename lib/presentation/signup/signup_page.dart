@@ -81,6 +81,12 @@ class SignUpPage extends StatelessWidget {
                           onPressed: () async {
                             try {
                               await model.signUp();
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TopPage(),
+                                ),
+                              );
                             } catch (e) {
                               _showTextDialog(context, e.toString());
                             }
@@ -110,6 +116,7 @@ class SignUpPage extends StatelessWidget {
                         ),
                         textColor: Colors.grey,
                         onPressed: () {
+                          model.signInAnonymous();
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
