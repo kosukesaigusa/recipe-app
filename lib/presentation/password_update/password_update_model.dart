@@ -9,7 +9,7 @@ class PasswordUpdateModel extends ChangeNotifier {
   String newPassword = '';
   String confirm = '';
 
-  Future signUp() async {
+  Future updatePassword() async {
     //バリデーション
     if (password.isEmpty) {
       throw ('現在のパスワードを入力してください');
@@ -25,28 +25,14 @@ class PasswordUpdateModel extends ChangeNotifier {
     if (newPassword.length < 8 || newPassword.length > 20) {
       throw ('パスワードは8文字以上20文字以内です');
     }
-    if (password != confirm) {
+    if (newPassword != confirm) {
       throw ('新しいパスワードの入力内容が一致していません');
     }
 
     try {
-      // Firebase Auth にユーザを登録する
-      final result = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: newPassword,
-        password: password,
-      );
-
-      //FireStoreにuserを作成する
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(result.user.uid)
-          .set(
-        {
-          'email': newPassword,
-          'userId': result.user.uid,
-          'createdAt': DateTime.now(),
-        },
-      );
+      // パスワードをupdateする
+      final user = FirebaseAuth.instance.currentUser;
+      await user.updatePassword(newPassword);
     } catch (e) {
       _errorMessage(e.code);
     }

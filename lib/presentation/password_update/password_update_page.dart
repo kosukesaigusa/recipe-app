@@ -29,7 +29,7 @@ class PasswordUpdatePage extends StatelessWidget {
                     TextFormField(
                       controller: passwordController,
                       onChanged: (text) {
-                        model.newPassword = text;
+                        model.password = text;
                       },
                       obscureText: true,
                       maxLines: 1,
@@ -45,7 +45,7 @@ class PasswordUpdatePage extends StatelessWidget {
                     TextFormField(
                       controller: newPasswordController,
                       onChanged: (text) {
-                        model.password = text;
+                        model.newPassword = text;
                       },
                       obscureText: true,
                       maxLines: 1,
@@ -83,7 +83,7 @@ class PasswordUpdatePage extends StatelessWidget {
                         textColor: Colors.white,
                         onPressed: () async {
                           try {
-                            await model.signUp();
+                            await model.updatePassword();
                             Navigator.pop(
                               context,
                               MaterialPageRoute(
