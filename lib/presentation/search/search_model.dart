@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class SearchModel extends ChangeNotifier {
   String firestoreEnv;
   bool isLoading;
+  int recipeTabIndex = 0;
 
   Future fetchSearch(context) async {
     startLoading();
@@ -13,6 +14,11 @@ class SearchModel extends ChangeNotifier {
         .get();
     this.firestoreEnv = docFirestoreEnv.data()['firestore_environment'];
     endLoading();
+    notifyListeners();
+  }
+
+  void onRecipeTabTapped(int index) {
+    this.recipeTabIndex = index;
     notifyListeners();
   }
 
