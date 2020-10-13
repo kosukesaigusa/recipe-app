@@ -21,7 +21,7 @@ class Recipe {
   String thumbnailURL;
   String imageURL;
   String content;
-  List<String> ingredients;
+  List ingredients;
   String reference;
   bool isPublic;
 }
