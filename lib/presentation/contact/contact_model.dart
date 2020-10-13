@@ -6,8 +6,6 @@ class ContactModel extends ChangeNotifier {
   String category = '';
   String content = '';
 
-  // Timestamp createAt;
-
   Future addContactToFirebase() async {
     if (email.isEmpty) {
       throw ('emailを入力してください');

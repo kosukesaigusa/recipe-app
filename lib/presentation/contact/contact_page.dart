@@ -138,24 +138,6 @@ class ContactPage extends StatelessWidget {
                     },
                   ),
                 ),
-                // SizedBox(
-                //   height: 20,
-                // ),
-                // SizedBox(
-                //   width: double.infinity,
-                //   height: 50,
-                //   child: RaisedButton(
-                //     child: Text('質問list'),
-                //     color: Colors.blue,
-                //     textColor: Colors.white,
-                //     onPressed: () async {
-                //       Navigator.push(
-                //         context,
-                //         MaterialPageRoute(builder: (context) => BookList()),
-                //       );
-                //     },
-                //   ),
-                // ),
               ],
             ),
           ));
