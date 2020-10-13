@@ -2,34 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/book_list_page.dart';
 import 'package:recipe/presentation/contact/contact_model.dart';
-import 'package:recipe/presentation/signup/signup_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class ContactPage extends StatelessWidget {
-  CollectionReference users = FirebaseFirestore.instance.collection('contacts');
-  final mailController = TextEditingController();
-  final categoryController = TextEditingController();
-  final contactController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
+    String dropdownValue = '不具合の報告';
     return ChangeNotifierProvider<ContactModel>(
-      create: (_) => ContactModel(),
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text("お問い合わせ"),
-        ),
-        body: Consumer<ContactModel>(builder: (context, model, child) {
-          return Container(
-              child: Padding(
+        create: (_) => ContactModel(),
+        child: Scaffold(
+            appBar: AppBar(
+              centerTitle: true,
+              title: Text("お問い合わせ"),
+            ),
+        //     <<<<<<< Updated upstream
+        // body: Text('お問い合わせページ'),
+        // =======
+    body: Consumer<ContactModel>(builder: (context, model, child) {
+      return Container(
+          child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Text(document.data()['title'][0]),
                 TextFormField(
-                  controller: mailController,
+                  // controller: mailController,
                   readOnly: true,
                   onChanged: (text) {
                     // model.mail = text.trim();
@@ -42,6 +38,37 @@ class ContactPage extends StatelessWidget {
                 ),
                 const SizedBox(
                   height: 20,
+                ),
+                Container(
+                  height: 40,
+                  decoration: BoxDecoration(border: Border.all(
+                    color: Colors.red,
+                    width: 1.0,
+                  ),
+                  ),
+                  child: DropdownButton<String>(
+                    value: dropdownValue,
+                    icon: Icon(Icons.arrow_downward),
+                    iconSize: 24,
+                    elevation: 16,
+                    style: TextStyle(color: Colors.deepPurple),
+                    underline: Container(
+                      height: 2,
+                      color: Colors.deepPurpleAccent,
+                    ),
+                    onChanged: (String newValue) {
+                      // setState(() {
+                      //   dropdownValue = newValue;
+                      // });
+                    },
+                    items: <String>['不具合の報告', '機能追加の要望', 'その他']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
                 ),
                 TextFormField(
                   // controller: categoryController,
@@ -63,7 +90,7 @@ class ContactPage extends StatelessWidget {
                   height: 20,
                 ),
                 TextFormField(
-                  controller: contactController,
+                  // controller: contactController,
                   onChanged: (text) {
                     // model.contact = text;
                   },
@@ -110,27 +137,9 @@ class ContactPage extends StatelessWidget {
               ],
             ),
           ));
-        }),
-      ),
+    }),
+    // >>>>>>> Stashed changes
+    ),
     );
   }
-}
-
-_showTextDialog(context, message) async {
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(message),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }
