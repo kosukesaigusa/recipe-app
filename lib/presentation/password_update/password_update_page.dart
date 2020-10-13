@@ -61,7 +61,7 @@ class PasswordUpdatePage extends StatelessWidget {
                     TextFormField(
                       controller: confirmPasswordController,
                       onChanged: (text) {
-                        model.confirm = text;
+                        model.confirmPassword = text;
                       },
                       obscureText: true,
                       maxLines: 1,
@@ -84,11 +84,29 @@ class PasswordUpdatePage extends StatelessWidget {
                         onPressed: () async {
                           try {
                             await model.updatePassword();
-                            Navigator.pop(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MyAccountPage(),
-                              ),
+                            await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text(
+                                      'パスワードを変更しました。新しいパスワードで再度ログインして下さい。'),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      child: Text('OK'),
+                                      onPressed: () {
+                                        //TODO:ログアウトメソッド（未実装）を叩き、ログイン画面に画面遷移する
+                                        Navigator.pop(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                MyAccountPage(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           } catch (e) {
                             _showTextDialog(context, e.toString());

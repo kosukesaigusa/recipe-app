@@ -6,25 +6,23 @@ class PasswordUpdateModel extends ChangeNotifier {
 
   String password = '';
   String newPassword = '';
-  String confirm = '';
+  String confirmPassword = '';
 
   Future updatePassword() async {
     //バリデーション
     if (password.isEmpty) {
       throw ('現在のパスワードを入力してください');
     }
-    //TODO:現在のパスワードが正しいものか確認
-
     if (newPassword.isEmpty) {
       throw ('新しいパスワードを入力してください');
     }
-    if (confirm.isEmpty) {
+    if (confirmPassword.isEmpty) {
       throw ('確認用パスワードを入力してください');
     }
     if (newPassword.length < 8 || newPassword.length > 20) {
       throw ('パスワードは8文字以上20文字以内です');
     }
-    if (newPassword != confirm) {
+    if (newPassword != confirmPassword) {
       throw ('新しいパスワードの入力内容が一致していません');
     }
 
