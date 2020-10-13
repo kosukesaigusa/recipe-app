@@ -4,9 +4,9 @@ import 'package:recipe/presentation/my_account/my_account_page.dart';
 import 'package:recipe/presentation/password_update/password_update_model.dart';
 
 class PasswordUpdatePage extends StatelessWidget {
-  final mailController = TextEditingController();
   final passwordController = TextEditingController();
-  final confirmController = TextEditingController(); //パスワード（確認用）
+  final newPasswordController = TextEditingController();
+  final confirmPasswordController = TextEditingController(); //パスワード（確認用）
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +27,11 @@ class PasswordUpdatePage extends StatelessWidget {
                   children: <Widget>[
                     //メールアドレス
                     TextFormField(
-                      controller: mailController,
+                      controller: passwordController,
                       onChanged: (text) {
-                        model.mail = text.trim();
+                        model.newPassword = text;
                       },
+                      obscureText: true,
                       maxLines: 1,
                       decoration: InputDecoration(
                         labelText: '現在のパスワード',
@@ -42,7 +43,7 @@ class PasswordUpdatePage extends StatelessWidget {
                     ),
                     //パスワード
                     TextFormField(
-                      controller: passwordController,
+                      controller: newPasswordController,
                       onChanged: (text) {
                         model.password = text;
                       },
@@ -58,7 +59,7 @@ class PasswordUpdatePage extends StatelessWidget {
                       height: 20,
                     ),
                     TextFormField(
-                      controller: confirmController,
+                      controller: confirmPasswordController,
                       onChanged: (text) {
                         model.confirm = text;
                       },
