@@ -5,7 +5,7 @@ import 'package:recipe/presentation/contact/contact_model.dart';
 class ContactPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    String dropdownValue;
+    String dropdownValue = "不具合の報告";
     final emailController = TextEditingController();
     final categoryController = TextEditingController();
     final contentController = TextEditingController();
@@ -24,10 +24,8 @@ class ContactPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Text(document.data()['title'][0]),
                 TextFormField(
                   controller: emailController,
-                  // readOnly: true,
                   onChanged: (text) {
                     model.email = text;
                   },
@@ -53,7 +51,7 @@ class ContactPage extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: DropdownButtonFormField<String>(
-                      value: dropdownValue = "不具合の報告",
+                      value: dropdownValue,
                       decoration: InputDecoration.collapsed(),
                       icon: Icon(Icons.arrow_drop_down_outlined),
                       iconSize: 24,
