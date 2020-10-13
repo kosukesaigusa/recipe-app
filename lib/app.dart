@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:recipe/app_model.dart';
 import 'package:recipe/domain/user_state.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
-import 'package:recipe/presentation/signup/signup_page.dart';
 import 'package:recipe/presentation/splash/splash_page.dart';
 import 'package:recipe/presentation/top/top_page.dart';
 
