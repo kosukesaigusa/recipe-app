@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -41,10 +40,6 @@ class PasswordUpdateModel extends ChangeNotifier {
 
 String _errorMessage(e) {
   switch (e) {
-    case 'invalid-email':
-      return 'メールアドレスを正しい形式で入力してください';
-    case 'wrong-password':
-      return 'パスワードが間違っています';
     case 'user-not-found':
       return 'ユーザーが見つかりません';
     case 'user-disabled':
