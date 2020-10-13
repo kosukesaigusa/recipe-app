@@ -2,10 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignInModel extends ChangeNotifier {
-  // Future fetchSignIn(context) async {}
-
   String mail = '';
   String password = '';
+  bool isLoading = false;
 
   Future login() async {
     if (mail.isEmpty) {
@@ -25,13 +24,24 @@ class SignInModel extends ChangeNotifier {
         password: password,
       );
     } catch (e) {
-      _errorMessage(e.code);
+      print('${e.code}: $e');
+      throw (_convertErrorMessage(e.code));
     }
+  }
+
+  void startLoading() {
+    this.isLoading = true;
+    notifyListeners();
+  }
+
+  void endLoading() {
+    this.isLoading = false;
+    notifyListeners();
   }
 }
 
-String _errorMessage(e) {
-  switch (e) {
+String _convertErrorMessage(eCode) {
+  switch (eCode) {
     case 'invalid-email':
       return 'メールアドレスを正しい形式で入力してください';
     case 'email-already-in-use':

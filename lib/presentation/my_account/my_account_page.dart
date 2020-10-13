@@ -12,6 +12,10 @@ class MyAccountPage extends StatelessWidget {
     return ChangeNotifierProvider<MyAccountModel>(
       create: (_) => MyAccountModel(),
       child: Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text("マイページ"),
+        ),
         body: Consumer<MyAccountModel>(builder: (context, model, child) {
           return Stack(
             children: <Widget>[
@@ -90,12 +94,20 @@ class MyAccountPage extends StatelessWidget {
                                 style: TextStyle(color: Colors.blue),
                               ),
                             ),
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              model.startLoading();
+                              try {
+                                await model.signOut();
+                                await Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => SignInPage(),
-                                  ));
+                                  ),
+                                );
+                              } catch (e) {
+                                await _showErrorDialog(context, e);
+                                model.endLoading();
+                              }
                             },
                           ),
                           Divider(
@@ -106,11 +118,38 @@ class MyAccountPage extends StatelessWidget {
                     ),
                   ],
                 ),
-              )
+              ),
+              model.isLoading
+                  ? Container(
+                      color: Colors.black.withOpacity(0.3),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : SizedBox()
             ],
           );
         }),
       ),
+    );
+  }
+
+  Future _showErrorDialog(BuildContext context, dynamic e) async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(e.toString()),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -36,7 +36,7 @@ class AppModel {
       }
       _state = state;
 
-      // noLogin の場合すぐに SplashPage が閉じてしまうので少し待つ
+      // singedOut の場合すぐに SplashPage が閉じてしまうので少し待つ
       if (_state == UserState.signedOut) {
         await Future.delayed(Duration(seconds: 2));
       }
