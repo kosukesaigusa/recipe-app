@@ -32,15 +32,15 @@ class TopPage extends StatelessWidget {
             items: [
               BottomNavigationBarItem(
                 icon: Icon(Icons.edit),
-                title: Text(_tabNames[0]),
+                label: _tabNames[0],
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.search),
-                title: Text(_tabNames[1]),
+                label: _tabNames[1],
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.menu),
-                title: Text(_tabNames[2]),
+                label: _tabNames[2],
               ),
             ],
           ),
