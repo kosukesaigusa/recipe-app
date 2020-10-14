@@ -63,6 +63,7 @@ class MyAccountPage extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => EmailUpdatePage(),
+                                    fullscreenDialog: true,
                                   ));
                             },
                           ),
@@ -81,6 +82,7 @@ class MyAccountPage extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => PasswordUpdatePage(),
+                                    fullscreenDialog: true,
                                   ));
                             },
                           ),
