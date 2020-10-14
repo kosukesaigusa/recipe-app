@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:recipe/presentation/password_update/password_update_page.dart';
+import 'update_password_page.dart';
 
 class PasswordUpdatePage extends StatelessWidget {
   @override

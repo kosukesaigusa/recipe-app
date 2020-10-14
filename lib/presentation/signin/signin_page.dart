@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:recipe/presentation/password_forget/password_forget_page.dart';
+import 'package:recipe/presentation/forget_password/forget_password_page.dart';
 import 'package:recipe/presentation/signin/signin_model.dart';
 import 'package:recipe/presentation/signup/signup_page.dart';
 import 'package:recipe/presentation/top/top_page.dart';

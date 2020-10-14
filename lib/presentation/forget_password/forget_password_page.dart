@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:recipe/presentation/password_forget/password_forget_model.dart';
+import 'forget_password_model.dart';
 
 class ForgetPasswordPage extends StatelessWidget {
   @override
