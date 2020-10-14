@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:recipe/presentation/my_account/my_account_page.dart';
 import 'package:recipe/presentation/password_update/password_update_model.dart';
+import 'package:recipe/presentation/signin/signin_page.dart';
 
 class PasswordUpdatePage extends StatelessWidget {
   final passwordController = TextEditingController();
@@ -94,14 +94,14 @@ class PasswordUpdatePage extends StatelessWidget {
                                     FlatButton(
                                       child: Text('OK'),
                                       onPressed: () {
-                                        //TODO:ログアウトメソッド（未実装）を叩き、ログイン画面に画面遷移する
-                                        Navigator.pop(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                MyAccountPage(),
-                                          ),
-                                        );
+                                        //ダイアログの「OK」を押すとsignOutメソッドを叩く
+                                        model.signOut();
+                                        Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  SignInPage(),
+                                            ));
                                       },
                                     ),
                                   ],

@@ -34,6 +34,15 @@ class PasswordUpdateModel extends ChangeNotifier {
       _errorMessage(e.code);
     }
   }
+
+  //AuthのユーザーからsignOutする
+  Future signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      _errorMessage(e.code);
+    }
+  }
 }
 
 String _errorMessage(e) {
