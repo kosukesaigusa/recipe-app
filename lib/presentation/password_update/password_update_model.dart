@@ -1,19 +1,57 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:recipe/presentation/password_update/password_update_page.dart';
 
-class PasswordUpdatePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<PasswordUpdateModel>(
-      create: (_) => PasswordUpdateModel()..fetchPasswordUpdate(context),
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text("パスワードの更新"),
-        ),
-        body: Text('パスワードの更新ページ'),
-      ),
-    );
+class PasswordUpdateModel extends ChangeNotifier {
+  Future fetchPasswordUpdate(context) async {}
+
+  String password = '';
+  String newPassword = '';
+  String confirmPassword = '';
+
+  Future updatePassword() async {
+    //バリデーション
+    if (password.isEmpty) {
+      throw ('現在のパスワードを入力してください');
+    }
+    if (newPassword.isEmpty) {
+      throw ('新しいパスワードを入力してください');
+    }
+    if (confirmPassword.isEmpty) {
+      throw ('確認用パスワードを入力してください');
+    }
+    if (newPassword.length < 8 || newPassword.length > 20) {
+      throw ('パスワードは8文字以上20文字以内です');
+    }
+    if (newPassword != confirmPassword) {
+      throw ('新しいパスワードの入力内容が一致していません');
+    }
+
+    try {
+      // パスワードをupdateする
+      final user = FirebaseAuth.instance.currentUser;
+      await user.updatePassword(newPassword);
+    } catch (e) {
+      _errorMessage(e.code);
+    }
+  }
+
+  //AuthのユーザーからsignOutする
+  Future signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      _errorMessage(e.code);
+    }
+  }
+}
+
+String _errorMessage(e) {
+  switch (e) {
+    case 'user-not-found':
+      return 'ユーザーが見つかりません';
+    case 'user-disabled':
+      return 'ユーザーが無効です';
+    default:
+      return '不明なエラーです';
   }
 }
