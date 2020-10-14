@@ -102,7 +102,7 @@ class SignInPage extends StatelessWidget {
                           ),
                           textColor: Colors.grey,
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ForgetPasswordPage(),
