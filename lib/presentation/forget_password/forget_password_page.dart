@@ -39,19 +39,15 @@ class ForgetPasswordPage extends StatelessWidget {
                           width: double.infinity,
                           height: 50,
                           child: RaisedButton(
-                            child: Text('再設定メールを送信'),
+                            child: Text('再設定する'),
                             color: Colors.blue,
                             textColor: Colors.white,
                             onPressed: () async {
                               model.startLoading();
                               try {
                                 await model.sendResetEmail();
-                                await Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SignInPage(),
-                                  ),
-                                );
+                                await _showTextDialog(context, '再設定メールを送信しました');
+                                Navigator.of(context).pop();
                               } catch (e) {
                                 _showTextDialog(context, e.toString());
                                 model.endLoading();
