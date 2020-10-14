@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/presentation/password_forget/password_forget_page.dart';
 import 'package:recipe/presentation/signin/signin_model.dart';
 import 'package:recipe/presentation/signup/signup_page.dart';
 import 'package:recipe/presentation/top/top_page.dart';
@@ -78,6 +79,9 @@ class SignInPage extends StatelessWidget {
                             },
                           ),
                         ),
+                        SizedBox(
+                          height: 20,
+                        ),
                         FlatButton(
                           child: Text(
                             '新規登録はこちら',
@@ -88,6 +92,20 @@ class SignInPage extends StatelessWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => SignUpPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        FlatButton(
+                          child: Text(
+                            'パスワードを忘れた場合',
+                          ),
+                          textColor: Colors.grey,
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ForgetPasswordPage(),
                               ),
                             );
                           },
