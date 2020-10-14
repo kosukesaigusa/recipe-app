@@ -93,9 +93,14 @@ class PasswordUpdatePage extends StatelessWidget {
                                   actions: <Widget>[
                                     FlatButton(
                                       child: Text('OK'),
-                                      onPressed: () {
+                                      onPressed: () async {
                                         //ダイアログの「OK」を押すとsignOutメソッドを叩く
-                                        model.signOut();
+                                        try {
+                                          await model.signOut();
+                                        } catch (e) {
+                                          _showTextDialog(
+                                              context, e.toString());
+                                        }
                                         Navigator.pushReplacement(
                                             context,
                                             MaterialPageRoute(
