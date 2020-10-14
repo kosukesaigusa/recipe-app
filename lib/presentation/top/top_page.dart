@@ -18,11 +18,14 @@ class TopPage extends StatelessWidget {
       create: (_) => TopModel()..init(),
       child: Consumer<TopModel>(builder: (context, model, child) {
         return Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: Text(_tabNames[model.currentIndex]),
-            leading: SizedBox(),
-            backgroundColor: Colors.blue,
+          // AppBar にタイトルなどを表示しない
+          // かつバッテリーやWi-Fiのマークが見える程度に最低限高さを小さくする
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(1.0),
+            child: AppBar(
+              backgroundColor: Colors.blue,
+              elevation: 0.0, // 影を消す
+            ),
           ),
           body: _topPageBody(context),
           bottomNavigationBar: BottomNavigationBar(
@@ -32,15 +35,15 @@ class TopPage extends StatelessWidget {
             items: [
               BottomNavigationBarItem(
                 icon: Icon(Icons.edit),
-                title: Text(_tabNames[0]),
+                label: _tabNames[0],
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.search),
-                title: Text(_tabNames[1]),
+                label: _tabNames[1],
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.menu),
-                title: Text(_tabNames[2]),
+                label: _tabNames[2],
               ),
             ],
           ),
