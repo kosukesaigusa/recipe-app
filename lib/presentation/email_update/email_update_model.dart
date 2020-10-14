@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class EmailUpdateModel extends ChangeNotifier {
   // Future fetchEmailUpdate(context) async {}
+  final FirebaseAuth auth = FirebaseAuth.instance;
   String newMail = '';
   String confirmMail = '';
   String password = '';
@@ -36,11 +37,14 @@ class EmailUpdateModel extends ChangeNotifier {
     if (newMail != confirmMail) {
       throw ("新しいメールアドレスと確認用のメールアドレスが一致しません。");
     }
-
+    final user = auth.currentUser;
     try {
       //メールアドレスのアップデートの処理
-
-      final user = FirebaseAuth.instance.currentUser;
+      //再認証のコード
+      await user.reauthenticateWithCredential(EmailAuthProvider.credential(
+        email: newMail,
+        password: password,
+      ));
       await user.updateEmail(newMail);
     } catch (e) {
       _errorMessage(e.toString());
@@ -52,6 +56,10 @@ String _errorMessage(e) {
   switch (e) {
     case 'invalid-email':
       return 'メールアドレスを正しい形式で入力してください';
+    case 'email-already-in-use':
+      return 'そのメールアドレスは、すでに使用されています';
+    case 'too-many-requests':
+      return 'しばらく待ってからお試し下さい';
     case 'wrong-password':
       return 'パスワードが間違っています';
     case 'user-not-found':
