@@ -17,118 +17,130 @@ class SignUpPage extends StatelessWidget {
         child: Scaffold(
           body: Consumer<SignUpModel>(
             builder: (context, model, child) {
-              return Container(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      //メールアドレス
-                      TextFormField(
-                        controller: mailController,
-                        onChanged: (text) {
-                          model.mail = text.trim();
-                        },
-                        maxLines: 1,
-                        decoration: InputDecoration(
-                          labelText: 'メールアドレス',
-                          border: OutlineInputBorder(),
+              return Stack(children: [
+                Container(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        //メールアドレス
+                        TextFormField(
+                          controller: mailController,
+                          onChanged: (text) {
+                            model.mail = text.trim();
+                          },
+                          maxLines: 1,
+                          decoration: InputDecoration(
+                            labelText: 'メールアドレス',
+                            border: OutlineInputBorder(),
+                          ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      //パスワード
-                      TextFormField(
-                        controller: passwordController,
-                        onChanged: (text) {
-                          model.password = text;
-                        },
-                        obscureText: true,
-                        maxLines: 1,
-                        decoration: InputDecoration(
-                          labelText: 'パスワード',
-                          // errorText: '８文字以上20文字以内',
-                          border: OutlineInputBorder(),
+                        const SizedBox(
+                          height: 20,
                         ),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      TextFormField(
-                        controller: confirmController,
-                        onChanged: (text) {
-                          model.confirm = text;
-                        },
-                        obscureText: true,
-                        maxLines: 1,
-                        decoration: InputDecoration(
-                          labelText: 'パスワード（確認用）',
-                          // errorText: '８文字以上20文字以内',
-                          border: OutlineInputBorder(),
+                        //パスワード
+                        TextFormField(
+                          controller: passwordController,
+                          onChanged: (text) {
+                            model.password = text;
+                          },
+                          obscureText: true,
+                          maxLines: 1,
+                          decoration: InputDecoration(
+                            labelText: 'パスワード',
+                            // errorText: '８文字以上20文字以内',
+                            border: OutlineInputBorder(),
+                          ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: RaisedButton(
-                          child: Text('新規登録'),
-                          color: Colors.blue,
-                          textColor: Colors.white,
-                          onPressed: () async {
-                            try {
-                              await model.signUp();
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TopPage(),
-                                ),
-                              );
-                            } catch (e) {
-                              _showTextDialog(context, e.toString());
-                            }
+                        SizedBox(
+                          height: 20,
+                        ),
+                        TextFormField(
+                          controller: confirmController,
+                          onChanged: (text) {
+                            model.confirm = text;
+                          },
+                          obscureText: true,
+                          maxLines: 1,
+                          decoration: InputDecoration(
+                            labelText: 'パスワード（確認用）',
+                            // errorText: '８文字以上20文字以内',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: RaisedButton(
+                            child: Text('新規登録'),
+                            color: Colors.blue,
+                            textColor: Colors.white,
+                            onPressed: () async {
+                              model.startLoading();
+                              try {
+                                await model.signUp();
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TopPage(),
+                                  ),
+                                );
+                              } catch (e) {
+                                _showTextDialog(context, e.toString());
+                                model.endLoading();
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        FlatButton(
+                          child: Text(
+                            'ログインはこちら',
+                          ),
+                          textColor: Colors.blue,
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SignInPage(),
+                              ),
+                            );
                           },
                         ),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      FlatButton(
-                        child: Text(
-                          'ログインはこちら',
+                        FlatButton(
+                          child: Text(
+                            'ゲストとして利用',
+                          ),
+                          textColor: Colors.grey,
+                          onPressed: () {
+                            model.signInAnonymous();
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TopPage(),
+                              ),
+                            );
+                          },
                         ),
-                        textColor: Colors.blue,
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SignInPage(),
-                            ),
-                          );
-                        },
-                      ),
-                      FlatButton(
-                        child: Text(
-                          'ゲストとして利用',
-                        ),
-                        textColor: Colors.grey,
-                        onPressed: () {
-                          model.signInAnonymous();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TopPage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              );
+                model.isLoading
+                    ? Container(
+                        color: Colors.black.withOpacity(0.3),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : SizedBox()
+              ]);
             },
           ),
         ));
