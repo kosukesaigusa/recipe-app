@@ -9,6 +9,7 @@ class SignUpModel extends ChangeNotifier {
   String mail = '';
   String password = '';
   String confirm = '';
+  bool isLoading = false;
 
   Future signUp() async {
     //バリデーション
@@ -70,6 +71,17 @@ class SignUpModel extends ChangeNotifier {
     } catch (e) {
       _errorMessage(e.code);
     }
+  }
+
+  ///ローディング
+  void startLoading() {
+    this.isLoading = true;
+    notifyListeners();
+  }
+
+  void endLoading() {
+    this.isLoading = false;
+    notifyListeners();
   }
 }
 
