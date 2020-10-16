@@ -15,36 +15,30 @@ class RecipeAddPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
         children: [
-          Row(
-            children: [
-              Text(
-                '1.レシピ名：',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
+          Text(
+            '1.レシピ名：',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Container(
+            height: 30,
+            child: TextField(
+              controller: nameController,
+              onChanged: (text) {},
+              maxLines: 1,
+              decoration: InputDecoration(
+                labelText: 'レシピ名',
+                border: OutlineInputBorder(),
               ),
-              Container(
-                height: 30,
-                width: 250,
-                child: TextField(
-                  controller: nameController,
-                  onChanged: (text) {},
-                  maxLines: 1,
-                  decoration: InputDecoration(
-                    labelText: 'レシピ名',
-                    border: OutlineInputBorder(),
-                  ),
-                  style: TextStyle(
-                    fontSize: 12.0,
-                    height: 1.0,
-                  ),
-                ),
+              style: TextStyle(
+                fontSize: 12.0,
+                height: 1.0,
               ),
-            ],
+            ),
           ),
           _h8sizedBox(),
           Text(
@@ -55,8 +49,7 @@ class RecipeAddPage extends StatelessWidget {
             ),
           ),
           Container(
-            alignment: Alignment.bottomRight,
-            width: 250,
+            alignment: Alignment.center,
             height: 150,
             child: Image.network(
                 'https://d3a3a5e2ntl4bk.cloudfront.net/uploads/2020/02/Apple-SteveJobs.jpg'),
@@ -125,7 +118,7 @@ class RecipeAddPage extends StatelessWidget {
               Text(
                 'このレシピをみんなに公開する',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -141,7 +134,10 @@ class RecipeAddPage extends StatelessWidget {
               ),
               Text(
                 '公開するレシピのガイドラインを読んで同意しました',
-                style: TextStyle(fontSize: 12),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
