@@ -5,10 +5,9 @@ import 'package:recipe/domain/recipe.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
 
 class SearchModel extends ChangeNotifier {
-  FirebaseAuth auth = FirebaseAuth.instance;
+  FirebaseAuth _auth = FirebaseAuth.instance;
   String userId = '';
   bool isLoading;
-  int recipeTabIndex = 0;
   List myRecipes = [];
   List publicRecipes = [];
   int loadLimit = 10;
@@ -22,7 +21,7 @@ class SearchModel extends ChangeNotifier {
   Future fetchRecipes(context) async {
     startLoading();
 
-    if (auth == null) {
+    if (_auth.currentUser == null) {
       // ユーザーが見つからない場合は pushReplacement() でログインページへ
       await Navigator.pushReplacement(
         context,
@@ -31,14 +30,14 @@ class SearchModel extends ChangeNotifier {
         ),
       );
     } else {
-      this.userId = auth.currentUser.uid;
+      this.userId = _auth.currentUser.uid;
     }
 
     /// わたしのレシピ
     // わたしのレシピを10件取得
     QuerySnapshot docsMyRecipe = await FirebaseFirestore.instance
         .collection('users/${this.userId}/recipes')
-        .orderBy('createdAt')
+        .orderBy('createdAt', descending: true)
         .limit(this.loadLimit)
         .get();
 
@@ -66,7 +65,7 @@ class SearchModel extends ChangeNotifier {
     // みんなのレシピを10件取得
     QuerySnapshot docsPublicRecipe = await FirebaseFirestore.instance
         .collection('public_recipes')
-        .orderBy('createdAt')
+        .orderBy('createdAt', descending: true)
         .limit(this.loadLimit)
         .get();
 
@@ -102,7 +101,7 @@ class SearchModel extends ChangeNotifier {
   Future fetchMoreMyRecipes() async {
     QuerySnapshot docsMyRecipe = await FirebaseFirestore.instance
         .collection('users/${this.userId}/recipes')
-        .orderBy('createdAt')
+        .orderBy('createdAt', descending: true)
         .startAfterDocument(this.myLastVisible)
         .limit(this.loadLimit)
         .get();
@@ -133,7 +132,7 @@ class SearchModel extends ChangeNotifier {
   Future fetchMorePublicRecipes() async {
     QuerySnapshot docsPublicRecipe = await FirebaseFirestore.instance
         .collection('public_recipes')
-        .orderBy('createdAt')
+        .orderBy('createdAt', descending: true)
         .startAfterDocument(this.publicLastVisible)
         .limit(this.loadLimit)
         .get();
@@ -161,11 +160,6 @@ class SearchModel extends ChangeNotifier {
       this.publicRecipes.addAll(publicRecipes);
     }
 
-    notifyListeners();
-  }
-
-  void onRecipeTabTapped(int index) {
-    this.recipeTabIndex = index;
     notifyListeners();
   }
 
