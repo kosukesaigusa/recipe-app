@@ -37,13 +37,14 @@ class SearchPage extends StatelessWidget {
                   body: TabBarView(
                     children: [
                       ListView(
-                        key: PageStorageKey(0),
+                        key: PageStorageKey(0), // スクロール位置の保存に必要
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(
                               top: 16.0,
                               left: 8.0,
                               right: 8.0,
+                              bottom: 16.0,
                             ),
                             child: TextField(
                               onChanged: (text) {},
@@ -78,11 +79,15 @@ class SearchPage extends StatelessWidget {
                         ],
                       ),
                       ListView(
-                        key: PageStorageKey(1),
+                        key: PageStorageKey(1), // スクロール位置の保存に必要
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(
-                                top: 16.0, left: 8.0, right: 8.0),
+                              top: 16.0,
+                              left: 8.0,
+                              right: 8.0,
+                              bottom: 16.0,
+                            ),
                             child: TextField(
                               onChanged: (text) {},
                               maxLines: 1,
@@ -140,6 +145,14 @@ class SearchPage extends StatelessWidget {
       // Card ウィジェットをループの個数だけリストに追加する
       list.add(
         Card(
+          elevation: 0.0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5.0),
+            side: BorderSide(
+              color: Color(0xFFDADADA),
+              width: 1.0,
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
