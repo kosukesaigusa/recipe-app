@@ -8,7 +8,7 @@ class MyAccountModel extends ChangeNotifier {
   Future fetchMyAccount() async {
     // ここにユーザーのメールアドレスを取得する処理を書く
     // ...
-    // ...
+    // ..
     // this.mail = ユーザーのメールアドレス
     notifyListeners();
   }

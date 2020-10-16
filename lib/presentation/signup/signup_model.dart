@@ -9,6 +9,7 @@ class SignUpModel extends ChangeNotifier {
   String mail = '';
   String password = '';
   String confirm = '';
+  bool isLoading = false;
 
   Future signUp() async {
     //バリデーション
@@ -71,12 +72,25 @@ class SignUpModel extends ChangeNotifier {
       _errorMessage(e.code);
     }
   }
+
+  ///ローディング
+  void startLoading() {
+    this.isLoading = true;
+    notifyListeners();
+  }
+
+  void endLoading() {
+    this.isLoading = false;
+    notifyListeners();
+  }
 }
 
 String _errorMessage(e) {
   switch (e) {
     case 'invalid-email':
       return 'メールアドレスを正しい形式で入力してください';
+    case 'email-already-in-use':
+      return 'メールアドレスはすでに別のアカウントで使用されています。';
     case 'wrong-password':
       return 'パスワードが間違っています';
     case 'user-not-found':

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
-import 'forget_password_model.dart';
+import 'password_forget_model.dart';
 
 class ForgetPasswordPage extends StatelessWidget {
   final mailController = TextEditingController();
