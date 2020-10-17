@@ -122,6 +122,7 @@ class RecipeAddPage extends StatelessWidget {
             ),
             _h8sizedBox(),
             TextFormField(
+              textInputAction: TextInputAction.done,
               controller: contentController,
               focusNode: _nodeText,
               onChanged: (text) {
