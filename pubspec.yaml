@@ -17,6 +17,8 @@ dependencies:
   flutter_launcher_icons: ^0.7.5
   enum_to_string: ^1.0.9
   simple_logger: ^1.7.0
+  keyboard_actions: ^3.3.1+1
+
 
 dev_dependencies:
   flutter_test:
