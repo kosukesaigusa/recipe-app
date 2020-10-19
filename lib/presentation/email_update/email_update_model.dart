@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class EmailUpdateModel extends ChangeNotifier {
   // Future fetchEmailUpdate(context) async {}
+  //kr07031321@gmail.com
+  //hogehogehoge27@gmail.com
   final FirebaseAuth auth = FirebaseAuth.instance;
-  String newMail = '';
+
+  String newMail;
   String confirmMail = '';
   String password = '';
   bool isLoading = false;
@@ -20,7 +24,7 @@ class EmailUpdateModel extends ChangeNotifier {
   }
 
   //メールアドレスのアップデート
-  Future updateMail() async {
+  Future<void> updateMail() async {
     //バリデーション
     if (newMail.isEmpty) {
       throw ("新しいメールアドレスを入力してください");
@@ -37,17 +41,37 @@ class EmailUpdateModel extends ChangeNotifier {
     if (newMail != confirmMail) {
       throw ("新しいメールアドレスと確認用のメールアドレスが一致しません。");
     }
-    final user = auth.currentUser;
+
     try {
-      //メールアドレスのアップデートの処理
-      //再認証のコード
-      await user.reauthenticateWithCredential(EmailAuthProvider.credential(
-        email: newMail,
-        password: password,
-      ));
+      final user = auth.currentUser;
+      try {
+        //認証情報の作成
+        EmailAuthCredential emailAuthCredential = EmailAuthProvider.credential(
+          email: user.email,
+          password: password,
+        );
+        //再認証(再認証しないとuser-mismatchとエラーが出て認証情報が更新されず後にやるupdateEmailがupdateされずに進むため回避するには再認証して認証情報を最新のものにしてあげる必要がある)
+        await user.reauthenticateWithCredential(emailAuthCredential);
+      } catch (e) {
+        print(e.toString());
+        throw (e.toString());
+      }
+      //メールアドレス更新
       await user.updateEmail(newMail);
+      //確認用のメール送信
+      await user.sendEmailVerification();
+      //Firestoreのemailを更新
+      //Firestoreのドキュメント取得
+      final updateDoc =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      //Firestoreの登録済みのアドレス更新と更新日時更新
+      await updateDoc.update({
+        'email': newMail,
+        'update_at': Timestamp.now(),
+      });
     } catch (e) {
-      _errorMessage(e.toString());
+      print(e.code);
+      throw (_errorMessage(e.code));
     }
   }
 }
@@ -66,6 +90,8 @@ String _errorMessage(e) {
       return 'ユーザーが見つかりません';
     case 'user-disabled':
       return 'ユーザーが無効です';
+    case 'requires-recent-login':
+      return '再度認証が必要です';
     default:
       return '不明なエラーです';
   }
