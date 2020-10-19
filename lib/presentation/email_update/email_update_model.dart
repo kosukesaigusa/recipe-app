@@ -24,7 +24,7 @@ class EmailUpdateModel extends ChangeNotifier {
   }
 
   //メールアドレスのアップデート
-  Future<User> updateMail() async {
+  Future<void> updateMail() async {
     //バリデーション
     if (newMail.isEmpty) {
       throw ("新しいメールアドレスを入力してください");
