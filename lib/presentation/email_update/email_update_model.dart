@@ -50,7 +50,7 @@ class EmailUpdateModel extends ChangeNotifier {
           email: user.email,
           password: password,
         );
-        //再認証（しないと怒られる）
+        //再認証(再認証しないとuser-mismatchとエラーが出て認証情報が更新されず後にやるupdateEmailがupdateされずに進むため回避するには再認証して認証情報を最新のものにしてあげる必要がある)
         await user.reauthenticateWithCredential(emailAuthCredential);
       } catch (e) {
         print(e.toString());
@@ -58,8 +58,6 @@ class EmailUpdateModel extends ChangeNotifier {
       }
       //メールアドレス更新
       await user.updateEmail(newMail);
-      //IDトークン更新
-      await user.getIdToken(true);
       //確認用のメール送信
       await user.sendEmailVerification();
       //Firestoreのemailを更新
