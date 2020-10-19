@@ -62,6 +62,15 @@ class EmailUpdateModel extends ChangeNotifier {
       await user.getIdToken(true);
       //確認用のメール送信
       await user.sendEmailVerification();
+      //Firestoreのemailを更新
+      //Firestoreのドキュメント取得
+      final updateDoc =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      //Firestoreの登録済みのアドレス更新と更新日時更新
+      await updateDoc.update({
+        'email': newMail,
+        'update_at': Timestamp.now(),
+      });
     } catch (e) {
       print(e.code);
       throw (_errorMessage(e.code));
