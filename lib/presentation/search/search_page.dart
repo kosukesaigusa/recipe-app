@@ -9,7 +9,7 @@ class SearchPage extends StatelessWidget {
     // デバイスの画面サイズを取得
     final Size size = MediaQuery.of(context).size;
     return ChangeNotifierProvider<SearchModel>(
-      create: (_) => SearchModel()..fetchSearch(context),
+      create: (_) => SearchModel()..fetchRecipes(context),
       child: Consumer<SearchModel>(
         builder: (context, model, child) {
           return Stack(
@@ -87,160 +87,38 @@ class SearchPage extends StatelessWidget {
                       maintainState: true,
                       child: Column(
                         children: [
-                          /// とりあえず
-                          for (int i = 0; i < model.recipes.length; i++)
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 8.0),
-                                      child: SizedBox(
-                                        width: size.width - 156,
-                                        height: 100,
-                                        //height: ,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  bottom: 4.0),
-                                              child: Text(
-                                                '${model.recipes[i].name}',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              '${model.recipes[i].content}',
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 4.0),
-                                              child: Text(
-                                                '${'${model.recipes[i].createdAt.toDate()}'.substring(0, 10)} ${_convertWeekdayName(model.recipes[i].createdAt.toDate().weekday)}',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Color(0xFF777777),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 8.0),
-                                      child: SizedBox(
-                                        width: 100,
-                                        child: Image.network(
-                                          '${model.recipes[i].thumbnailURL}',
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
+                          _recipeCards(model.myRecipes, size),
+                          FlatButton(
+                            onPressed: () async {
+                              await model.fetchMoreMyRecipes();
+                            },
+                            child: model.isMyRecipeLeft == true
+                                ? Text('さらに読み込む')
+                                : model.noMyRecipe == true
+                                    ? Text('まだレシピが登録されていません')
+                                    : Text('以上です'),
+                          ),
                         ],
                       ),
                     ),
 
-                    /// みんなのレシピ
+                    /// みんなのレシピをFirestoreから取得
                     Visibility(
                       visible: model.recipeTabIndex == 1,
                       maintainState: true,
                       child: Column(
                         children: [
-                          /// とりあえず
-                          for (int i = 0; i < 5; i++)
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 8.0),
-                                      child: SizedBox(
-                                        width: size.width - 156,
-                                        height: 100,
-                                        //height: ,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  bottom: 4.0),
-                                              child: Text(
-                                                'みんなの豚キムチチチチチチチチチチチチチチチチチチチチチチチチチチチ',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              'まず豚こま肉を200g程度、塩胡椒と薄力粉でコーティングして下準備する。ニンニクは2片ほどを荒みじん切り、玉ねぎ半分を薄めのスライスにしておく。'
-                                              '\n温めたフライパンにニンニクを入れて火を通し、柴犬色になったら肉をよく広げながら入れる。全体に火が通ってきたら玉ねぎを入れて、透明になるまで炒める。そこにキムチを投入して、酒大さじ1、醤油小さじ1、佐藤小さじ1、めんつゆ少々を加えて、水分が少し減るくらいまで炒める。'
-                                              '\nご飯によく合う味で美味しい！！',
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 4.0),
-                                              child: Text(
-                                                '2020年10月1日 (木)',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Color(0xFF777777),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 8.0),
-                                      child: SizedBox(
-                                        width: 100,
-                                        child: Image.network(
-                                          'https://img.cpcdn.com/recipes/597693/840x1461s/3961a206a888b9997f627487663ab3a4?u=125911&p=1246605171',
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
+                          _recipeCards(model.publicRecipes, size),
+                          FlatButton(
+                            onPressed: () async {
+                              await model.fetchMorePublicRecipes();
+                            },
+                            child: model.isPublicRecipeLeft == true
+                                ? Text('さらに読み込む')
+                                : model.noPublicRecipe == true
+                                    ? Text('まだレシピが登録されていません')
+                                    : Text('以上です'),
+                          ),
                         ],
                       ),
                     ),
@@ -254,11 +132,89 @@ class SearchPage extends StatelessWidget {
                         child: CircularProgressIndicator(),
                       ),
                     )
-                  : SizedBox()
+                  : SizedBox(),
             ],
           );
         },
       ),
+    );
+  }
+
+  // レシピのカード一覧のウィジェトを返す関数
+  Widget _recipeCards(List recipes, Size size) {
+    // 画面に表示するカードのリスト
+    List<Widget> list = List<Widget>();
+    for (int i = 0; i < recipes.length; i++) {
+      // Card ウィジェットをループの個数だけリストに追加する
+      list.add(
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: SizedBox(
+                    width: size.width - 156,
+                    height: 100,
+                    //height: ,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text(
+                            '${recipes[i].name}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${recipes[i].content}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            '${'${recipes[i].createdAt.toDate()}'.substring(0, 10)} ${_convertWeekdayName(recipes[i].createdAt.toDate().weekday)}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF777777),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: SizedBox(
+                    width: 100,
+                    child: Image.network(
+                      '${recipes[i].thumbnailURL}',
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Column(
+      children: list,
     );
   }
 

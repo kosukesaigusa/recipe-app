@@ -3,7 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/presentation/email_update/email_update_page.dart';
 import 'package:recipe/presentation/my_account/my_account_model.dart';
-import 'package:recipe/presentation/password_update/password_update_model.dart';
+import 'package:recipe/presentation/password_update/password_update_page.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
 
 class MyAccountPage extends StatelessWidget {
@@ -74,6 +74,7 @@ class MyAccountPage extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => EmailUpdatePage(),
+                                    fullscreenDialog: true,
                                   ));
                             },
                           ),
@@ -92,6 +93,7 @@ class MyAccountPage extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => PasswordUpdatePage(),
+                                    fullscreenDialog: true,
                                   ));
                             },
                           ),
