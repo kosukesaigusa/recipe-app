@@ -10,7 +10,7 @@ class MyAccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<MyAccountModel>(
-      create: (_) => MyAccountModel(),
+      create: (_) => MyAccountModel()..fetchMyAccount(),
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -37,7 +37,18 @@ class MyAccountPage extends StatelessWidget {
                       child: Column(
                         children: <Widget>[
                           Text('メールアドレス'),
-                          Text('ここにログインしたユーザーのアドレス入る'),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          model.mail == null
+                              ? Text(
+                                  'ゲスト',
+                                  style: TextStyle(fontSize: 20),
+                                )
+                              : Text(
+                                  '${model.mail}',
+                                  style: TextStyle(fontSize: 20),
+                                ),
                         ],
                       ),
                     ),

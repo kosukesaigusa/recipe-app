@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 
 class MyAccountModel extends ChangeNotifier {
   bool isLoading = false;
-  String mail = '';
-
+  String mail;
+  User user;
+//Authからアドレス取得
   Future fetchMyAccount() async {
-    // ここにユーザーのメールアドレスを取得する処理を書く
-    // ...
-    // ..
-    // this.mail = ユーザーのメールアドレス
+    this.isLoading = true;
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    this.mail = firebaseUser.email;
+    this.isLoading = false;
     notifyListeners();
   }
 
