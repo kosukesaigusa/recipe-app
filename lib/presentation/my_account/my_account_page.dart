@@ -63,26 +63,26 @@ class MyAccountPage extends StatelessWidget {
                       width: double.infinity,
                       child: ListView(
                         children: <Widget>[
-                          //TODO:ゲストユーザーのみ表示の三項演算子を書く
-                          ListTile(
-                              title: Center(
-                                child: Text(
-                                  '登録して利用する',
-                                  style: TextStyle(color: Colors.blue),
-                                ),
-                              ),
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        LinkAnonymousUserPage(),
+                          model.mail == null
+                              ? ListTile(
+                                  title: Center(
+                                    child: Text(
+                                      '登録して利用する',
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
                                   ),
-                                );
-                              }),
-                          Divider(
-                            height: 20,
-                          ),
+                                  onTap: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            LinkAnonymousUserPage(),
+                                      ),
+                                    );
+                                  })
+                              : Divider(
+                                  height: 20,
+                                ),
                           ListTile(
                             title: Center(
                               child: Text(
