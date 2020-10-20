@@ -120,7 +120,7 @@ class SignUpPage extends StatelessWidget {
                           textColor: Colors.grey,
                           onPressed: () {
                             model.signInAnonymous();
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => TopPage(),

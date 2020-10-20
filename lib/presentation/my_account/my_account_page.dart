@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/presentation/email_update/email_update_page.dart';
+import 'package:recipe/presentation/link_anonymous_user/link_anonymous_user_page.dart';
 import 'package:recipe/presentation/my_account/my_account_model.dart';
 import 'package:recipe/presentation/password_update/password_update_page.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
@@ -62,6 +63,34 @@ class MyAccountPage extends StatelessWidget {
                       width: double.infinity,
                       child: ListView(
                         children: <Widget>[
+                          //TODO:ゲストユーザーのみ表示の三項演算子を書く
+                          ListTile(
+                            title: Center(
+                              child: Text(
+                                '登録して利用する',
+                                style: TextStyle(color: Colors.blue),
+                              ),
+                            ),
+                            onTap: () async {
+                              model.startLoading();
+                              try {
+                                await model.signOut();
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        LinkAnonymousUserPage(),
+                                  ),
+                                );
+                              } catch (e) {
+                                await _showErrorDialog(context, e);
+                                model.endLoading();
+                              }
+                            },
+                          ),
+                          Divider(
+                            height: 20,
+                          ),
                           ListTile(
                             title: Center(
                               child: Text(
