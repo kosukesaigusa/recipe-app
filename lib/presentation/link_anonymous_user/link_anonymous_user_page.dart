@@ -85,6 +85,22 @@ class LinkAnonymousUserPage extends StatelessWidget {
                               try {
                                 await model.linkAnonymousUser();
                                 await model.login();
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text('ユーザー登録が完了しました'),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: Text('OK'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
                                 Navigator.pop(context);
                               } catch (e) {
                                 _showTextDialog(context, e.toString());
