@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -28,21 +29,22 @@ class LinkAnonymousUserModel extends ChangeNotifier {
     }
 
     try {
-      // Firebase Auth にユーザを登録する
-      final result = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      // ユーザー情報オブジェクト
+      final credential = EmailAuthProvider.credential(
         email: mail,
         password: password,
       );
+      //匿名アカウントから永久アカウントに変更する
+      final result = await FirebaseAuth.instance.currentUser
+          .linkWithCredential(credential);
 
-      //FireStoreにuserを作成する
+      //FireStoreにユーザー情報をsetする
       await FirebaseFirestore.instance
           .collection('users')
           .doc(result.user.uid)
-          .set(
+          .update(
         {
           'email': mail,
-          'userId': result.user.uid,
-          'createdAt': DateTime.now(),
         },
       );
     } catch (e) {
@@ -50,25 +52,16 @@ class LinkAnonymousUserModel extends ChangeNotifier {
     }
   }
 
-  ///匿名ログイン
-  Future signInAnonymous() async {
+  ///ログイン（ユーザー登録直後に叩く）
+  Future login() async {
     try {
-      //firebaseAuthに匿名ユーザーを登録する
-      final result = await FirebaseAuth.instance.signInAnonymously();
-
-      //FireStoreにuserを作成する
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(result.user.uid)
-          .set(
-        {
-          'email': null,
-          'userId': result.user.uid,
-          'createdAt': DateTime.now(),
-        },
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: mail,
+        password: password,
       );
     } catch (e) {
-      _errorMessage(e.code);
+      print('${e.code}: $e');
+      throw (_errorMessage(e.code));
     }
   }
 

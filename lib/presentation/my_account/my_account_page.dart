@@ -65,16 +65,13 @@ class MyAccountPage extends StatelessWidget {
                         children: <Widget>[
                           //TODO:ゲストユーザーのみ表示の三項演算子を書く
                           ListTile(
-                            title: Center(
-                              child: Text(
-                                '登録して利用する',
-                                style: TextStyle(color: Colors.blue),
+                              title: Center(
+                                child: Text(
+                                  '登録して利用する',
+                                  style: TextStyle(color: Colors.blue),
+                                ),
                               ),
-                            ),
-                            onTap: () async {
-                              model.startLoading();
-                              try {
-                                await model.signOut();
+                              onTap: () async {
                                 await Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -82,12 +79,7 @@ class MyAccountPage extends StatelessWidget {
                                         LinkAnonymousUserPage(),
                                   ),
                                 );
-                              } catch (e) {
-                                await _showErrorDialog(context, e);
-                                model.endLoading();
-                              }
-                            },
-                          ),
+                              }),
                           Divider(
                             height: 20,
                           ),
