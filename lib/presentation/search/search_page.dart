@@ -48,6 +48,7 @@ class SearchPage extends StatelessWidget {
                             ),
                             child: TextField(
                               onChanged: (text) async {
+                                model.updateMyErrorText(text);
                                 if (text.isNotEmpty) {
                                   model.startMyRecipeFiltering();
                                   await model.filterMyRecipe(text);
@@ -57,6 +58,7 @@ class SearchPage extends StatelessWidget {
                               },
                               maxLines: 1,
                               decoration: InputDecoration(
+                                errorText: model.mySearchErrorText,
                                 labelText: 'レシピ名 や 材料名 で検索',
                                 border: OutlineInputBorder(),
                               ),
@@ -121,6 +123,7 @@ class SearchPage extends StatelessWidget {
                             ),
                             child: TextField(
                               onChanged: (text) async {
+                                model.updatePublicErrorText(text);
                                 if (text.isNotEmpty) {
                                   model.startPublicRecipeFiltering();
                                   await model.filterPublicRecipe(text);
@@ -130,6 +133,7 @@ class SearchPage extends StatelessWidget {
                               },
                               maxLines: 1,
                               decoration: InputDecoration(
+                                errorText: model.publicSearchErrorText,
                                 labelText: 'レシピ名 や 材料名 で検索',
                                 border: OutlineInputBorder(),
                               ),

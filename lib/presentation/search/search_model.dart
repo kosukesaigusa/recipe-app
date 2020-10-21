@@ -8,6 +8,8 @@ import 'package:recipe/presentation/signin/signin_page.dart';
 class SearchModel extends ChangeNotifier {
   FirebaseAuth _auth = FirebaseAuth.instance;
   String userId = '';
+  String mySearchErrorText;
+  String publicSearchErrorText;
   bool isLoading;
   bool isFiltering = false;
   int loadLimit = 10;
@@ -34,6 +36,9 @@ class SearchModel extends ChangeNotifier {
 
   Future fetchRecipes(context) async {
     startLoading();
+
+    this.mySearchErrorText = null;
+    this.publicSearchErrorText = null;
 
     if (_auth.currentUser == null) {
       await Navigator.pushReplacement(
@@ -354,6 +359,28 @@ class SearchModel extends ChangeNotifier {
 
   void endPublicRecipeFiltering() {
     this.isPublicRecipeFiltering = false;
+    notifyListeners();
+  }
+
+  void updateMyErrorText(input) {
+    if (input.length == 1) {
+      this.mySearchErrorText = '検索ワードは2文字以上で入力して下さい。';
+    } else if (input.length > 50) {
+      this.mySearchErrorText = '検索ワードは50文字以内で入力して下さい。';
+    } else {
+      this.mySearchErrorText = null;
+    }
+    notifyListeners();
+  }
+
+  void updatePublicErrorText(input) {
+    if (input.length == 1) {
+      this.publicSearchErrorText = '検索ワードは2文字以上で入力して下さい。';
+    } else if (input.length > 50) {
+      this.publicSearchErrorText = '検索ワードは50文字以内で入力して下さい。';
+    } else {
+      this.publicSearchErrorText = null;
+    }
     notifyListeners();
   }
 }
