@@ -11,6 +11,7 @@ class Recipe {
     content = doc.data()['content'];
     ingredients = doc.data()['ingredients'];
     reference = doc.data()['reference'];
+    tokenMap = doc.data()['tokenMap'];
     isPublic = doc.data()['isPublic'];
   }
 
@@ -23,5 +24,6 @@ class Recipe {
   String content;
   List ingredients;
   String reference;
+  Map tokenMap;
   bool isPublic;
 }
