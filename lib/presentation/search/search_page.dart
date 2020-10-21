@@ -47,41 +47,24 @@ class SearchPage extends StatelessWidget {
                               right: 8.0,
                               bottom: 16.0,
                             ),
-                            child: Column(
-                              children: [
-                                TextField(
-                                  onChanged: (text) async {
-                                    if (text.isNotEmpty) {
-                                      model.startMyRecipeFiltering();
-                                      await model.filterMyRecipe(text);
-                                    } else {
-                                      model.endMyRecipeFiltering();
-                                    }
-                                  },
-                                  maxLines: 1,
-                                  decoration: InputDecoration(
-                                    labelText: 'レシピ名 や 材料名 で検索',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  style: TextStyle(
-                                    fontSize: 12.0,
-                                    height: 1.0,
-                                  ),
-                                ),
-                                model.isMyRecipeFiltering
-                                    ? Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 8.0),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: [
-                                            Text('検索結果：X 件'),
-                                          ],
-                                        ),
-                                      )
-                                    : SizedBox(),
-                              ],
+                            child: TextField(
+                              onChanged: (text) async {
+                                if (text.isNotEmpty) {
+                                  model.startMyRecipeFiltering();
+                                  await model.filterMyRecipe(text);
+                                } else {
+                                  model.endMyRecipeFiltering();
+                                }
+                              },
+                              maxLines: 1,
+                              decoration: InputDecoration(
+                                labelText: 'レシピ名 や 材料名 で検索',
+                                border: OutlineInputBorder(),
+                              ),
+                              style: TextStyle(
+                                fontSize: 12.0,
+                                height: 1.0,
+                              ),
                             ),
                           ),
 
