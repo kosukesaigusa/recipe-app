@@ -8,6 +8,8 @@ import 'package:recipe/presentation/signin/signin_page.dart';
 class SearchModel extends ChangeNotifier {
   FirebaseAuth _auth = FirebaseAuth.instance;
   String userId = '';
+  String mySearchWords = '';
+  String publicSearchWords = '';
   String mySearchErrorText;
   String publicSearchErrorText;
   bool isLoading;
@@ -362,7 +364,8 @@ class SearchModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateMyErrorText(input) {
+  void changeMySearchWords(input) {
+    this.mySearchWords = input;
     if (input.length == 1) {
       this.mySearchErrorText = '検索ワードは2文字以上で入力して下さい。';
     } else if (input.length > 50) {
@@ -373,7 +376,8 @@ class SearchModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updatePublicErrorText(input) {
+  void changePublicSearchWords(input) {
+    this.publicSearchWords = input;
     if (input.length == 1) {
       this.publicSearchErrorText = '検索ワードは2文字以上で入力して下さい。';
     } else if (input.length > 50) {

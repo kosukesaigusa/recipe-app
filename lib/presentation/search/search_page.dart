@@ -46,9 +46,10 @@ class SearchPage extends StatelessWidget {
                               right: 8.0,
                               bottom: 16.0,
                             ),
-                            child: TextField(
+                            child: TextFormField(
+                              initialValue: model.mySearchWords,
                               onChanged: (text) async {
-                                model.updateMyErrorText(text);
+                                model.changeMySearchWords(text);
                                 if (text.isNotEmpty) {
                                   model.startMyRecipeFiltering();
                                   await model.filterMyRecipe(text);
@@ -93,17 +94,24 @@ class SearchPage extends StatelessWidget {
                                                       .loadMoreMyRecipes();
                                                 }
                                               : null,
-                                      child: model.isMyRecipeFiltering
-                                          ? model.canLoadMoreFilteredMyRecipe
-                                              ? Text('検索結果をさらに読み込む')
-                                              : model.existsFilteredMyRecipe
-                                                  ? Text('検索結果は以上です')
-                                                  : Text('検索結果が見つかりません')
-                                          : model.canLoadMoreMyRecipe
-                                              ? Text('さらに読み込む')
-                                              : model.existsMyRecipe
-                                                  ? Text('以上です')
-                                                  : Text('まだレシピが登録されていません'),
+                                      child: model.isFiltering
+                                          ? Text('検索中...')
+                                          : model.isLoading
+                                              ? SizedBox()
+                                              : model.isMyRecipeFiltering
+                                                  ? model
+                                                          .canLoadMoreFilteredMyRecipe
+                                                      ? Text('検索結果をさらに読み込む')
+                                                      : model
+                                                              .existsFilteredMyRecipe
+                                                          ? Text('検索結果は以上です')
+                                                          : Text('検索結果が見つかりません')
+                                                  : model.canLoadMoreMyRecipe
+                                                      ? Text('さらに読み込む')
+                                                      : model.existsMyRecipe
+                                                          ? Text('以上です')
+                                                          : Text(
+                                                              'まだレシピが登録されていません'),
                                     ),
                                   ],
                                 ),
@@ -121,9 +129,10 @@ class SearchPage extends StatelessWidget {
                               right: 8.0,
                               bottom: 16.0,
                             ),
-                            child: TextField(
+                            child: TextFormField(
+                              initialValue: model.publicSearchWords,
                               onChanged: (text) async {
-                                model.updatePublicErrorText(text);
+                                model.changePublicSearchWords(text);
                                 if (text.isNotEmpty) {
                                   model.startPublicRecipeFiltering();
                                   await model.filterPublicRecipe(text);
@@ -169,17 +178,21 @@ class SearchPage extends StatelessWidget {
                                                       .loadMorePublicRecipes();
                                                 }
                                               : null,
-                                      child: model.isPublicRecipeFiltering
-                                          ? model.canLoadMoreFilteredPublicRecipe
-                                              ? Text('検索結果をさらに読み込む')
-                                              : model.existsFilteredPublicRecipe
-                                                  ? Text('検索結果は以上です')
-                                                  : Text('検索結果が見つかりません')
-                                          : model.canLoadMorePublicRecipe
-                                              ? Text('さらに読み込む')
-                                              : model.existsPublicRecipe
-                                                  ? Text('以上です')
-                                                  : Text('まだレシピが登録されていません'),
+                                      child: model.isFiltering
+                                          ? Text('検索中...')
+                                          : model.isLoading
+                                              ? SizedBox()
+                                              : model.isPublicRecipeFiltering
+                                                  ? model.canLoadMoreFilteredPublicRecipe
+                                                      ? Text('検索結果をさらに読み込む')
+                                                      : model.existsFilteredPublicRecipe
+                                                          ? Text('検索結果は以上です')
+                                                          : Text('検索結果が見つかりません')
+                                                  : model.canLoadMorePublicRecipe
+                                                      ? Text('さらに読み込む')
+                                                      : model.existsPublicRecipe
+                                                          ? Text('以上です')
+                                                          : Text('まだレシピが登録されていません'),
                                     ),
                                   ],
                                 ),
