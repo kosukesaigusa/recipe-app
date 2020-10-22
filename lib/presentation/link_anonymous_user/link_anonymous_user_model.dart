@@ -37,7 +37,7 @@ class LinkAnonymousUserModel extends ChangeNotifier {
       final result = await FirebaseAuth.instance.currentUser
           .linkWithCredential(credential);
 
-      //FireStoreにユーザー情報をsetする
+      //FireStoreのユーザー情報をupdateする
       await FirebaseFirestore.instance
           .collection('users')
           .doc(result.user.uid)
