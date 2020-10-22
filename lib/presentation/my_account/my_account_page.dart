@@ -64,22 +64,33 @@ class MyAccountPage extends StatelessWidget {
                       child: ListView(
                         children: <Widget>[
                           model.mail == null
-                              ? ListTile(
-                                  title: Center(
-                                    child: Text(
-                                      '登録して利用する',
-                                      style: TextStyle(color: Colors.blue),
+                              ? Column(
+                                  children: [
+                                    Divider(
+                                      height: 20,
                                     ),
-                                  ),
-                                  onTap: () async {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            LinkAnonymousUserPage(),
-                                      ),
-                                    );
-                                  })
+                                    ListTile(
+                                        title: Center(
+                                          child: Text(
+                                            '登録して利用する',
+                                            style:
+                                                TextStyle(color: Colors.blue),
+                                          ),
+                                        ),
+                                        onTap: () async {
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  LinkAnonymousUserPage(),
+                                            ),
+                                          );
+                                        }),
+                                    Divider(
+                                      height: 20,
+                                    ),
+                                  ],
+                                )
                               : Divider(
                                   height: 20,
                                 ),
