@@ -53,7 +53,15 @@ EXPOSE 9005
 
 ## Docker イメージのビルド
 
-Dockerfile からイメージを作成することをビルドと言います。まずは、`Dockerfile` が配置されているのと同じディレクトリに移動します。
+Dockerfile からイメージを作成することをビルドと言います。
+
+まずは、任意のディレクトリ（今回は `Flutter アプリの root/firebase` の下） `Dockefile` という名前のファイルを作成します。拡張子は必要ありません。
+
+```
+touch <Flutter アプリの root/firebase>/Dockerfile
+```
+
+次に `Dockerfile` が配置されているディレクトリに移動します。
 
 ```
 $ cd <Dockerfile までのパス>
@@ -250,3 +258,5 @@ Docker コンテナを起動した状態で、次のコマンドで Firestore �
 ![firebase-emulator-ui](../information/screenshots/firebase-emulator-ui.png "firebase-emulator-ui.png")
 
 Firestore emulator からは、Security Rule のテストの実行などを、Functions emulator からは、Cloud Functions の実行ログの確認などを行うことができます。
+
+エミュレータは `control C` のキー入力でストップすることができます。
