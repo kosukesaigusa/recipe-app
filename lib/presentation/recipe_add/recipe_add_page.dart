@@ -181,13 +181,13 @@ class RecipeAddPage extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        // Checkbox(
-                        //   activeColor: Colors.blue,
-                        //   onChanged: (bool) {
-                        //     model.isPublic = bool;
-                        //     // value: model.isAccept,
-                        //   },
-                        // ),
+                        Checkbox(
+                          activeColor: Colors.blue,
+                          onChanged: (bool) {
+                            model.isPublic = bool;
+                          },
+                          value: model.isPublic,
+                        ),
                         Text(
                           'このレシピをみんなに公開する',
                           style: TextStyle(
@@ -205,7 +205,7 @@ class RecipeAddPage extends StatelessWidget {
                         //   onChanged: (bool) {
                         //     model.isPublic = bool;
                         //   },
-                        //   // value: model.isAccept,
+                        //   value: model.isAccept,
                         // ),
                         Text(
                           '公開するレシピのガイドラインを読んで同意しました',

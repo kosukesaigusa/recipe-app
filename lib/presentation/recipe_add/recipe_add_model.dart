@@ -34,8 +34,11 @@ class RecipeAddModel extends ChangeNotifier {
     if (content.isEmpty) {
       throw ('作り方・材料を入力してください');
     }
-
-    FirebaseFirestore.instance.collection('recipes').add(
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(_auth.currentUser.uid)
+        .collection('recipes')
+        .add(
       {
         'name': name,
         'imageURL': imageURL,
@@ -46,8 +49,22 @@ class RecipeAddModel extends ChangeNotifier {
         'updateAt': Timestamp.now(),
         'isPublic': isPublic,
         'isAccept': isAccept,
-        'userId': _auth.currentUser.uid,
       },
     );
+
+    // FirebaseFirestore.instance.collection('recipes').add(
+    //   {
+    //     'name': name,
+    //     'imageURL': imageURL,
+    //     'thumbnailURL': thumbnailURL,
+    //     'content': content,
+    //     'reference': reference,
+    //     'createdAt': Timestamp.now(),
+    //     'updateAt': Timestamp.now(),
+    //     'isPublic': isPublic,
+    //     'isAccept': isAccept,
+    //     'userId': _auth.currentUser.uid,
+    //   },
+    // );
   }
 }
