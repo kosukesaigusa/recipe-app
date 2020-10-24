@@ -118,14 +118,21 @@ class SignUpPage extends StatelessWidget {
                             'ゲストとして利用',
                           ),
                           textColor: Colors.grey,
-                          onPressed: () {
-                            model.signInAnonymous();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TopPage(),
-                              ),
-                            );
+                          onPressed: () async {
+                            model.startLoading();
+                            try {
+                              await model.signInAnonymous();
+                              model.endLoading();
+                              await Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TopPage(),
+                                ),
+                              );
+                            } catch (e) {
+                              _showTextDialog(context, e.toString());
+                              model.endLoading();
+                            }
                           },
                         ),
                       ],

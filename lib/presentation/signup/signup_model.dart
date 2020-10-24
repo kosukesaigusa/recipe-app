@@ -3,9 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignUpModel extends ChangeNotifier {
-  // Future fetchSignUp(context) async {}
-  //mamushi.journey@gmail.com
-
   String mail = '';
   String password = '';
   String confirm = '';
@@ -35,7 +32,7 @@ class SignUpModel extends ChangeNotifier {
         password: password,
       );
 
-      //FireStoreにuserを作成する
+      // FireStoreにuserを作成する
       await FirebaseFirestore.instance
           .collection('users')
           .doc(result.user.uid)
@@ -51,7 +48,7 @@ class SignUpModel extends ChangeNotifier {
     }
   }
 
-  ///匿名ログイン
+  /// 匿名ログイン
   Future signInAnonymous() async {
     try {
       //firebaseAuthに匿名ユーザーを登録する
@@ -73,7 +70,6 @@ class SignUpModel extends ChangeNotifier {
     }
   }
 
-  ///ローディング
   void startLoading() {
     this.isLoading = true;
     notifyListeners();

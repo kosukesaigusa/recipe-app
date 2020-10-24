@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'link_anonymous_user_model.dart';
 
 class LinkAnonymousUserPage extends StatelessWidget {
@@ -25,7 +26,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        //メールアドレス
+                        // メールアドレス
                         TextFormField(
                           controller: mailController,
                           onChanged: (text) {
@@ -37,7 +38,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
                             border: OutlineInputBorder(),
                           ),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 20,
                         ),
                         //パスワード
@@ -50,7 +51,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
                           maxLines: 1,
                           decoration: InputDecoration(
                             labelText: 'パスワード',
-                            // errorText: '８文字以上20文字以内',
+                            // errorText: '8文字以上20文字以内',
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -66,7 +67,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
                           maxLines: 1,
                           decoration: InputDecoration(
                             labelText: 'パスワード（確認用）',
-                            // errorText: '８文字以上20文字以内',
+                            // errorText: '8文字以上20文字以内',
                             border: OutlineInputBorder(),
                           ),
                         ),

@@ -3,15 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LinkAnonymousUserModel extends ChangeNotifier {
-  Future fetchPasswordUpdate(context) async {}
-
   String mail = '';
   String password = '';
   String confirm = '';
   bool isLoading = false;
 
   Future linkAnonymousUser() async {
-    //バリデーション
     if (mail.isEmpty) {
       throw ('メールアドレスを入力してください');
     }
@@ -27,31 +24,37 @@ class LinkAnonymousUserModel extends ChangeNotifier {
       throw ('同じパスワードを入力してください');
     }
 
-    try {
-      // ユーザー情報オブジェクト
-      final credential = EmailAuthProvider.credential(
-        email: mail,
-        password: password,
-      );
-      //匿名アカウントから永久アカウントに変更する
-      final result = await FirebaseAuth.instance.currentUser
-          .linkWithCredential(credential);
+    AuthCredential credential = EmailAuthProvider.credential(
+      email: mail,
+      password: password,
+    );
 
-      //FireStoreのユーザー情報をupdateする
+    User anonymousUser = FirebaseAuth.instance.currentUser;
+
+    try {
+      await anonymousUser.linkWithCredential(credential);
+    } catch (e) {
+      print(e.code);
+      throw (_errorMessage(e.code));
+    }
+
+    try {
+      // FireStoreのユーザー情報をUpdateする
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(result.user.uid)
+          .doc(anonymousUser.uid)
           .update(
         {
           'email': mail,
         },
       );
     } catch (e) {
+      print(e.code);
       _errorMessage(e.code);
     }
   }
 
-  ///ログイン（ユーザー登録直後に叩く）
+  /// ログイン（ユーザー登録直後に叩く）
   Future login() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -64,7 +67,6 @@ class LinkAnonymousUserModel extends ChangeNotifier {
     }
   }
 
-  ///ローディング
   void startLoading() {
     this.isLoading = true;
     notifyListeners();
@@ -81,7 +83,7 @@ String _errorMessage(e) {
     case 'invalid-email':
       return 'メールアドレスを正しい形式で入力してください';
     case 'email-already-in-use':
-      return 'メールアドレスはすでに別のアカウントで使用されています。';
+      return 'そのメールアドレスはすでに別のアカウントで使用されています。';
     case 'wrong-password':
       return 'パスワードが間違っています';
     case 'user-not-found':
