@@ -85,6 +85,7 @@ class MyAccountPage extends StatelessWidget {
                                                   LinkAnonymousUserPage(),
                                             ),
                                           );
+                                          await model.fetchMyAccount();
                                         }),
                                     Divider(
                                       height: 20,

@@ -101,7 +101,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
                                     );
                                   },
                                 );
-                                Navigator.pop(context);
+                                Navigator.of(context).pop();
                               } catch (e) {
                                 _showTextDialog(context, e.toString());
                                 model.endLoading();
