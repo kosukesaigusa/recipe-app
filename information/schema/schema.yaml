@@ -17,6 +17,7 @@ users:
     content: string
     ingredients: list (string)
     reference: string
+    tokenMap: map
     isPublic: boolean
 
   # 各ユーザーのレシピの材料データの蓄積
@@ -37,6 +38,7 @@ public_recipes:
   content: string
   ingredients: list (string)
   reference: string
+  tokenMap: map
   isPublic: boolean
 
 # 公開設定になったレシピの材料データの蓄積
