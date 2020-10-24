@@ -1,60 +1,63 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:recipe/common/convert_error_message.dart';
 
 class SignUpModel extends ChangeNotifier {
   String mail = '';
   String password = '';
   String confirm = '';
+  String errorMail = '';
+  String errorPassword = '';
+  String errorConfirm = '';
   bool isLoading = false;
+  bool isMailValid = false;
+  bool isPasswordValid = false;
+  bool isConfirmValid = false;
+  UserCredential userCredential;
 
   Future signUp() async {
-    //バリデーション
-    if (mail.isEmpty) {
-      throw ('メールアドレスを入力してください');
-    }
-    if (password.isEmpty) {
-      throw ('パスワードを入力してください');
+    if (this.password != this.confirm) {
+      throw ('パスワードが一致しません。');
     }
 
-    if (password.length < 8 || password.length > 20) {
-      throw ('パスワードは8文字以上20文字以内です');
-    }
-
-    if (password != confirm) {
-      throw ('同じパスワードを入力してください');
-    }
-
+    /// 入力されたメール, パスワードで UserCredential を作成
     try {
-      // Firebase Auth にユーザを登録する
-      final result = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: mail,
-        password: password,
+      this.userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: this.mail,
+        password: this.password,
       );
+    } catch (e) {
+      print('エラーコード：${e.code}\nエラー：$e');
+      throw (convertErrorMessage(e.code));
+    }
 
-      // FireStoreにuserを作成する
+    /// UserCredential の null チェック
+    if (this.userCredential == null) {
+      throw ('エラーが発生しました。');
+    }
+
+    /// users コレクションにユーザーデータを保存
+    try {
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(result.user.uid)
+          .doc(this.userCredential.user.uid)
           .set(
         {
-          'email': mail,
-          'userId': result.user.uid,
-          'createdAt': DateTime.now(),
+          'email': this.mail,
+          'userId': this.userCredential.user.uid,
+          'createdAt': FieldValue.serverTimestamp(),
         },
       );
     } catch (e) {
-      _errorMessage(e.code);
+      throw ('エラーが発生しました。');
     }
   }
 
-  /// 匿名ログイン
-  Future signInAnonymous() async {
+  Future signInAnonymously() async {
     try {
-      //firebaseAuthに匿名ユーザーを登録する
-      final result = await FirebaseAuth.instance.signInAnonymously();
-
-      //FireStoreにuserを作成する
+      UserCredential result = await FirebaseAuth.instance.signInAnonymously();
       await FirebaseFirestore.instance
           .collection('users')
           .doc(result.user.uid)
@@ -62,12 +65,54 @@ class SignUpModel extends ChangeNotifier {
         {
           'email': null,
           'userId': result.user.uid,
-          'createdAt': DateTime.now(),
+          'createdAt': FieldValue.serverTimestamp(),
         },
       );
     } catch (e) {
-      _errorMessage(e.code);
+      throw ('エラーが発生しました。');
     }
+  }
+
+  void changeMail(text) {
+    this.mail = text.trim();
+    if (text.length == 0) {
+      this.isMailValid = false;
+      this.errorMail = 'メールアドレスを入力して下さい。';
+    } else {
+      this.isMailValid = true;
+      this.errorMail = '';
+    }
+    notifyListeners();
+  }
+
+  void changePassword(text) {
+    this.password = text;
+    if (text.length == 0) {
+      isPasswordValid = false;
+      this.errorPassword = 'パスワードを入力して下さい。';
+    } else if (text.length < 8 || text.length > 20) {
+      isPasswordValid = false;
+      this.errorPassword = 'パスワードは8文字以上20文字以内です。';
+    } else {
+      isPasswordValid = true;
+      this.errorPassword = '';
+    }
+    notifyListeners();
+  }
+
+  void changeConfirm(text) {
+    this.confirm = text;
+    if (text.length == 0) {
+      isConfirmValid = false;
+      this.errorConfirm = 'パスワードを再入力して下さい。';
+    } else if (text.length < 8 || text.length > 20) {
+      isConfirmValid = false;
+      this.errorConfirm = 'パスワードは8文字以上20文字以内です。';
+    } else {
+      isConfirmValid = true;
+      this.errorConfirm = '';
+    }
+    notifyListeners();
   }
 
   void startLoading() {
@@ -78,22 +123,5 @@ class SignUpModel extends ChangeNotifier {
   void endLoading() {
     this.isLoading = false;
     notifyListeners();
-  }
-}
-
-String _errorMessage(e) {
-  switch (e) {
-    case 'invalid-email':
-      return 'メールアドレスを正しい形式で入力してください';
-    case 'email-already-in-use':
-      return 'メールアドレスはすでに別のアカウントで使用されています。';
-    case 'wrong-password':
-      return 'パスワードが間違っています';
-    case 'user-not-found':
-      return 'ユーザーが見つかりません';
-    case 'user-disabled':
-      return 'ユーザーが無効です';
-    default:
-      return '不明なエラーです';
   }
 }

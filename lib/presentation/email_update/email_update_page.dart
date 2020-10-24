@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/text_dialog.dart';
 import 'package:recipe/presentation/email_update/email_update_model.dart';
+import 'package:recipe/presentation/my_account/my_account_page.dart';
 
 class EmailUpdatePage extends StatelessWidget {
   final mailController = TextEditingController();
@@ -19,84 +21,90 @@ class EmailUpdatePage extends StatelessWidget {
           builder: (context, model, child) {
             return Stack(
               children: <Widget>[
-                Container(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(
-                          height: 20,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      TextFormField(
+                        controller: mailController,
+                        onChanged: (text) {
+                          model.changeMail(text);
+                        },
+                        maxLines: 1,
+                        decoration: InputDecoration(
+                          errorText:
+                              model.errorMail == '' ? null : model.errorMail,
+                          labelText: 'メールアドレス',
+                          border: OutlineInputBorder(),
                         ),
-                        //メールアドレス
-                        TextFormField(
-                          controller: mailController,
-                          onChanged: (text) {
-                            model.newMail = text.trim();
-                          },
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            labelText: 'メールアドレス',
-                            border: OutlineInputBorder(),
-                          ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                        controller: confirmMailController,
+                        onChanged: (text) {
+                          model.changeConfirmMail(text);
+                        },
+                        maxLines: 1,
+                        decoration: InputDecoration(
+                          labelText: 'メールアドレス（確認用）',
+                          border: OutlineInputBorder(),
                         ),
-                        const SizedBox(
-                          height: 20,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                        controller: passwordController,
+                        onChanged: (text) {
+                          model.changePassword(text);
+                        },
+                        obscureText: true,
+                        maxLines: 1,
+                        decoration: InputDecoration(
+                          errorText: model.errorPassword == ''
+                              ? null
+                              : model.errorPassword,
+                          labelText: 'パスワード',
+                          border: OutlineInputBorder(),
                         ),
-                        //メールアドレス(確認用)
-                        TextFormField(
-                          controller: confirmMailController,
-                          onChanged: (text) {
-                            model.confirmMail = text.trim();
-                          },
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            labelText: 'メールアドレス(確認用)',
-                            border: OutlineInputBorder(),
-                          ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: RaisedButton(
+                          child: Text('メールアドレスの更新'),
+                          color: Colors.blue,
+                          textColor: Colors.white,
+                          onPressed: model.isMailValid &&
+                                  model.isConfirmMailValid &&
+                                  model.isPasswordValid
+                              ? () async {
+                                  model.startLoading();
+                                  try {
+                                    await model.updateMail(context);
+                                    await showTextDialog(
+                                        context, 'メールアドレスの変更をしました');
+                                    await Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MyAccountPage(),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    showTextDialog(context, e.toString());
+                                    model.endLoading();
+                                  }
+                                }
+                              : null,
                         ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        //パスワード
-                        TextFormField(
-                          controller: passwordController,
-                          onChanged: (text) {
-                            model.password = text;
-                          },
-                          obscureText: true,
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            labelText: 'パスワード',
-                            // errorText: '８文字以上20文字以内',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: RaisedButton(
-                            child: Text('メールアドレスの更新'),
-                            color: Colors.blue,
-                            textColor: Colors.white,
-                            onPressed: () async {
-                              model.startLoading();
-                              try {
-                                await model.updateMail();
-                                await _showTextDialog(
-                                    context, 'メールアドレスの変更をしました');
-                                Navigator.of(context).pop();
-                              } catch (e) {
-                                _showTextDialog(context, e.toString());
-                              }
-                              model.endLoading();
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 model.isLoading
@@ -114,23 +122,4 @@ class EmailUpdatePage extends StatelessWidget {
       ),
     );
   }
-}
-
-_showTextDialog(context, message) async {
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(message),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }
