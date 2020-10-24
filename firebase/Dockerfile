@@ -11,6 +11,9 @@ RUN apt-get install -y openjdk-8-jdk
 # Firebase CLI のインストール
 RUN curl -sL "https://firebase.tools" | bash
 
+# Node.js と npm のインストール
+RUN apt install -y nodejs npm
+
 # エミュレータの設定
 ENV HOST 0.0.0.0
 EXPOSE 4000
