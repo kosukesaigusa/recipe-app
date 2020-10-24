@@ -2,14 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class SignUpModel extends ChangeNotifier {
+class LinkAnonymousUserModel extends ChangeNotifier {
   String mail = '';
   String password = '';
   String confirm = '';
   bool isLoading = false;
 
-  Future signUp() async {
-    //バリデーション
+  Future linkAnonymousUser() async {
     if (mail.isEmpty) {
       throw ('メールアドレスを入力してください');
     }
@@ -25,48 +24,46 @@ class SignUpModel extends ChangeNotifier {
       throw ('同じパスワードを入力してください');
     }
 
-    try {
-      // Firebase Auth にユーザを登録する
-      final result = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: mail,
-        password: password,
-      );
+    AuthCredential credential = EmailAuthProvider.credential(
+      email: mail,
+      password: password,
+    );
 
-      // FireStoreにuserを作成する
+    User anonymousUser = FirebaseAuth.instance.currentUser;
+
+    try {
+      await anonymousUser.linkWithCredential(credential);
+    } catch (e) {
+      print(e.code);
+      throw (_errorMessage(e.code));
+    }
+
+    try {
+      // FireStoreのユーザー情報をUpdateする
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(result.user.uid)
-          .set(
+          .doc(anonymousUser.uid)
+          .update(
         {
           'email': mail,
-          'userId': result.user.uid,
-          'createdAt': DateTime.now(),
         },
       );
     } catch (e) {
+      print(e.code);
       _errorMessage(e.code);
     }
   }
 
-  /// 匿名ログイン
-  Future signInAnonymous() async {
+  /// ログイン（ユーザー登録直後に叩く）
+  Future login() async {
     try {
-      //firebaseAuthに匿名ユーザーを登録する
-      final result = await FirebaseAuth.instance.signInAnonymously();
-
-      //FireStoreにuserを作成する
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(result.user.uid)
-          .set(
-        {
-          'email': null,
-          'userId': result.user.uid,
-          'createdAt': DateTime.now(),
-        },
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: mail,
+        password: password,
       );
     } catch (e) {
-      _errorMessage(e.code);
+      print('${e.code}: $e');
+      throw (_errorMessage(e.code));
     }
   }
 
@@ -86,7 +83,7 @@ String _errorMessage(e) {
     case 'invalid-email':
       return 'メールアドレスを正しい形式で入力してください';
     case 'email-already-in-use':
-      return 'メールアドレスはすでに別のアカウントで使用されています。';
+      return 'そのメールアドレスはすでに別のアカウントで使用されています。';
     case 'wrong-password':
       return 'パスワードが間違っています';
     case 'user-not-found':

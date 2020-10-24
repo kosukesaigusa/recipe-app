@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:recipe/presentation/signin/signin_page.dart';
-import 'package:recipe/presentation/signup/signup_model.dart';
-import 'package:recipe/presentation/top/top_page.dart';
 
-class SignUpPage extends StatelessWidget {
+import 'link_anonymous_user_model.dart';
+
+class LinkAnonymousUserPage extends StatelessWidget {
   final mailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmController = TextEditingController(); //パスワード（確認用）
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<SignUpModel>(
-        create: (_) => SignUpModel(),
-        // ..fetchSignUp(context),
+    return ChangeNotifierProvider<LinkAnonymousUserModel>(
+        create: (_) => LinkAnonymousUserModel(),
         child: Scaffold(
-          body: Consumer<SignUpModel>(
+          appBar: AppBar(
+            centerTitle: true,
+            title: Text("ユーザー登録"),
+          ),
+          body: Consumer<LinkAnonymousUserModel>(
             builder: (context, model, child) {
               return Stack(children: [
                 Container(
@@ -24,7 +26,7 @@ class SignUpPage extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        //メールアドレス
+                        // メールアドレス
                         TextFormField(
                           controller: mailController,
                           onChanged: (text) {
@@ -36,7 +38,7 @@ class SignUpPage extends StatelessWidget {
                             border: OutlineInputBorder(),
                           ),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 20,
                         ),
                         //パスワード
@@ -49,7 +51,7 @@ class SignUpPage extends StatelessWidget {
                           maxLines: 1,
                           decoration: InputDecoration(
                             labelText: 'パスワード',
-                            // errorText: '８文字以上20文字以内',
+                            // errorText: '8文字以上20文字以内',
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -65,7 +67,7 @@ class SignUpPage extends StatelessWidget {
                           maxLines: 1,
                           decoration: InputDecoration(
                             labelText: 'パスワード（確認用）',
-                            // errorText: '８文字以上20文字以内',
+                            // errorText: '8文字以上20文字以内',
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -76,19 +78,31 @@ class SignUpPage extends StatelessWidget {
                           width: double.infinity,
                           height: 50,
                           child: RaisedButton(
-                            child: Text('新規登録'),
+                            child: Text('ユーザー登録する'),
                             color: Colors.blue,
                             textColor: Colors.white,
                             onPressed: () async {
                               model.startLoading();
                               try {
-                                await model.signUp();
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TopPage(),
-                                  ),
+                                await model.linkAnonymousUser();
+                                await model.login();
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: Text('ユーザー登録が完了しました'),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: Text('OK'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 );
+                                Navigator.of(context).pop();
                               } catch (e) {
                                 _showTextDialog(context, e.toString());
                                 model.endLoading();
@@ -98,42 +112,6 @@ class SignUpPage extends StatelessWidget {
                         ),
                         SizedBox(
                           height: 20,
-                        ),
-                        FlatButton(
-                          child: Text(
-                            'ログインはこちら',
-                          ),
-                          textColor: Colors.blue,
-                          onPressed: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SignInPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        FlatButton(
-                          child: Text(
-                            'ゲストとして利用',
-                          ),
-                          textColor: Colors.grey,
-                          onPressed: () async {
-                            model.startLoading();
-                            try {
-                              await model.signInAnonymous();
-                              model.endLoading();
-                              await Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TopPage(),
-                                ),
-                              );
-                            } catch (e) {
-                              _showTextDialog(context, e.toString());
-                              model.endLoading();
-                            }
-                          },
                         ),
                       ],
                     ),
