@@ -219,7 +219,7 @@ class SearchPage extends StatelessWidget {
     );
   }
 
-  // レシピのカード一覧のウィジェトを返す関数
+  /// レシピのカード一覧のウィジェトを返す関数
   Widget _recipeCards(List recipes, Size size) {
     // 画面に表示するカードのリスト
     List<Widget> list = List<Widget>();
@@ -250,8 +250,8 @@ class SearchPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4.0),
+                        Container(
+                          height: 26,
                           child: Text(
                             '${recipes[i].name}',
                             maxLines: 1,
@@ -261,18 +261,24 @@ class SearchPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Text(
-                          '${recipes[i].content}',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
+                        SizedBox(height: 4.0),
+                        Container(
+                          height: 50,
+                          child: Text(
+                            '${recipes[i].content}',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                            ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
+                        SizedBox(height: 4.0),
+                        Container(
+                          height: 16,
                           child: Text(
-                            '${'${recipes[i].createdAt.toDate()}'.substring(0, 10)} ${_convertWeekdayName(recipes[i].createdAt.toDate().weekday)}',
+                            '${'${recipes[i].createdAt.toDate()}'.substring(0, 10)} '
+                            '${_convertWeekdayName(recipes[i].createdAt.toDate().weekday)}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -289,9 +295,26 @@ class SearchPage extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 8.0),
                   child: SizedBox(
                     width: 100,
-                    child: Image.network(
-                      '${recipes[i].thumbnailURL}',
-                    ),
+                    child: '${recipes[i].thumbnailURL}' == ''
+                        ? Container(
+                            color: Color(0xFFDADADA),
+                            width: 100,
+                            height: 100,
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  'No photo',
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            '${recipes[i].thumbnailURL}',
+                          ),
                   ),
                 )
               ],
