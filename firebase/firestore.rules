@@ -1,8 +1,44 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+
+    // 何らかの方法で認証が済んでいること
+    function isAnyAuthentificated() {
+      return request.auth != null;
+    }
+
+    // 認証が済んでいるのが本人であること
+    function isUserAuthentificated(userId) {
+      return isAnyAuthentificated() && userId == request.auth.uid;
+    }
+
+    // root/users コレクションのドキュメント
+    match /users/{userId} {
+      allow get: if isUserAuthentificated(userId);
+      allow create: if isUserAuthentificated(userId);
+      allow update: if isUserAuthentificated(userId);
+      allow delete: if isUserAuthentificated(userId);
+
+      // root/users/{userId}/recipes コレクションのドキュメント
+      match /recipes/{myRecipeId} {
+        allow read: if isUserAuthentificated(userId);
+        allow create: if isUserAuthentificated(userId);
+        allow update: if isUserAuthentificated(userId);
+        allow delete: if isUserAuthentificated(userId);
+      }
+    }
+
+    // root/public_recipes コレクションのドキュメント
+    match /public_recipes/{publicRecipeId} {
+      allow read: if isAnyAuthentificated();
+      allow create: if isAnyAuthentificated();
+      allow update: if isAnyAuthentificated();
+      allow delete: if isAnyAuthentificated();
+    }
+
+    // root/contacts コレクションのドキュメント
+    match /contacts/{contactId} {
+      allow create: if isAnyAuthentificated();
     }
   }
 }
