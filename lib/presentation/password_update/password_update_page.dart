@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/text_dialog.dart';
 import 'package:recipe/presentation/password_update/password_update_model.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
 
 class PasswordUpdatePage extends StatelessWidget {
   final passwordController = TextEditingController();
   final newPasswordController = TextEditingController();
-  final confirmPasswordController = TextEditingController(); //パスワード（確認用）
+  final confirmController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<PasswordUpdateModel>(
-      create: (_) => PasswordUpdateModel()..fetchPasswordUpdate(context),
+      create: (_) => PasswordUpdateModel(),
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -19,135 +20,115 @@ class PasswordUpdatePage extends StatelessWidget {
         ),
         body: Consumer<PasswordUpdateModel>(
           builder: (context, model, child) {
-            return Container(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    //メールアドレス
-                    TextFormField(
-                      controller: passwordController,
-                      onChanged: (text) {
-                        model.password = text;
-                      },
-                      obscureText: true,
-                      maxLines: 1,
-                      decoration: InputDecoration(
-                        labelText: '現在のパスワード',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    //パスワード
-                    TextFormField(
-                      controller: newPasswordController,
-                      onChanged: (text) {
-                        model.newPassword = text;
-                      },
-                      obscureText: true,
-                      maxLines: 1,
-                      decoration: InputDecoration(
-                        labelText: '新しいパスワード',
-                        // errorText: '８文字以上20文字以内',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    TextFormField(
-                      controller: confirmPasswordController,
-                      onChanged: (text) {
-                        model.confirmPassword = text;
-                      },
-                      obscureText: true,
-                      maxLines: 1,
-                      decoration: InputDecoration(
-                        labelText: '新しいパスワード（確認用）',
-                        // errorText: '８文字以上20文字以内',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: RaisedButton(
-                        child: Text('パスワードの変更'),
-                        color: Colors.blue,
-                        textColor: Colors.white,
-                        onPressed: () async {
-                          try {
-                            await model.updatePassword();
-                            await showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Text(
-                                      'パスワードを変更しました。新しいパスワードで再度ログインして下さい。'),
-                                  actions: <Widget>[
-                                    FlatButton(
-                                      child: Text('OK'),
-                                      onPressed: () async {
-                                        //ダイアログの「OK」を押すとsignOutメソッドを叩く
-                                        try {
-                                          await model.signOut();
-                                        } catch (e) {
-                                          _showTextDialog(
-                                              context, e.toString());
-                                        }
-                                        Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  SignInPage(),
-                                            ));
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          } catch (e) {
-                            _showTextDialog(context, e.toString());
-                          }
+            return Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      TextFormField(
+                        controller: passwordController,
+                        onChanged: (text) {
+                          model.changePassword(text);
                         },
+                        obscureText: true,
+                        maxLines: 1,
+                        decoration: InputDecoration(
+                          errorText: model.errorPassword == ''
+                              ? null
+                              : model.errorPassword,
+                          labelText: '現在のパスワード',
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                  ],
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                        controller: newPasswordController,
+                        onChanged: (text) {
+                          model.changeNewPassword(text);
+                        },
+                        obscureText: true,
+                        maxLines: 1,
+                        decoration: InputDecoration(
+                          errorText: model.errorNewPassword == ''
+                              ? null
+                              : model.errorNewPassword,
+                          labelText: '新しいパスワード',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                        controller: confirmController,
+                        onChanged: (text) {
+                          model.changeConfirm(text);
+                        },
+                        obscureText: true,
+                        maxLines: 1,
+                        decoration: InputDecoration(
+                          labelText: 'パスワード（確認用）',
+                          errorText: model.errorConfirm == ''
+                              ? null
+                              : model.errorConfirm,
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: RaisedButton(
+                          child: Text('パスワードの変更'),
+                          color: Colors.blue,
+                          textColor: Colors.white,
+                          onPressed: model.isPasswordValid &&
+                                  model.isNewPasswordValid &&
+                                  model.isConfirmValid
+                              ? () async {
+                                  model.startLoading();
+                                  try {
+                                    await model.updatePassword(context);
+                                    await model.signOut();
+                                    model.endLoading();
+                                    await showTextDialog(context,
+                                        'パスワードを変更しました。新しいパスワードで再度ログインして下さい。');
+                                    await Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => SignInPage(),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    showTextDialog(context, e);
+                                    model.endLoading();
+                                  }
+                                }
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                model.isLoading
+                    ? Container(
+                        color: Colors.black.withOpacity(0.3),
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : SizedBox(),
+              ],
             );
           },
         ),
       ),
     );
   }
-}
-
-_showTextDialog(context, message) async {
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(message),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }

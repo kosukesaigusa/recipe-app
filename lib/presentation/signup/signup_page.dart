@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/text_dialog.dart';
+import 'package:recipe/common/will_pop_scope.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
 import 'package:recipe/presentation/signup/signup_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
@@ -7,49 +9,51 @@ import 'package:recipe/presentation/top/top_page.dart';
 class SignUpPage extends StatelessWidget {
   final mailController = TextEditingController();
   final passwordController = TextEditingController();
-  final confirmController = TextEditingController(); //パスワード（確認用）
+  final confirmController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<SignUpModel>(
-        create: (_) => SignUpModel(),
-        // ..fetchSignUp(context),
-        child: Scaffold(
-          body: Consumer<SignUpModel>(
-            builder: (context, model, child) {
-              return Stack(children: [
-                Container(
-                  child: Padding(
+    return WillPopScope(
+      onWillPop: willPopCallback,
+      child: ChangeNotifierProvider<SignUpModel>(
+          create: (_) => SignUpModel(),
+          child: Scaffold(
+            body: Consumer<SignUpModel>(
+              builder: (context, model, child) {
+                return Stack(children: [
+                  Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        //メールアドレス
                         TextFormField(
                           controller: mailController,
                           onChanged: (text) {
-                            model.mail = text.trim();
+                            model.changeMail(text);
                           },
                           maxLines: 1,
                           decoration: InputDecoration(
+                            errorText:
+                                model.errorMail == '' ? null : model.errorMail,
                             labelText: 'メールアドレス',
                             border: OutlineInputBorder(),
                           ),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 20,
                         ),
-                        //パスワード
                         TextFormField(
                           controller: passwordController,
                           onChanged: (text) {
-                            model.password = text;
+                            model.changePassword(text);
                           },
                           obscureText: true,
                           maxLines: 1,
                           decoration: InputDecoration(
+                            errorText: model.errorPassword == ''
+                                ? null
+                                : model.errorPassword,
                             labelText: 'パスワード',
-                            // errorText: '８文字以上20文字以内',
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -59,13 +63,15 @@ class SignUpPage extends StatelessWidget {
                         TextFormField(
                           controller: confirmController,
                           onChanged: (text) {
-                            model.confirm = text;
+                            model.changeConfirm(text);
                           },
                           obscureText: true,
                           maxLines: 1,
                           decoration: InputDecoration(
                             labelText: 'パスワード（確認用）',
-                            // errorText: '８文字以上20文字以内',
+                            errorText: model.errorConfirm == ''
+                                ? null
+                                : model.errorConfirm,
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -79,21 +85,26 @@ class SignUpPage extends StatelessWidget {
                             child: Text('新規登録'),
                             color: Colors.blue,
                             textColor: Colors.white,
-                            onPressed: () async {
-                              model.startLoading();
-                              try {
-                                await model.signUp();
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TopPage(),
-                                  ),
-                                );
-                              } catch (e) {
-                                _showTextDialog(context, e.toString());
-                                model.endLoading();
-                              }
-                            },
+                            onPressed: model.isMailValid &&
+                                    model.isPasswordValid &&
+                                    model.isConfirmValid
+                                ? () async {
+                                    model.startLoading();
+                                    try {
+                                      await model.signUp();
+                                      await Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => TopPage(),
+                                        ),
+                                      );
+                                      model.endLoading();
+                                    } catch (e) {
+                                      showTextDialog(context, e);
+                                      model.endLoading();
+                                    }
+                                  }
+                                : null,
                           ),
                         ),
                         SizedBox(
@@ -121,7 +132,7 @@ class SignUpPage extends StatelessWidget {
                           onPressed: () async {
                             model.startLoading();
                             try {
-                              await model.signInAnonymous();
+                              await model.signInAnonymously();
                               model.endLoading();
                               await Navigator.pushReplacement(
                                 context,
@@ -130,7 +141,7 @@ class SignUpPage extends StatelessWidget {
                                 ),
                               );
                             } catch (e) {
-                              _showTextDialog(context, e.toString());
+                              showTextDialog(context, e.toString());
                               model.endLoading();
                             }
                           },
@@ -138,37 +149,18 @@ class SignUpPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
-                model.isLoading
-                    ? Container(
-                        color: Colors.black.withOpacity(0.3),
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    : SizedBox()
-              ]);
-            },
-          ),
-        ));
+                  model.isLoading
+                      ? Container(
+                          color: Colors.black.withOpacity(0.3),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : SizedBox(),
+                ]);
+              },
+            ),
+          )),
+    );
   }
-}
-
-_showTextDialog(context, message) async {
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(message),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }
