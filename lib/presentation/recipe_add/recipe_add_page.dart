@@ -253,8 +253,7 @@ class RecipeAddPage extends StatelessWidget {
                                       ),
                                       color: Colors.red,
                                       textColor: Colors.white,
-                                      onPressed: model.recipeAdd.isAccept ==
-                                              true
+                                      onPressed: model.recipeAdd.isAccept
                                           ? () async {
                                               model.recipeAdd.isPublic = true;
                                               await addRecipe(model, context);

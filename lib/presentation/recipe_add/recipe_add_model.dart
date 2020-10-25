@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -71,7 +72,7 @@ class RecipeAddModel extends ChangeNotifier {
     // 画像が変更されている場合のみ実行する
     if (this.imageFile != null) {
       recipeAdd.imageURL = await _upLoadImage();
-      //todo: サムネイル用画像のリサイズ
+      // todo: サムネイル用画像のリサイズ
       recipeAdd.thumbnailURL = recipeAdd.imageURL;
     }
 
@@ -126,7 +127,7 @@ class RecipeAddModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  //Firestoreにアップロードする
+  // Firestoreにアップロードする
   Future<String> _upLoadImage() async {
     String _fileName;
     _fileName = Timestamp.now().toString() + _auth.currentUser.uid + '.png';
