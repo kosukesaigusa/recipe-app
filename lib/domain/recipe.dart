@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Recipe {
   Recipe(DocumentSnapshot doc) {
+    documentId = doc.id;
     userId = doc.data()['userId'];
     createdAt = doc.data()['createdAt'];
     updatedAt = doc.data()['updatedAt'];
@@ -16,6 +17,7 @@ class Recipe {
     isAccept = doc.data()['isAccept'];
   }
 
+  String documentId;
   String userId;
   Timestamp createdAt;
   Timestamp updatedAt;
