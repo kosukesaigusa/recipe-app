@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/presentation/recipe/recipe_page.dart';
 import 'package:recipe/presentation/search/search_model.dart';
 
 class SearchPage extends StatelessWidget {
@@ -77,9 +78,10 @@ class SearchPage extends StatelessWidget {
                                 Column(
                                   children: [
                                     model.isMyRecipeFiltering
-                                        ? _recipeCards(
-                                            model.filteredMyRecipes, _size)
-                                        : _recipeCards(model.myRecipes, _size),
+                                        ? _recipeCards(model.filteredMyRecipes,
+                                            _size, context)
+                                        : _recipeCards(
+                                            model.myRecipes, _size, context),
                                     FlatButton(
                                       onPressed: model.isMyRecipeFiltering
                                           ? model.canLoadMoreFilteredMyRecipe
@@ -161,9 +163,11 @@ class SearchPage extends StatelessWidget {
                                   children: [
                                     model.isPublicRecipeFiltering
                                         ? _recipeCards(
-                                            model.filteredPublicRecipes, _size)
-                                        : _recipeCards(
-                                            model.publicRecipes, _size),
+                                            model.filteredPublicRecipes,
+                                            _size,
+                                            context)
+                                        : _recipeCards(model.publicRecipes,
+                                            _size, context),
                                     FlatButton(
                                       onPressed: model.isPublicRecipeFiltering
                                           ? model.canLoadMoreFilteredPublicRecipe
@@ -220,7 +224,8 @@ class SearchPage extends StatelessWidget {
   }
 
   /// レシピのカード一覧のウィジェトを返す関数
-  Widget _recipeCards(List recipes, Size size) {
+  Widget _recipeCards(List recipes, Size size, context) {
+    final model = Provider.of<SearchModel>(context);
     // 画面に表示するカードのリスト
     List<Widget> list = List<Widget>();
     for (int i = 0; i < recipes.length; i++) {
@@ -235,89 +240,98 @@ class SearchPage extends StatelessWidget {
               width: 1.0,
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: SizedBox(
-                    width: size.width - 156,
-                    height: 100,
-                    //height: ,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 26,
-                          child: Text(
-                            '${recipes[i].name}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 16,
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) {
+                    return RecipePage(recipes[i].documentId, recipes[i].userId);
+                  },
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: SizedBox(
+                      width: size.width - 156,
+                      height: 100,
+                      //height: ,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 26,
+                            child: Text(
+                              '${recipes[i].name}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 16,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 4.0),
-                        Container(
-                          height: 50,
-                          child: Text(
-                            '${recipes[i].content}',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14,
+                          SizedBox(height: 4.0),
+                          Container(
+                            height: 50,
+                            child: Text(
+                              '${recipes[i].content}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 4.0),
-                        Container(
-                          height: 16,
-                          child: Text(
-                            '${'${recipes[i].createdAt.toDate()}'.substring(0, 10)} '
-                            '${_convertWeekdayName(recipes[i].createdAt.toDate().weekday)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF777777),
+                          SizedBox(height: 4.0),
+                          Container(
+                            height: 16,
+                            child: Text(
+                              '${'${recipes[i].createdAt.toDate()}'.substring(0, 10)} '
+                              '${_convertWeekdayName(recipes[i].createdAt.toDate().weekday)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF777777),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: SizedBox(
-                    width: 100,
-                    child: '${recipes[i].thumbnailURL}' == ''
-                        ? Container(
-                            color: Color(0xFFDADADA),
-                            width: 100,
-                            height: 100,
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'No photo',
-                                  style: TextStyle(
-                                    fontSize: 10.0,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: SizedBox(
+                      width: 100,
+                      child: '${recipes[i].thumbnailURL}' == ''
+                          ? Container(
+                              color: Color(0xFFDADADA),
+                              width: 100,
+                              height: 100,
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'No photo',
+                                    style: TextStyle(
+                                      fontSize: 10.0,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          )
-                        : Image.network(
-                            '${recipes[i].thumbnailURL}',
-                          ),
-                  ),
-                )
-              ],
+                            )
+                          : Image.network('${recipes[i].thumbnailURL}'),
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
         ),

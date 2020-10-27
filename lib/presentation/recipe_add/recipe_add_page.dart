@@ -295,7 +295,7 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('あなたのレシピを追加しました。'),
+          content: Text('レシピを追加しました。'),
           actions: <Widget>[
             FlatButton(
               child: Text('OK'),

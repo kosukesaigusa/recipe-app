@@ -28,7 +28,7 @@ users:
 
 # 公開設定になったレシピ
 public_recipes:
-  documentId: auto (equal to the corresponding recipe's documentId)
+  documentId: documentId = 'public_{corresponding recipe's documentId}'
   userId: userId = auth.uid
   publishedAt: timestamp
   updatedAt: timestamp
