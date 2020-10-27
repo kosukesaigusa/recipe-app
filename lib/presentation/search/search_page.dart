@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:recipe/presentation/search/search_model.dart';
 import 'package:recipe/presentation/recipe/recipe_page.dart';
+import 'package:recipe/presentation/search/search_model.dart';
 
 class SearchPage extends StatelessWidget {
   @override
@@ -78,9 +78,10 @@ class SearchPage extends StatelessWidget {
                                 Column(
                                   children: [
                                     model.isMyRecipeFiltering
-                                        ? _recipeCards(
-                                            model.filteredMyRecipes, _size, context)
-                                        : _recipeCards(model.myRecipes, _size, context),
+                                        ? _recipeCards(model.filteredMyRecipes,
+                                            _size, context)
+                                        : _recipeCards(
+                                            model.myRecipes, _size, context),
                                     FlatButton(
                                       onPressed: model.isMyRecipeFiltering
                                           ? model.canLoadMoreFilteredMyRecipe
@@ -162,9 +163,11 @@ class SearchPage extends StatelessWidget {
                                   children: [
                                     model.isPublicRecipeFiltering
                                         ? _recipeCards(
-                                            model.filteredPublicRecipes, _size, context)
-                                        : _recipeCards(
-                                            model.publicRecipes, _size, context),
+                                            model.filteredPublicRecipes,
+                                            _size,
+                                            context)
+                                        : _recipeCards(model.publicRecipes,
+                                            _size, context),
                                     FlatButton(
                                       onPressed: model.isPublicRecipeFiltering
                                           ? model.canLoadMoreFilteredPublicRecipe
@@ -240,13 +243,11 @@ class SearchPage extends StatelessWidget {
           child: InkWell(
             onTap: () {
               Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (context) {
-                        return RecipePage(
-                            recipes[i].documentId, model.userId
-                        );
-                      }
-                  )
+                MaterialPageRoute(
+                  builder: (context) {
+                    return RecipePage(recipes[i].documentId, recipes[i].userId);
+                  },
+                ),
               );
             },
             child: Padding(
@@ -326,9 +327,7 @@ class SearchPage extends StatelessWidget {
                                 ),
                               ),
                             )
-                          : Image.network(
-                              '${recipes[i].thumbnailURL}',
-                            ),
+                          : Image.network('${recipes[i].thumbnailURL}'),
                     ),
                   )
                 ],

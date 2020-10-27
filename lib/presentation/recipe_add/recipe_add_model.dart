@@ -16,6 +16,7 @@ class RecipeAddModel extends ChangeNotifier {
   List<Recipe> recipes = [];
   File imageFile;
   bool isUploading = false;
+  String tmp;
 
   Future fetchRecipeAdd(context) async {
     final docs = await FirebaseFirestore.instance.collection('recipes').get();
@@ -85,36 +86,54 @@ class RecipeAddModel extends ChangeNotifier {
         Map.fromIterable(_tokenizeList, key: (e) => e, value: (_) => true);
     print(recipeAdd.tokenMap);
 
+    String generatedId;
+
     await FirebaseFirestore.instance
-        .collection('users')
-        .doc(_auth.currentUser.uid)
-        .collection('recipes')
+        .collection('users/${_auth.currentUser.uid}/recipes')
         .add(
-      {
-        'name': recipeAdd.name,
-        'imageURL': recipeAdd.imageURL,
-        'thumbnailURL': recipeAdd.thumbnailURL,
-        'content': recipeAdd.content,
-        'reference': recipeAdd.reference,
-        'createdAt': Timestamp.now(),
-        'updateAt': Timestamp.now(),
-        'ingredients': recipeAdd.ingredients,
-        'tokenMap': recipeAdd.tokenMap,
-        'isPublic': recipeAdd.isPublic,
-        'isAccept': recipeAdd.isAccept,
-      },
-    );
+          {
+            'userId': _auth.currentUser.uid,
+            'name': recipeAdd.name,
+            'imageURL': recipeAdd.imageURL,
+            'thumbnailURL': recipeAdd.thumbnailURL,
+            'content': recipeAdd.content,
+            'reference': recipeAdd.reference,
+            'createdAt': FieldValue.serverTimestamp(),
+            'updateAt': FieldValue.serverTimestamp(),
+            'ingredients': recipeAdd.ingredients,
+            'tokenMap': recipeAdd.tokenMap,
+            'isPublic': recipeAdd.isPublic,
+            'isAccept': recipeAdd.isAccept,
+          },
+        )
+        .then((docRef) async => {generatedId = docRef.id})
+        .then((_) async => {
+              await FirebaseFirestore.instance
+                  .collection('users/${_auth.currentUser.uid}/recipes')
+                  .doc(generatedId)
+                  .update(
+                {
+                  'documentId': generatedId,
+                },
+              )
+            });
 
     if (recipeAdd.isPublic) {
-      await FirebaseFirestore.instance.collection('public_recipes').add(
+      /// みんなのレシピの ID は、public_{わたしのレシピのID} の形にする
+      await FirebaseFirestore.instance
+          .collection('public_recipes')
+          .doc('public_$generatedId')
+          .set(
         {
+          'documentId': 'public_$generatedId',
+          'userId': _auth.currentUser.uid,
           'name': recipeAdd.name,
           'imageURL': recipeAdd.imageURL,
           'thumbnailURL': recipeAdd.thumbnailURL,
           'content': recipeAdd.content,
           'reference': recipeAdd.reference,
-          'createdAt': Timestamp.now(),
-          'updateAt': Timestamp.now(),
+          'createdAt': FieldValue.serverTimestamp(),
+          'updateAt': FieldValue.serverTimestamp(),
           'ingredients': recipeAdd.ingredients,
           'tokenMap': recipeAdd.tokenMap,
           'isPublic': recipeAdd.isPublic,
@@ -129,8 +148,9 @@ class RecipeAddModel extends ChangeNotifier {
 
   // Firestoreにアップロードする
   Future<String> _upLoadImage() async {
-    String _fileName;
-    _fileName = Timestamp.now().toString() + _auth.currentUser.uid + '.png';
+    String _fileName = FieldValue.serverTimestamp().toString() +
+        _auth.currentUser.uid +
+        '.png';
     final storage = FirebaseStorage.instance;
     StorageTaskSnapshot snapshot =
         await storage.ref().child(_fileName).putFile(this.imageFile).onComplete;
