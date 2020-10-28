@@ -225,7 +225,6 @@ class SearchPage extends StatelessWidget {
 
   /// レシピのカード一覧のウィジェトを返す関数
   Widget _recipeCards(List recipes, Size size, context) {
-    final model = Provider.of<SearchModel>(context);
     // 画面に表示するカードのリスト
     List<Widget> list = List<Widget>();
     for (int i = 0; i < recipes.length; i++) {
@@ -308,26 +307,49 @@ class SearchPage extends StatelessWidget {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
-                    child: SizedBox(
-                      width: 100,
-                      child: '${recipes[i].thumbnailURL}' == ''
-                          ? Container(
-                              color: Color(0xFFDADADA),
-                              width: 100,
-                              height: 100,
-                              child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    'No photo',
-                                    style: TextStyle(
-                                      fontSize: 10.0,
+                    child: Stack(
+                      children: [
+                        SizedBox(
+                          width: 100,
+                          child: '${recipes[i].thumbnailURL}' == ''
+                              ? Container(
+                                  color: Color(0xFFDADADA),
+                                  width: 100,
+                                  height: 100,
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'No photo',
+                                        style: TextStyle(
+                                          fontSize: 10.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Image.network('${recipes[i].thumbnailURL}'),
+                        ),
+                        recipes[i].isPublic
+                            ? Positioned(
+                                top: 0.0,
+                                right: 0.0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2.0),
+                                  color: Color(0xFFFFCC00),
+                                  child: Center(
+                                    child: Text(
+                                      '公開中',
+                                      style: TextStyle(
+                                        color: Color(0xFF0033FF),
+                                        fontSize: 8,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            )
-                          : Image.network('${recipes[i].thumbnailURL}'),
+                              )
+                            : SizedBox(),
+                      ],
                     ),
                   )
                 ],
