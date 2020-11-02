@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:recipe/common/text_process.dart';
@@ -12,21 +13,28 @@ import 'package:recipe/domain/recipe_add.dart';
 
 class RecipeAddModel extends ChangeNotifier {
   FirebaseAuth _auth = FirebaseAuth.instance;
-  RecipeAdd recipeAdd = RecipeAdd(isPublic: false);
+  RecipeAdd recipeAdd = RecipeAdd();
   List<Recipe> recipes = [];
   File imageFile;
+  File thumbnailImageFile;
   bool isUploading = false;
-  String tmp;
+  String errorName = '';
+  String errorContent = '';
+  String errorReference = '';
+  bool isNameValid = false;
+  bool isContentValid = false;
+  bool isReferenceValid = true;
 
   Future fetchRecipeAdd(context) async {
-    final docs = await FirebaseFirestore.instance.collection('recipes').get();
-    final recipes = docs.docs.map((doc) => Recipe(doc)).toList();
+    QuerySnapshot docs =
+        await FirebaseFirestore.instance.collection('recipes').get();
+    List<Recipe> recipes = docs.docs.map((doc) => Recipe(doc)).toList();
     this.recipes = recipes;
     notifyListeners();
   }
 
   extractIngredients() {
-    final exp = RegExp(r'(?<=【)[^【】]+(?=】)');
+    RegExp exp = RegExp(r'(?<=【)[^【】]+(?=】)');
     this.recipeAdd.ingredients = exp
         .allMatches(this.recipeAdd.content)
         .map((match) => match.group(0))
@@ -35,55 +43,68 @@ class RecipeAddModel extends ChangeNotifier {
   }
 
   Future showImagePicker() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
-    final pickedImage = File(pickedFile.path);
+    ImagePicker picker = ImagePicker();
+    PickedFile pickedFile = await picker.getImage(source: ImageSource.gallery);
 
-    // 画像をアス比1:1で切り抜く
-    if (pickedImage != null) {
-      this.imageFile = await ImageCropper.cropImage(
-        sourcePath: pickedImage.path,
-        maxHeight: 150,
-        aspectRatio: CropAspectRatio(ratioX: 4, ratioY: 3),
-        compressFormat: ImageCompressFormat.png,
-        compressQuality: 10,
-        iosUiSettings: IOSUiSettings(
-          title: '編集',
-        ),
-      );
+    if (pickedFile == null) {
+      return;
     }
-    notifyListeners();
-  }
 
-  clickCheckBox() {
+    File pickedImage = File(pickedFile.path);
+
+    if (pickedImage == null) {
+      return;
+    }
+
+    // 画像をアスペクト比 4:3 で 切り抜く
+    File _croppedImageFile = await ImageCropper.cropImage(
+      sourcePath: pickedImage.path,
+      maxHeight: 150,
+      aspectRatio: CropAspectRatio(ratioX: 4, ratioY: 3),
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 10,
+      iosUiSettings: IOSUiSettings(
+        title: '編集',
+      ),
+    );
+
+    // レシピ画像（W: 400, H:300 @2x）
+    this.imageFile = await FlutterNativeImage.compressImage(
+      _croppedImageFile.path,
+      targetWidth: 400,
+      targetHeight: 300,
+    );
+
+    // サムネイル用画像（W: 200, H: 30 @2x）
+    this.thumbnailImageFile = await FlutterNativeImage.compressImage(
+      _croppedImageFile.path,
+      targetWidth: 200,
+      targetHeight: 150,
+    );
+
     notifyListeners();
   }
 
   Future addRecipeToFirebase() async {
-    if (recipeAdd.name.isEmpty) {
-      throw ('レシピ名を入力してください');
-    }
-    if (recipeAdd.content.isEmpty) {
-      throw ('作り方・材料を入力してください');
-    }
-
-    this.isUploading = true;
-    notifyListeners();
-
     // 画像が変更されている場合のみ実行する
     if (this.imageFile != null) {
-      recipeAdd.imageURL = await _upLoadImage();
-      // todo: サムネイル用画像のリサイズ
-      recipeAdd.thumbnailURL = recipeAdd.imageURL;
+      recipeAdd.imageURL = await _uploadImage();
+      recipeAdd.thumbnailURL = await _uploadThumbnail();
     }
 
-    // ディープコピーしています もっとスマートなやり方がありそう
-    List _preTokenizeList = [...recipeAdd.ingredients];
-    _preTokenizeList.add(recipeAdd.name);
+    // tokenMap を作成するための入力となる文字列のリスト
+    /// レシピ名と【】で囲まれた材料名を検索対象にする場合
+    // List _preTokenizedList = [...recipeAdd.ingredients];
+    // _preTokenizedList.add(recipeAdd.name);
 
-    List _tokenizeList = tokenize(_preTokenizeList);
+    /// レシピ名とレシピの全文を検索対象にする場合
+    List _preTokenizedList = [];
+    _preTokenizedList.add(recipeAdd.name);
+    _preTokenizedList.add(recipeAdd.content);
+
+    List _tokenizedList = tokenize(_preTokenizedList);
     recipeAdd.tokenMap =
-        Map.fromIterable(_tokenizeList, key: (e) => e, value: (_) => true);
+        Map.fromIterable(_tokenizedList, key: (e) => e, value: (_) => true);
     print(recipeAdd.tokenMap);
 
     String generatedId;
@@ -99,7 +120,7 @@ class RecipeAddModel extends ChangeNotifier {
             'content': recipeAdd.content,
             'reference': recipeAdd.reference,
             'createdAt': FieldValue.serverTimestamp(),
-            'updateAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
             'ingredients': recipeAdd.ingredients,
             'tokenMap': recipeAdd.tokenMap,
             'isPublic': recipeAdd.isPublic,
@@ -133,7 +154,7 @@ class RecipeAddModel extends ChangeNotifier {
           'content': recipeAdd.content,
           'reference': recipeAdd.reference,
           'createdAt': FieldValue.serverTimestamp(),
-          'updateAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
           'ingredients': recipeAdd.ingredients,
           'tokenMap': recipeAdd.tokenMap,
           'isPublic': recipeAdd.isPublic,
@@ -142,25 +163,97 @@ class RecipeAddModel extends ChangeNotifier {
       );
     }
 
-    this.isUploading = false;
     notifyListeners();
   }
 
-  // Firestoreにアップロードする
-  Future<String> _upLoadImage() async {
-    String _fileName = FieldValue.serverTimestamp().toString() +
+  // Firestore に画像をアップロードする
+  Future<String> _uploadImage() async {
+    String _fileName = "image_" +
+        DateTime.now().toString() +
+        "_" +
         _auth.currentUser.uid +
-        '.png';
-    final storage = FirebaseStorage.instance;
-    StorageTaskSnapshot snapshot =
-        await storage.ref().child(_fileName).putFile(this.imageFile).onComplete;
-    final String downloadURL = await snapshot.ref.getDownloadURL();
+        '.jpg';
+    FirebaseStorage _storage = FirebaseStorage.instance;
+    StorageTaskSnapshot _snapshot = await _storage
+        .ref()
+        .child('images/' + _fileName)
+        .putFile(this.imageFile)
+        .onComplete;
+    String downloadURL = await _snapshot.ref.getDownloadURL();
     return downloadURL;
   }
 
-  // 【】に囲まれた文字列を抽出する
-  List<String> _splitMoves(String content) {
-    final exp = RegExp(r'(?<=【)[^【】]+(?=】)');
-    return exp.allMatches(content).map((match) => match.group(0)).toList();
+  // Firestore にサムネイル用画像をアップロードする
+  Future<String> _uploadThumbnail() async {
+    String _fileName = "thumbnail_" +
+        DateTime.now().toString() +
+        "_" +
+        _auth.currentUser.uid +
+        '.jpg';
+    FirebaseStorage _storage = FirebaseStorage.instance;
+    StorageTaskSnapshot _snapshot = await _storage
+        .ref()
+        .child('thumbnails/' + _fileName)
+        .putFile(this.thumbnailImageFile)
+        .onComplete;
+    String downloadURL = await _snapshot.ref.getDownloadURL();
+    return downloadURL;
+  }
+
+  changeRecipeName(text) {
+    this.recipeAdd.name = text;
+    if (text.isEmpty) {
+      this.isNameValid = false;
+      this.errorName = 'レシピ名を入力して下さい。';
+    } else if (text.length > 30) {
+      this.isNameValid = false;
+      this.errorName = '30文字以内で入力して下さい。';
+    } else {
+      this.isNameValid = true;
+      this.errorName = '';
+    }
+    notifyListeners();
+  }
+
+  changeRecipeContent(text) {
+    this.recipeAdd.content = text;
+    if (text.isEmpty) {
+      this.isContentValid = false;
+      this.errorContent = 'レシピの内容を入力して下さい。';
+    } else if (text.length > 1000) {
+      this.isContentValid = false;
+      this.errorContent = '1000文字以内で入力して下さい。';
+    } else {
+      this.isContentValid = true;
+      this.errorContent = '';
+    }
+    notifyListeners();
+  }
+
+  changeRecipeReference(text) {
+    this.recipeAdd.reference = text;
+    if (text.length > 1000) {
+      this.isReferenceValid = false;
+      this.errorReference = '1000文字以内で入力して下さい。';
+    } else {
+      this.isReferenceValid = true;
+      this.errorReference = '';
+    }
+    notifyListeners();
+  }
+
+  void clickCheckBox(val) {
+    this.recipeAdd.isAccept = val;
+    notifyListeners();
+  }
+
+  void startLoading() {
+    this.isUploading = true;
+    notifyListeners();
+  }
+
+  void endLoading() {
+    this.isUploading = false;
+    notifyListeners();
   }
 }

@@ -5,6 +5,7 @@ class RecipeAdd {
     this.userId = '',
     this.createdAt,
     this.updatedAt,
+    this.name = '',
     this.thumbnailURL = '',
     this.imageURL = '',
     this.content = '',

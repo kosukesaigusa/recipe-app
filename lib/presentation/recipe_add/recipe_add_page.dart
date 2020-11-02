@@ -9,9 +9,15 @@ class RecipeAddPage extends StatelessWidget {
   final contentController = TextEditingController();
   final referenceURLController = TextEditingController();
 
-  Widget _h8sizedBox() {
+  Widget _smallMargin() {
     return SizedBox(
       height: 8,
+    );
+  }
+
+  Widget _bigMargin() {
+    return SizedBox(
+      height: 16,
     );
   }
 
@@ -27,7 +33,7 @@ class RecipeAddPage extends StatelessWidget {
         KeyboardActionsItem(
           focusNode: _nodeText,
           toolbarButtons: [
-            //button 1
+            // button 1
             (node) {
               return GestureDetector(
                 onTap: () => {
@@ -46,7 +52,7 @@ class RecipeAddPage extends StatelessWidget {
                 ),
               );
             },
-            //button 2
+            // button 2
             (node) {
               return GestureDetector(
                 onTap: () => {
@@ -74,52 +80,66 @@ class RecipeAddPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<RecipeAddModel>(
-        create: (_) => RecipeAddModel(),
-        builder: (context, snapshot) {
-          return KeyboardActions(
-            config: _buildConfig(context),
-            child: Consumer<RecipeAddModel>(builder: (context, model, child) {
-              return Stack(
-                children: [
-                  Padding(
+      create: (_) => RecipeAddModel(),
+      child: Consumer<RecipeAddModel>(
+        builder: (context, model, child) {
+          return Stack(
+            children: [
+              Scaffold(
+                body: KeyboardActions(
+                  config: _buildConfig(context),
+                  child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '1.レシピ名',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        _h8sizedBox(),
-                        Container(
-                          height: 30,
-                          child: TextField(
-                            controller: nameController,
-                            onChanged: (text) {
-                              model.recipeAdd.name = text;
-                            },
-                            maxLines: 1,
-                            decoration: InputDecoration(
-                              labelText: 'レシピ名',
-                              border: OutlineInputBorder(),
-                            ),
+                        RichText(
+                          text: TextSpan(
                             style: TextStyle(
-                              fontSize: 12.0,
-                              height: 1.0,
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
                             ),
+                            children: [
+                              TextSpan(text: '1. レシピ名'),
+                              TextSpan(
+                                text: '（必須）',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        _h8sizedBox(),
-                        Text(
-                          '2.写真',
+                        _smallMargin(),
+                        TextFormField(
+                          initialValue: model.recipeAdd.name,
+                          textInputAction: TextInputAction.done,
+                          onChanged: (text) {
+                            model.changeRecipeName(text);
+                          },
+                          maxLines: 1,
+                          decoration: InputDecoration(
+                            labelText: 'レシピ名',
+                            border: OutlineInputBorder(),
+                            errorText:
+                                model.errorName == '' ? null : model.errorName,
+                          ),
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 10.0,
+                            height: 1.0,
+                          ),
+                        ),
+                        _bigMargin(),
+                        Text(
+                          '2. 写真',
+                          style: TextStyle(
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        _smallMargin(),
                         Container(
                           alignment: Alignment.center,
                           height: 150,
@@ -127,164 +147,233 @@ class RecipeAddPage extends StatelessWidget {
                             onTap: () {
                               model.showImagePicker();
                             },
-                            child: model?.imageFile == null
-                                ? Image.network(
-                                    'https://d3a3a5e2ntl4bk.cloudfront.net/uploads/2020/02/Apple-SteveJobs.jpg')
-                                : Image.file(
-                                    model?.imageFile,
-                                  ),
-                          ),
-                        ),
-                        _h8sizedBox(),
-                        Text(
-                          '3.作り方・材料',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        _h8sizedBox(),
-                        model.recipeAdd.ingredients == null
-                            ? Container()
-                            : Text(model.recipeAdd.ingredients.join('・')),
-                        _h8sizedBox(),
-                        TextFormField(
-                          textInputAction: TextInputAction.done,
-                          controller: contentController,
-                          focusNode: _nodeText,
-                          onChanged: (text) {
-                            model.recipeAdd.content = text;
-                            model.extractIngredients();
-                          },
-                          minLines: 8,
-                          maxLines: 8,
-                          decoration: InputDecoration(
-                            labelText: 'レシピをここに記入します',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        _h8sizedBox(),
-                        Text(
-                          '4.参考にしたレシピ',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        _h8sizedBox(),
-                        Container(
-                          height: 30,
-                          child: TextField(
-                            controller: referenceURLController,
-                            onChanged: (text) {
-                              model.recipeAdd.reference = text;
-                            },
-                            maxLines: 1,
-                            decoration: InputDecoration(
-                              labelText: '参考にしたレシピのURLや書籍名を記入',
-                              border: OutlineInputBorder(),
-                            ),
-                            style: TextStyle(
-                              fontSize: 15.0,
-                              height: 1.0,
-                            ),
-                          ),
-                        ),
-                        _h8sizedBox(),
-                        Stack(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '5.公開',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      activeColor: Colors.red,
-                                      checkColor: Colors.white,
-                                      onChanged: (bool val) {
-                                        model.recipeAdd.isAccept = val;
-                                        model.clickCheckBox();
-                                      },
-                                      value: model.recipeAdd.isAccept == null
-                                          ? false
-                                          : model.recipeAdd.isAccept,
-                                    ),
-                                    Text(
-                                      '公開するレシピのガイドラインを読んで同意しました',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    RaisedButton(
-                                      child: Text(
-                                        "わたしのレシピに追加",
-                                        style: TextStyle(
-                                          fontSize: 12,
+                            child: model.imageFile == null
+                                ? SizedBox(
+                                    width: 200,
+                                    height: 150,
+                                    child: Stack(
+                                      children: [
+                                        Container(
+                                          color: Color(0xFFDADADA),
                                         ),
-                                      ),
-                                      color: Colors.blue,
-                                      textColor: Colors.white,
-                                      onPressed: () async {
-                                        await addRecipe(model, context);
-                                      },
-                                    ),
-                                    SizedBox(
-                                      width: 20,
-                                    ),
-                                    RaisedButton(
-                                      child: Text(
-                                        "みんなのレシピに公開",
-                                        style: TextStyle(
-                                          fontSize: 12,
+                                        Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.add_photo_alternate),
+                                              SizedBox(
+                                                height: 8,
+                                              ),
+                                              Text(
+                                                'タップして画像を追加',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      color: Colors.red,
-                                      textColor: Colors.white,
-                                      onPressed: model.recipeAdd.isAccept
-                                          ? () async {
-                                              model.recipeAdd.isPublic = true;
-                                              await addRecipe(model, context);
-                                            }
-                                          : null,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            model.isUploading
-                                ? Container(
-                                    height: 160,
-                                    color: Colors.grey.withOpacity(0.7),
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
+                                      ],
                                     ),
                                   )
-                                : Center(
-                                    child: SizedBox(),
+                                : Image.file(
+                                    model.imageFile,
                                   ),
+                          ),
+                        ),
+                        _bigMargin(),
+                        RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            children: [
+                              TextSpan(text: '3. 作り方・材料'),
+                              TextSpan(
+                                text: '（必須）',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        model.recipeAdd.ingredients == null
+                            ? Container()
+                            : Text(
+                                model.recipeAdd.ingredients.join('・'),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                        _smallMargin(),
+                        TextFormField(
+                          textInputAction: TextInputAction.done,
+                          initialValue: model.recipeAdd.content,
+                          focusNode: _nodeText,
+                          onChanged: (text) {
+                            model.changeRecipeContent(text);
+                            model.extractIngredients();
+                          },
+                          minLines: 12,
+                          maxLines: 12,
+                          decoration: InputDecoration(
+                            labelText: 'レシピの内容（作り方・材料）',
+                            alignLabelWithHint: true,
+                            border: OutlineInputBorder(),
+                            errorText: model.errorContent == ''
+                                ? null
+                                : model.errorContent,
+                          ),
+                          style: TextStyle(
+                            fontSize: 10.0,
+                            height: 1.4,
+                          ),
+                        ),
+                        _bigMargin(),
+                        Text(
+                          '4. 参考にしたレシピ',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        _smallMargin(),
+                        TextFormField(
+                          textInputAction: TextInputAction.done,
+                          initialValue: model.recipeAdd.reference,
+                          onChanged: (text) {
+                            model.changeRecipeReference(text);
+                          },
+                          maxLines: 1,
+                          decoration: InputDecoration(
+                            labelText: '参考にしたレシピのURLや書籍名を記入',
+                            border: OutlineInputBorder(),
+                          ),
+                          style: TextStyle(
+                            fontSize: 10.0,
+                            height: 1.0,
+                          ),
+                        ),
+                        _bigMargin(),
+                        Text(
+                          '5. 投稿',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Checkbox(
+                              activeColor: Colors.red,
+                              checkColor: Colors.white,
+                              onChanged: (val) {
+                                model.clickCheckBox(val);
+                              },
+                              value: model.recipeAdd.isAccept,
+                            ),
+                            Flexible(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  children: [
+                                    TextSpan(text: '公開するレシピの'),
+                                    TextSpan(
+                                      text: 'ガイドライン',
+                                      style: TextStyle(
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                    TextSpan(text: 'を読んで同意しました。'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        ButtonBar(
+                          alignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            RaisedButton(
+                              child: Text(
+                                "わたしのレシピに追加",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                              color: Colors.blue,
+                              textColor: Colors.white,
+                              onPressed: model.isNameValid &&
+                                      model.isContentValid &&
+                                      model.isReferenceValid
+                                  ? () async {
+                                      model.startLoading();
+                                      await addRecipe(model, context);
+                                      model.endLoading();
+                                    }
+                                  : null,
+                            ),
+                            RaisedButton(
+                              child: Text(
+                                "みんなのレシピに公開",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                              color: Colors.red,
+                              textColor: Colors.white,
+                              onPressed: model.isNameValid &&
+                                      model.isContentValid &&
+                                      model.isReferenceValid
+                                  ? model.recipeAdd.isAccept
+                                      ? () async {
+                                          model.startLoading();
+                                          model.recipeAdd.isPublic = true;
+                                          await addRecipe(model, context);
+                                          model.endLoading();
+                                        }
+                                      : null
+                                  : null,
+                            ),
                           ],
                         ),
                       ],
                     ),
                   ),
-                ],
-              );
-            }),
+                ),
+              ),
+              model.isUploading
+                  ? Container(
+                      color: Colors.grey.withOpacity(0.7),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(
+                              height: 16,
+                            ),
+                            Text('レシピを保存しています...'),
+                          ],
+                        ),
+                      ),
+                    )
+                  : SizedBox(),
+            ],
           );
-        });
+        },
+      ),
+    );
   }
 }
 
@@ -293,6 +382,7 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
     await model.addRecipeToFirebase();
     await showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           content: Text('レシピを追加しました。'),
@@ -317,8 +407,10 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
     );
     Navigator.of(context).pop();
   } catch (e) {
+    model.endLoading();
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(e.toString()),
