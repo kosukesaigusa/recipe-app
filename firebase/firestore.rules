@@ -12,33 +12,84 @@ service cloud.firestore {
       return isAnyAuthentificated() && userId == request.auth.uid;
     }
 
+    // ユーザーの新規登録時のルール
+    function isValidUserCreate(user, targetUserId) {
+    return user.size() == 4
+    && 'createdAt' in user && user.createdAt is timestamp
+    && 'updatedAt' in user && user.updatedAt is timestamp
+    && 'email' in user && user.email is string
+    && 'userId' in user && user.userId is string && user.userId == targetUserId;
+    }
+
     // root/users コレクションのドキュメント
-    match /users/{userId} {
+      match /users/{userId} {
+      // ユーザー情報の取得
       allow get: if isUserAuthentificated(userId);
-      allow create: if isUserAuthentificated(userId);
+      // ユーザー情報の作成
+      allow create: if isUserAuthentificated(userId)
+      && isValidUserCreate(request.resource.data, targetUserId);
+      // ユーザー情報の更新
       allow update: if isUserAuthentificated(userId);
+      // ユーザー情報の削除
       allow delete: if isUserAuthentificated(userId);
+
+      // 自身のレシピ新規作成
+      function isValidRecipeAdd(recipe) {
+      return recipe.size() == 11
+      && 'content' in recipe && recipe.content is string && recipe.content.size() > 0 && recipe.content.size() < 100
+      && 'createdAt' in recipe && recipe.createdAt is timestamp && recipe.createdAt == request.time
+      && 'updatedAt' in recipe && recipe.updatedAt is timestamp && recipe.updatedAt == request.time
+      && 'imageURL' in recipe && recipe.imageURL is string && recipe.imageURL.size() > 0 && recipe.imageURL.size() < 100
+      && 'ingredients' in recipe && recipe.ingredients is list
+      && 'isPublic' in recipe && recipe.isPublic is bool
+      && 'name' in recipe && recipe.name is string && recipe.name.size() > 0 && recipe.name.size() < 100
+      && 'reference' in recipe && recipe.reference is string && recipe.reference.size() > 0 && recipe.reference.size() < 100
+      && 'thumbnailURL' in recipe && recipe.thumbnailURL is string && recipe.thumbnailURL.size() > 0 && recipe.thumbnailURL.size() < 100
+      && 'tokenMap' in recipe && recipe.tokenMap is map
+      && 'userId' in recipe && recipe.userId is string && recipe.userId.size() > 0 && recipe.userId.size() < 100;
+      }
+      // 自身のレシピ更新
+      function isValidRecipeUpdate(recipe) {
+      return recipe.size() == 11
+      && 'content' in recipe && recipe.content is string && recipe.content.size() > 0 && recipe.content.size() < 100
+      && 'createdAt' in recipe && recipe.createdAt is timestamp && recipe.createdAt == resource.data.createdAt
+      && 'updatedAt' in recipe && recipe.updatedAt is timestamp && recipe.updatedAt == request.time
+      && 'imageURL' in recipe && recipe.imageURL is string && recipe.imageURL.size() > 0 && recipe.imageURL.size() < 100
+      && 'ingredients' in recipe && recipe.ingredients is list
+      && 'isPublic' in recipe && recipe.isPublic is bool
+      && 'name' in recipe && recipe.name is string && recipe.name.size() > 0 && recipe.name.size() < 100
+      && 'reference' in recipe && recipe.reference is string && recipe.reference.size() > 0 && recipe.reference.size() < 100
+      && 'thumbnailURL' in recipe && recipe.thumbnailURL is string && recipe.thumbnailURL.size() > 0 && recipe.thumbnailURL.size() < 100
+      && 'tokenMap' in recipe && recipe.tokenMap is map
+      && 'userId' in recipe && recipe.userId is string && recipe.userId.size() > 0 && recipe.userId.size() < 100;
+      }
+
+    
 
       // root/users/{userId}/recipes コレクションのドキュメント
       match /recipes/{myRecipeId} {
+        // 自身のレシピデータの読み取りルール
         allow read: if isUserAuthentificated(userId);
-        allow create: if isUserAuthentificated(userId);
-        allow update: if isUserAuthentificated(userId);
+        // 自身のレシピデータの新規作成ルール
+        allow create: if isUserAuthentificated(userId) && isValidRecipeAdd(request.source.data,userId);
+        // 自身のレシピデータの更新ルール        
+        allow update: if isUserAuthentificated(userId) && isValidRecipeUpdate(request.resource.data);
+        // 自身のレシピデータの削除ルール
         allow delete: if isUserAuthentificated(userId);
       }
     }
 
-    // root/public_recipes コレクションのドキュメント
-    match /public_recipes/{publicRecipeId} {
-      allow read: if isAnyAuthentificated();
-      allow create: if isAnyAuthentificated();
-      allow update: if isAnyAuthentificated();
-      allow delete: if isAnyAuthentificated();
-    }
+      // root/public_recipes コレクションのドキュメント
+      match /public_recipes/{publicRecipeId} {
+        allow read: if isAnyAuthentificated();
+        allow create: if isAnyAuthentificated();
+        allow update: if isAnyAuthentificated();
+        allow delete: if isAnyAuthentificated();
+      }
 
-    // root/contacts コレクションのドキュメント
-    match /contacts/{contactId} {
-      allow create: if isAnyAuthentificated();
-    }
+      // root/contacts コレクションのドキュメント
+      match /contacts/{contactId} {
+        allow create: if isAnyAuthentificated();
+      }
   }
 }

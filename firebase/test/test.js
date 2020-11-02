@@ -23,15 +23,27 @@ const theirEmail = "their_email@example.com";
 
 // 自分のアカウント認証情報
 const myAuth = {
-    uid: myId, 
+    uid: myId,
     email: myEmail,
 };
+// サーバのタイムスタンプ取得
+const serverTimestamp = () => firebase.firestore.FieldValue.serverTimestamp();
 
 // 対象の Firestore DB の定義
 function getFirestore(auth) {
     // プロジェクト ID と 認証情報を入力して、Cloud Firestore のインスタンスを取得
-    return firebase.initializeTestApp({projectId: MY_PROJECT_ID, auth: auth}).firestore();
+    return firebase.initializeTestApp({ projectId: MY_PROJECT_ID, auth: auth }).firestore();
 }
+
+// テスト郡の実行前
+before(async () => {
+    await firebase.loadFirestoreRules({ projectId: MY_PROJECT_ID, rules });
+});
+
+// 各テストの実行前
+beforeEach(async () => {
+    await firebase.clearFirestoreData({ projectId: MY_PROJECT_ID });
+});
 
 describe("ユーザーデータの取得", () => {
     it("[Fail] 他人のユーザードキュメントは取得できない", async () => {
@@ -51,4 +63,42 @@ describe("ユーザーデータの取得", () => {
         // テストで確認する動作
         await firebase.assertSucceeds(testDoc.get());
     });
+    // it("ユーザードキュメントの作成", async () => {
+    it("[Fail] 他人のユーザードキュメントは作成できない", async () => {
+        const db = getFirestore(myAuth);
+        const testDoc = db.collection("users").doc(theirId); // 他人のユーザードキュメント
+        await firebase.assertFails(testDoc.set({
+            createdAt: serverTimestamp(),
+            email: myAuth.email,
+            userId: myAuth.uid
+        }));
+    });
+
+    it("[Fail] リクエストの中に email フィールドが存在しないので、ユーザードキュメントは作成できない", async () => {
+        const db = getFirestore(myAuth);
+        const testDoc = db.collection("users").doc(theirId);
+        await firebase.assertFails(testDoc.set({
+            createdAt: serverTimestamp(),
+            userId: myAuth.uid
+            // email がフィールドに含まれない
+        }));
+    });
+
+    it("[Success] 本人は、ユーザードキュメントを作成できる", async () => {
+        const db = getFirestore(myAuth);
+        const testDoc = db.collection("users").doc(myId);
+        await firebase.assertSucceeds(testDoc.set({
+            createdAt: serverTimestamp(),
+            email: myAuth.email,
+            userId: myAuth.uid
+        }));
+    });
+    // });
+
+
+});
+
+// テスト郡の実行後
+after(async () => {
+    await firebase.clearFirestoreData({ projectId: MY_PROJECT_ID });
 });
