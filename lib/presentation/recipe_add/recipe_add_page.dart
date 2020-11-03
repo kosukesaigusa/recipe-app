@@ -7,7 +7,7 @@ import 'package:recipe/presentation/top/top_page.dart';
 class RecipeAddPage extends StatelessWidget {
   final nameController = TextEditingController();
   final contentController = TextEditingController();
-  final referenceURLController = TextEditingController();
+  final referenceController = TextEditingController();
 
   Widget _smallMargin() {
     return SizedBox(
@@ -40,7 +40,8 @@ class RecipeAddPage extends StatelessWidget {
                   contentController.text = contentController.text,
                   contentController.text = contentController.text + '【',
                   contentController.selection = TextSelection.fromPosition(
-                      TextPosition(offset: contentController.text.length)),
+                    TextPosition(offset: contentController.text.length),
+                  ),
                 },
                 child: Container(
                   color: Colors.white,
@@ -59,7 +60,8 @@ class RecipeAddPage extends StatelessWidget {
                   contentController.text = contentController.text,
                   contentController.text += '】',
                   contentController.selection = TextSelection.fromPosition(
-                      TextPosition(offset: contentController.text.length)),
+                    TextPosition(offset: contentController.text.length),
+                  ),
                 },
                 child: Container(
                   color: Colors.white,
@@ -114,6 +116,7 @@ class RecipeAddPage extends StatelessWidget {
                         ),
                         _smallMargin(),
                         TextFormField(
+                          // controller: nameController,
                           initialValue: model.recipeAdd.name,
                           textInputAction: TextInputAction.done,
                           onChanged: (text) {
@@ -212,6 +215,7 @@ class RecipeAddPage extends StatelessWidget {
                               ),
                         _smallMargin(),
                         TextFormField(
+                          // controller: contentController,
                           textInputAction: TextInputAction.done,
                           initialValue: model.recipeAdd.content,
                           focusNode: _nodeText,
@@ -244,6 +248,7 @@ class RecipeAddPage extends StatelessWidget {
                         ),
                         _smallMargin(),
                         TextFormField(
+                          // controller: referenceController,
                           textInputAction: TextInputAction.done,
                           initialValue: model.recipeAdd.reference,
                           onChanged: (text) {

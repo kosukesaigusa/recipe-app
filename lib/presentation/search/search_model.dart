@@ -39,8 +39,8 @@ class SearchModel extends ChangeNotifier {
   Future fetchRecipes(context) async {
     startLoading();
 
-    this.mySearchErrorText = null;
-    this.publicSearchErrorText = null;
+    this.mySearchErrorText = '';
+    this.publicSearchErrorText = '';
 
     if (_auth.currentUser == null) {
       await Navigator.pushReplacement(
@@ -371,7 +371,7 @@ class SearchModel extends ChangeNotifier {
     } else if (input.length > 50) {
       this.mySearchErrorText = '検索ワードは50文字以内で入力して下さい。';
     } else {
-      this.mySearchErrorText = null;
+      this.mySearchErrorText = '';
     }
     notifyListeners();
   }
@@ -383,7 +383,7 @@ class SearchModel extends ChangeNotifier {
     } else if (input.length > 50) {
       this.publicSearchErrorText = '検索ワードは50文字以内で入力して下さい。';
     } else {
-      this.publicSearchErrorText = null;
+      this.publicSearchErrorText = '';
     }
     notifyListeners();
   }

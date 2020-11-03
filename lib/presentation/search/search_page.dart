@@ -20,6 +20,14 @@ class SearchPage extends StatelessWidget {
                 child: Scaffold(
                   appBar: AppBar(
                     leading: Container(),
+                    actions: <Widget>[
+                      IconButton(
+                        onPressed: () async {
+                          await model.fetchRecipes(context);
+                        },
+                        icon: Icon(Icons.autorenew),
+                      ),
+                    ],
                     flexibleSpace: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: <Widget>[
@@ -61,7 +69,9 @@ class SearchPage extends StatelessWidget {
                               },
                               maxLines: 1,
                               decoration: InputDecoration(
-                                errorText: model.mySearchErrorText,
+                                errorText: model.mySearchErrorText == ''
+                                    ? null
+                                    : model.mySearchErrorText,
                                 labelText: 'レシピ名 や 材料名 で検索',
                                 border: OutlineInputBorder(),
                               ),
@@ -145,7 +155,9 @@ class SearchPage extends StatelessWidget {
                               },
                               maxLines: 1,
                               decoration: InputDecoration(
-                                errorText: model.publicSearchErrorText,
+                                errorText: model.publicSearchErrorText == ''
+                                    ? null
+                                    : model.publicSearchErrorText,
                                 labelText: 'レシピ名 や 材料名 で検索',
                                 border: OutlineInputBorder(),
                               ),

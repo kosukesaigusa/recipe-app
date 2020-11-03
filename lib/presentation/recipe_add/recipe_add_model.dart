@@ -45,7 +45,6 @@ class RecipeAddModel extends ChangeNotifier {
   Future showImagePicker() async {
     ImagePicker picker = ImagePicker();
     PickedFile pickedFile = await picker.getImage(source: ImageSource.gallery);
-
     if (pickedFile == null) {
       return;
     }
@@ -55,7 +54,6 @@ class RecipeAddModel extends ChangeNotifier {
     if (pickedImage == null) {
       return;
     }
-
     // 画像をアスペクト比 4:3 で 切り抜く
     File _croppedImageFile = await ImageCropper.cropImage(
       sourcePath: pickedImage.path,
