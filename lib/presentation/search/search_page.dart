@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/presentation/recipe/recipe_page.dart';
@@ -328,7 +329,22 @@ class SearchPage extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                              : Image.network('${recipes[i].thumbnailURL}'),
+                              : CachedNetworkImage(
+                                  imageUrl: '${recipes[i].thumbnailURL}',
+                                  errorWidget: (context, url, error) =>
+                                      //Icon(Icons.error),
+                                      Container(
+                                    color: Color(0xFFDADADA),
+                                    width: 100,
+                                    height: 100,
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Icon(Icons.error_outline),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                         ),
                         recipes[i].isPublic
                             ? Positioned(
