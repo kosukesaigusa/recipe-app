@@ -57,17 +57,6 @@ class RecipeDetailPage extends StatelessWidget {
                                   textAlign: TextAlign.left,
                                 ),
                               ),
-                              model.isMyRecipe
-                                  ? IconButton(
-                                      onPressed: () {
-                                        // edit page
-                                      },
-                                      icon: Icon(
-                                        Icons.edit,
-                                        color: Colors.blue,
-                                      ),
-                                    )
-                                  : SizedBox(),
                             ],
                           ),
                         ),
