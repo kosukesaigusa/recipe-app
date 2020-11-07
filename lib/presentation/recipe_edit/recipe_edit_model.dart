@@ -163,10 +163,7 @@ class RecipeEditModel extends ChangeNotifier {
     // 画像が変更されている場合のみ実行する
     if (this.imageFile != null) {
       if (currentRecipe.imageURL.isNotEmpty) {
-        bool result = await _deleteImage();
-        if (result) {
-          throw ('画像の更新に失敗しました');
-        }
+        await _deleteImage();
       }
 
       await _uploadImage();
@@ -232,34 +229,6 @@ class RecipeEditModel extends ChangeNotifier {
 //    });
     endLoading();
     notifyListeners();
-  }
-
-  Future updatePublicRecipeToFirebase() async {
-    await FirebaseFirestore.instance
-        .collection('public_recipes')
-        .doc('public_$documentId')
-        .update(recipeUpdate);
-  }
-
-  Future updateMyRecipeToFirebase() async {
-    await FirebaseFirestore.instance
-        .collection('users/${_auth.currentUser.uid}/recipes')
-        .doc(currentRecipe.documentId)
-        .update(recipeUpdate);
-  }
-
-  Future addPublicRecipeToFirebase() async {
-    await FirebaseFirestore.instance
-      .collection('public_recipes')
-      .doc('public_$documentId')
-      .set(recipeAdd);
-  }
-
-  Future deletePublicRecipeToFirebase() async {
-    await FirebaseFirestore.instance
-      .collection('public_recipes')
-      .doc('public_$documentId')
-      .delete();
   }
 
   // Firestore に画像をアップロードする
