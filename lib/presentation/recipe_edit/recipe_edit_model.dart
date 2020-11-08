@@ -8,9 +8,7 @@ import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:recipe/common/text_process.dart';
-import 'package:recipe/domain/edit_state.dart';
 import 'package:recipe/domain/recipe.dart';
-import 'package:recipe/domain/recipe_add.dart';
 
 class RecipeEditModel extends ChangeNotifier {
   RecipeEditModel(this.currentRecipe) {
@@ -186,13 +184,11 @@ class RecipeEditModel extends ChangeNotifier {
     };
 
     recipeAdd = recipeUpdate;
-    recipeAdd.addAll(
-        {
-          'documentId': 'public_$documentId',
-          'userId': _auth.currentUser.uid,
-          'createdAt': FieldValue.serverTimestamp(),
-        }
-    );
+    recipeAdd.addAll({
+      'documentId': 'public_$documentId',
+      'userId': _auth.currentUser.uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
 
     var firestore = FirebaseFirestore.instance;
     var batch = firestore.batch();
@@ -201,25 +197,27 @@ class RecipeEditModel extends ChangeNotifier {
         .collection('users/${_auth.currentUser.uid}/recipes')
         .doc(currentRecipe.documentId);
 
-    var publicRecipeGroup=firestore
-        .collection('public_recipes')
-        .doc('public_$documentId');
+    var publicRecipeGroup =
+        firestore.collection('public_recipes').doc('public_$documentId');
 
     // 公開範囲が私のレシピ & その他
     batch.update(userRecipeGroup, recipeUpdate);
 
     // 公開範囲がみんなのレシピのまま
-    if (this.editRecipe.isPublic == true && this.currentRecipe.isPublic == true) {
+    if (this.editRecipe.isPublic == true &&
+        this.currentRecipe.isPublic == true) {
       batch.update(publicRecipeGroup, recipeUpdate);
     }
 
     // 公開範囲をみんなのレシピに変更
-    if (this.editRecipe.isPublic == true && this.currentRecipe.isPublic == false) {
+    if (this.editRecipe.isPublic == true &&
+        this.currentRecipe.isPublic == false) {
       batch.set(publicRecipeGroup, recipeAdd);
     }
 
     // 公開範囲を私のレシピに変更
-    if (this.editRecipe.isPublic == false && this.currentRecipe.isPublic == true) {
+    if (this.editRecipe.isPublic == false &&
+        this.currentRecipe.isPublic == true) {
       batch.delete(publicRecipeGroup);
     }
 
@@ -232,7 +230,7 @@ class RecipeEditModel extends ChangeNotifier {
   }
 
   // Firestore に画像をアップロードする
-  Future<String> _uploadImage() async {
+  Future _uploadImage() async {
     String _fileName = "image_" +
         DateTime.now().toString() +
         "_" +
@@ -249,7 +247,7 @@ class RecipeEditModel extends ChangeNotifier {
   }
 
   // Firestore にサムネイル用画像をアップロードする
-  Future<String> _uploadThumbnail() async {
+  Future _uploadThumbnail() async {
     String _fileName = "thumbnail_" +
         DateTime.now().toString() +
         "_" +
@@ -320,19 +318,13 @@ class RecipeEditModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 【】に囲まれた文字列を抽出する
-  List<String> _splitMoves(String content) {
-    final exp = RegExp(r'(?<=【)[^【】]+(?=】)');
-    return exp.allMatches(content).map((match) => match.group(0)).toList();
+  void startLoading() {
+    this.isUploading = true;
+    notifyListeners();
   }
 
-    void startLoading() {
-      this.isUploading = true;
-      notifyListeners();
-    }
-
-    void endLoading() {
-      this.isUploading = false;
-      notifyListeners();
-    }
+  void endLoading() {
+    this.isUploading = false;
+    notifyListeners();
+  }
 }

@@ -1,11 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/text_dialog.dart';
+import 'package:recipe/domain/recipe.dart';
 import 'package:recipe/presentation/recipe/recipe_model.dart';
 import 'package:recipe/presentation/recipe_detail/recipe_detail_page.dart';
-import 'package:recipe/domain/recipe.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_page.dart';
-import 'package:recipe/common/text_dialog.dart';
 
 class RecipePage extends StatelessWidget {
   RecipePage(this.recipeDocumentId, this.recipeOwnerId);
@@ -23,37 +24,37 @@ class RecipePage extends StatelessWidget {
           appBar: AppBar(
             actions: <Widget>[
               FlatButton(
-                onPressed: () {
-                  if (model.recipe == null) {
-                    showTextDialog(context, "レシピの詳細を取得できませんでした。");
-                    return;
-                  }
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return RecipeDetailPage(model.recipe);
-                      },
-                    ),
-                  );
-                },
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.loupe, color: Colors.white, size: 28,
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      "拡大する",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                        color: Colors.white,
+                  onPressed: () {
+                    if (model.recipe == null) {
+                      showTextDialog(context, "レシピの詳細を取得できませんでした。");
+                      return;
+                    }
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return RecipeDetailPage(model.recipe);
+                        },
                       ),
-                    ),
-                  ]
-                )
-              ),
+                    );
+                  },
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.loupe,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          "拡大する",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ])),
             ],
             centerTitle: true,
             title: Icon(
@@ -63,37 +64,39 @@ class RecipePage extends StatelessWidget {
           ),
           bottomNavigationBar: SafeArea(
             bottom: false,
-              child: Container(
-                constraints: BoxConstraints(maxHeight: model.isMyRecipe ? 70.0 : 0),
-                padding: EdgeInsets.only(left: 20.0, top:5, right: 20.0, bottom: 10),
-                child: FlatButton(
-                  color: Colors.lightBlue,
-                  disabledColor: Colors.grey,
-                  disabledTextColor: Colors.black,
-                  padding: EdgeInsets.all(2.0),
-                  splashColor: Colors.blueAccent,
-                  height: 45,
-                  child: Text(
-                    'レシピを編集する',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+            child: Container(
+              constraints:
+                  BoxConstraints(maxHeight: model.isMyRecipe ? 70.0 : 0),
+              padding:
+                  EdgeInsets.only(left: 20.0, top: 5, right: 20.0, bottom: 10),
+              child: FlatButton(
+                color: Colors.lightBlue,
+                disabledColor: Colors.grey,
+                disabledTextColor: Colors.black,
+                padding: EdgeInsets.all(2.0),
+                splashColor: Colors.blueAccent,
+                height: 45,
+                child: Text(
+                  'レシピを編集する',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
-                  onPressed: () async {
-                    showModalBottomSheet(
-                      context: context,
-                        builder: (context) {
-                          return RecipeEditPage(model.recipe);
-                        },
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                    )
-                    );
-                  },
                 ),
+                onPressed: () async {
+                  showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return RecipeEditPage(model.recipe);
+                      },
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(16)),
+                      ));
+                },
               ),
+            ),
           ),
           body: Stack(
             children: [
@@ -135,25 +138,86 @@ class RecipePage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(height: 16),
-                      model.imageURL == ''
-                          ? SizedBox()
-                          : Image.network(
-                        '${model.imageURL}',
+                      SizedBox(
+                        height: 16,
                       ),
-                      SizedBox(height: 16),
+                      Center(
+                        child: SizedBox(
+                          width: 200,
+                          height: 150,
+                          child: model.isLoading
+                              ? Container(
+                                  color: Color(0xFFDADADA),
+                                  width: 100,
+                                  height: 100,
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        'Loading...',
+                                        style: TextStyle(
+                                          fontSize: 10.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : '${model.imageURL}' == ''
+                                  ? Container(
+                                      color: Color(0xFFDADADA),
+                                      width: 100,
+                                      height: 100,
+                                      child: Center(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            'No photo',
+                                            style: TextStyle(
+                                              fontSize: 10.0,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : CachedNetworkImage(
+                                      imageUrl: '${model.imageURL}',
+                                      errorWidget: (context, url, error) =>
+                                          //Icon(Icons.error),
+                                          Container(
+                                        color: Color(0xFFDADADA),
+                                        width: 100,
+                                        height: 100,
+                                        child: Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Icon(Icons.error_outline),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
                       Text(
                         "作り方・材料",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                         textAlign: TextAlign.left,
                       ),
                       Text(model.content),
-                      SizedBox(height: 16),
+                      SizedBox(
+                        height: 16,
+                      ),
                       Text(
                         "参考にしたレシピ",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                         textAlign: TextAlign.left,
                       ),
                       Text(model.content),
@@ -163,11 +227,11 @@ class RecipePage extends StatelessWidget {
               ),
               model.isLoading
                   ? Container(
-                color: Colors.black.withOpacity(0.3),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              )
+                      color: Colors.black.withOpacity(0.3),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
                   : SizedBox(),
             ],
           ),
