@@ -22,6 +22,8 @@ class RecipeAdd {
   String name = '';
   String thumbnailURL = '';
   String imageURL = '';
+  String thumbnailName = '';
+  String imageName = '';
   String content = '';
   List<String> ingredients;
   String reference = '';

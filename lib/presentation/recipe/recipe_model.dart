@@ -15,7 +15,7 @@ class RecipeModel extends ChangeNotifier {
   String createdAt = "";
   bool isPublic = false;
   bool isMyRecipe;
-  Recipe recipe;
+  Recipe recipe = null;
 
   RecipeModel(recipeDocumentId, recipeOwnerId) {
     this.recipeDocumentId = recipeDocumentId;
@@ -53,6 +53,7 @@ class RecipeModel extends ChangeNotifier {
     }
 
     recipe = Recipe(doc);
+    recipe.isMyRecipe = this.isMyRecipe;
     name = recipe.name;
     imageURL = recipe.imageURL;
     content = recipe.content;

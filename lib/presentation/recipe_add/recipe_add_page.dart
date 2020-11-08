@@ -362,7 +362,6 @@ class RecipeAddPage extends StatelessWidget {
                       color: Colors.grey.withOpacity(0.7),
                       child: Center(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CircularProgressIndicator(),
                             SizedBox(

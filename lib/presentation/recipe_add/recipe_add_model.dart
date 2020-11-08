@@ -149,6 +149,8 @@ class RecipeAddModel extends ChangeNotifier {
           'name': recipeAdd.name,
           'imageURL': recipeAdd.imageURL,
           'thumbnailURL': recipeAdd.thumbnailURL,
+          'imageName': recipeAdd.imageName,
+          'thumbnailName': recipeAdd.thumbnailName,
           'content': recipeAdd.content,
           'reference': recipeAdd.reference,
           'createdAt': FieldValue.serverTimestamp(),
@@ -178,6 +180,7 @@ class RecipeAddModel extends ChangeNotifier {
         .putFile(this.imageFile)
         .onComplete;
     String downloadURL = await _snapshot.ref.getDownloadURL();
+    recipeAdd.imageName = _fileName;
     return downloadURL;
   }
 
@@ -195,6 +198,7 @@ class RecipeAddModel extends ChangeNotifier {
         .putFile(this.thumbnailImageFile)
         .onComplete;
     String downloadURL = await _snapshot.ref.getDownloadURL();
+    recipeAdd.thumbnailName = _fileName;
     return downloadURL;
   }
 
