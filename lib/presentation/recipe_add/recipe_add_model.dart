@@ -18,6 +18,8 @@ class RecipeAddModel extends ChangeNotifier {
   File imageFile;
   File thumbnailImageFile;
   bool isUploading = false;
+  bool willPublish = false;
+  bool agreed = false;
   String errorName = '';
   String errorContent = '';
   String errorReference = '';
@@ -30,15 +32,6 @@ class RecipeAddModel extends ChangeNotifier {
         await FirebaseFirestore.instance.collection('recipes').get();
     List<Recipe> recipes = docs.docs.map((doc) => Recipe(doc)).toList();
     this.recipes = recipes;
-    notifyListeners();
-  }
-
-  extractIngredients() {
-    RegExp exp = RegExp(r'(?<=【)[^【】]+(?=】)');
-    this.recipeAdd.ingredients = exp
-        .allMatches(this.recipeAdd.content)
-        .map((match) => match.group(0))
-        .toList();
     notifyListeners();
   }
 
@@ -91,10 +84,6 @@ class RecipeAddModel extends ChangeNotifier {
     }
 
     // tokenMap を作成するための入力となる文字列のリスト
-    /// レシピ名と【】で囲まれた材料名を検索対象にする場合
-    // List _preTokenizedList = [...recipeAdd.ingredients];
-    // _preTokenizedList.add(recipeAdd.name);
-
     /// レシピ名とレシピの全文を検索対象にする場合
     List _preTokenizedList = [];
     _preTokenizedList.add(recipeAdd.name);
@@ -119,10 +108,8 @@ class RecipeAddModel extends ChangeNotifier {
             'reference': recipeAdd.reference,
             'createdAt': FieldValue.serverTimestamp(),
             'updatedAt': FieldValue.serverTimestamp(),
-            'ingredients': recipeAdd.ingredients,
             'tokenMap': recipeAdd.tokenMap,
             'isPublic': recipeAdd.isPublic,
-            'isAccept': recipeAdd.isAccept,
           },
         )
         .then((docRef) async => {generatedId = docRef.id})
@@ -155,10 +142,8 @@ class RecipeAddModel extends ChangeNotifier {
           'reference': recipeAdd.reference,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
-          'ingredients': recipeAdd.ingredients,
           'tokenMap': recipeAdd.tokenMap,
           'isPublic': recipeAdd.isPublic,
-          'isAccept': recipeAdd.isAccept,
         },
       );
     }
@@ -244,8 +229,16 @@ class RecipeAddModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clickCheckBox(val) {
-    this.recipeAdd.isAccept = val;
+  void tapPublishCheckbox(val) {
+    this.willPublish = val;
+    if (val == false) {
+      this.agreed = false;
+    }
+    notifyListeners();
+  }
+
+  void tapAgreeCheckBox(val) {
+    this.agreed = val;
     notifyListeners();
   }
 

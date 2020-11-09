@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/presentation/my_account/my_account_page.dart';
 import 'package:recipe/presentation/recipe/recipe_page.dart';
+import 'package:recipe/presentation/recipe_add/recipe_add_page.dart';
 import 'package:recipe/presentation/search/search_model.dart';
 
 class SearchPage extends StatelessWidget {
@@ -22,10 +24,15 @@ class SearchPage extends StatelessWidget {
                     leading: Container(),
                     actions: <Widget>[
                       IconButton(
-                        onPressed: () async {
-                          await model.fetchRecipes(context);
+                        icon: Icon(Icons.menu),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MyAccountPage(),
+                            ),
+                          );
                         },
-                        icon: Icon(Icons.autorenew),
                       ),
                     ],
                     flexibleSpace: Column(
@@ -89,10 +96,14 @@ class SearchPage extends StatelessWidget {
                                 Column(
                                   children: [
                                     model.isMyRecipeFiltering
-                                        ? _recipeCards(model.filteredMyRecipes,
-                                            _size, context)
-                                        : _recipeCards(
-                                            model.myRecipes, _size, context),
+                                        ? _recipeCards(
+                                            model.filteredMyRecipes,
+                                            _size,
+                                            model.userId,
+                                            'my_tab',
+                                            context)
+                                        : _recipeCards(model.myRecipes, _size,
+                                            model.userId, 'my_tab', context),
                                     FlatButton(
                                       onPressed: model.isMyRecipeFiltering
                                           ? model.canLoadMoreFilteredMyRecipe
@@ -178,9 +189,15 @@ class SearchPage extends StatelessWidget {
                                         ? _recipeCards(
                                             model.filteredPublicRecipes,
                                             _size,
+                                            model.userId,
+                                            'public_tab',
                                             context)
-                                        : _recipeCards(model.publicRecipes,
-                                            _size, context),
+                                        : _recipeCards(
+                                            model.publicRecipes,
+                                            _size,
+                                            model.userId,
+                                            'public_tab',
+                                            context),
                                     FlatButton(
                                       onPressed: model.isPublicRecipeFiltering
                                           ? model.canLoadMoreFilteredPublicRecipe
@@ -220,6 +237,18 @@ class SearchPage extends StatelessWidget {
                       ),
                     ],
                   ),
+                  floatingActionButton: FloatingActionButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RecipeAddPage(),
+                          fullscreenDialog: true,
+                        ),
+                      );
+                    },
+                    child: Icon(Icons.add),
+                  ),
                 ),
               ),
               model.isLoading
@@ -237,10 +266,13 @@ class SearchPage extends StatelessWidget {
   }
 
   /// レシピのカード一覧のウィジェトを返す関数
-  Widget _recipeCards(List recipes, Size size, context) {
+  Widget _recipeCards(
+      List recipes, Size size, String userId, String tab, context) {
+    bool isMyRecipe;
     // 画面に表示するカードのリスト
     List<Widget> list = List<Widget>();
     for (int i = 0; i < recipes.length; i++) {
+      isMyRecipe = recipes[i].userId == userId;
       // Card ウィジェットをループの個数だけリストに追加する
       list.add(
         Card(
@@ -358,7 +390,7 @@ class SearchPage extends StatelessWidget {
                                   ),
                                 ),
                         ),
-                        recipes[i].isPublic
+                        tab == 'my_tab' && isMyRecipe && recipes[i].isPublic
                             ? Positioned(
                                 top: 0.0,
                                 right: 0.0,
@@ -370,6 +402,46 @@ class SearchPage extends StatelessWidget {
                                       '公開中',
                                       style: TextStyle(
                                         color: Color(0xFF0033FF),
+                                        fontSize: 8,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : SizedBox(),
+                        tab == 'my_tab' &&
+                                isMyRecipe &&
+                                recipes[i].isPublic == false
+                            ? Positioned(
+                                top: 0.0,
+                                right: 0.0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2.0),
+                                  color: Colors.grey,
+                                  child: Center(
+                                    child: Text(
+                                      '非公開',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : SizedBox(),
+                        tab == 'public_tab' && isMyRecipe && recipes[i].isPublic
+                            ? Positioned(
+                                top: 0.0,
+                                right: 0.0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2.0),
+                                  color: Colors.blue,
+                                  child: Center(
+                                    child: Text(
+                                      'わたしのレシピ',
+                                      style: TextStyle(
+                                        color: Colors.white,
                                         fontSize: 8,
                                       ),
                                     ),

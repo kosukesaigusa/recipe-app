@@ -15,16 +15,9 @@ users:
     thumbnailURL: string
     imageURL: string
     content: string
-    ingredients: list (string)
     reference: string
     tokenMap: map
     isPublic: boolean
-
-  # 各ユーザーのレシピの材料データの蓄積
-  ingredients:
-    documentId: auto
-      createdAt: timestamp
-      name: string
 
 # 公開設定になったレシピ
 public_recipes:
@@ -36,16 +29,9 @@ public_recipes:
   thumbnailURL: string
   imageURL: string
   content: string
-  ingredients: list (string)
   reference: string
   tokenMap: map
   isPublic: boolean
-
-# 公開設定になったレシピの材料データの蓄積
-ingredients:
-  documentId: auto
-  createdAt: timestamp
-  name: string
 
 # ユーザーから送信されたお問い合わせ
 contacts:
