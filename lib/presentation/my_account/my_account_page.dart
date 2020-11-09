@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/common/will_pop_scope.dart';
+import 'package:recipe/presentation/contact/contact_page.dart';
 import 'package:recipe/presentation/email_update/email_update_page.dart';
 import 'package:recipe/presentation/link_anonymous_user/link_anonymous_user_page.dart';
 import 'package:recipe/presentation/my_account/my_account_model.dart';
@@ -90,9 +91,25 @@ class MyAccountPage extends StatelessWidget {
                             : SizedBox(),
                         model.mail != null
                             ? FlatButton(
-                                textColor: Colors.grey,
+                                textColor: Colors.blue,
                                 onPressed: () {
-                                  Navigator.pushReplacement(
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ContactPage(),
+                                      fullscreenDialog: true,
+                                    ),
+                                  );
+                                },
+                                child: Text('お問い合わせ'),
+                              )
+                            : SizedBox(),
+                        model.mail != null
+                            ? FlatButton(
+                                textColor: Colors.grey,
+                                onPressed: () async {
+                                  await model.signOut();
+                                  await Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => SignInPage(),

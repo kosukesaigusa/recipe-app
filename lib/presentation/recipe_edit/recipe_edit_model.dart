@@ -23,10 +23,11 @@ class RecipeEditModel extends ChangeNotifier {
   List<Recipe> recipes = [];
   File imageFile;
   File thumbnailImageFile;
-  bool isUploading = false;
+  bool isLoading = false;
   bool isMyRecipe;
-  bool isEdit = false;
-  String tmp;
+  bool isEdited = false;
+  bool willPublish = false;
+  bool agreed = false;
   String documentId;
   Recipe currentRecipe;
   Recipe editRecipe;
@@ -83,15 +84,6 @@ class RecipeEditModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  extractIngredients() {
-    final exp = RegExp(r'(?<=【)[^【】]+(?=】)');
-    this.editRecipe.ingredients = exp
-        .allMatches(this.editRecipe.content)
-        .map((match) => match.group(0))
-        .toList();
-    notifyListeners();
-  }
-
   Future showImagePicker() async {
     ImagePicker picker = ImagePicker();
     PickedFile pickedFile = await picker.getImage(source: ImageSource.gallery);
@@ -130,11 +122,7 @@ class RecipeEditModel extends ChangeNotifier {
       targetHeight: 150,
     );
 
-    isEdit = true;
-    notifyListeners();
-  }
-
-  callNotifyListeners() {
+    isEdited = true;
     notifyListeners();
   }
 
@@ -177,10 +165,8 @@ class RecipeEditModel extends ChangeNotifier {
       'content': editRecipe.content,
       'reference': editRecipe.reference,
       'updateAt': FieldValue.serverTimestamp(),
-      'ingredients': editRecipe.ingredients,
       'tokenMap': editRecipe.tokenMap,
       'isPublic': editRecipe.isPublic,
-      'isAccept': editRecipe.isAccept,
     };
 
     recipeAdd = recipeUpdate;
@@ -190,14 +176,14 @@ class RecipeEditModel extends ChangeNotifier {
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    var firestore = FirebaseFirestore.instance;
-    var batch = firestore.batch();
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    WriteBatch batch = firestore.batch();
 
-    var userRecipeGroup = firestore
+    DocumentReference userRecipeGroup = firestore
         .collection('users/${_auth.currentUser.uid}/recipes')
         .doc(currentRecipe.documentId);
 
-    var publicRecipeGroup =
+    DocumentReference publicRecipeGroup =
         firestore.collection('public_recipes').doc('public_$documentId');
 
     // 公開範囲が私のレシピ & その他
@@ -215,7 +201,7 @@ class RecipeEditModel extends ChangeNotifier {
       batch.set(publicRecipeGroup, recipeAdd);
     }
 
-    // 公開範囲を私のレシピに変更
+    // 公開範囲をわたしのレシピに変更
     if (this.editRecipe.isPublic == false &&
         this.currentRecipe.isPublic == true) {
       batch.delete(publicRecipeGroup);
@@ -263,11 +249,11 @@ class RecipeEditModel extends ChangeNotifier {
     editRecipe.thumbnailName = _fileName;
   }
 
-  // FirebaseStorageから画像を削除する
+  // Firebase Storageから画像を削除する
   Future _deleteImage() async {
-    final image = currentRecipe.imageName;
-    final storage = FirebaseStorage.instance;
-    var desertRef = storage.ref().child('images/$image');
+    String image = currentRecipe.imageName;
+    FirebaseStorage storage = FirebaseStorage.instance;
+    StorageReference desertRef = storage.ref().child('images/$image');
     desertRef.delete();
   }
 
@@ -313,18 +299,26 @@ class RecipeEditModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clickCheckBox(val) {
-    this.editRecipe.isAccept = val;
+  void tapPublishCheckbox(val) {
+    this.willPublish = val;
+    if (val == false) {
+      this.agreed = false;
+    }
+    notifyListeners();
+  }
+
+  void tapAgreeCheckBox(val) {
+    this.agreed = val;
     notifyListeners();
   }
 
   void startLoading() {
-    this.isUploading = true;
+    this.isLoading = true;
     notifyListeners();
   }
 
   void endLoading() {
-    this.isUploading = false;
+    this.isLoading = false;
     notifyListeners();
   }
 }

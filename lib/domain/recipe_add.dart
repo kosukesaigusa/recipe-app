@@ -13,7 +13,6 @@ class RecipeAdd {
     this.reference = '',
     this.tokenMap,
     this.isPublic = false,
-    this.isAccept = false,
   });
 
   String userId = '';
@@ -29,5 +28,4 @@ class RecipeAdd {
   String reference = '';
   Map<String, bool> tokenMap;
   bool isPublic = false;
-  bool isAccept = false;
 }

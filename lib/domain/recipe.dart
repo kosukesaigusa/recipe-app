@@ -15,7 +15,6 @@ class Recipe {
     reference = doc.data()['reference'];
     tokenMap = doc.data()['tokenMap'];
     isPublic = doc.data()['isPublic'];
-    isAccept = doc.data()['isAccept'];
     isMyRecipe = false;
   }
 
@@ -33,6 +32,5 @@ class Recipe {
   String reference;
   Map tokenMap;
   bool isPublic;
-  bool isAccept;
   bool isMyRecipe;
 }

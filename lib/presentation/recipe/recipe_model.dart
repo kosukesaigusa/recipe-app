@@ -5,17 +5,17 @@ import 'package:recipe/domain/recipe.dart';
 
 class RecipeModel extends ChangeNotifier {
   FirebaseAuth _auth = FirebaseAuth.instance;
-  bool isLoading;
+  bool isLoading = false;
   String userId;
   String recipeDocumentId;
   String recipeOwnerId;
-  String name = "";
-  String imageURL = "";
-  String content = "";
-  String createdAt = "";
+  String name = '';
+  String imageURL = '';
+  String content = '';
+  String createdAt = '';
   bool isPublic = false;
   bool isMyRecipe;
-  Recipe recipe = null;
+  Recipe recipe;
 
   RecipeModel(recipeDocumentId, recipeOwnerId) {
     this.recipeDocumentId = recipeDocumentId;
@@ -52,13 +52,13 @@ class RecipeModel extends ChangeNotifier {
           .get();
     }
 
-    recipe = Recipe(doc);
-    recipe.isMyRecipe = this.isMyRecipe;
-    name = recipe.name;
-    imageURL = recipe.imageURL;
-    content = recipe.content;
-    createdAt = recipe.createdAt.toString();
-    isPublic = recipe.isPublic;
+    this.recipe = Recipe(doc);
+    this.recipe.isMyRecipe = this.isMyRecipe;
+    this.name = recipe.name;
+    this.imageURL = recipe.imageURL;
+    this.content = recipe.content;
+    this.createdAt = recipe.createdAt.toString();
+    this.isPublic = recipe.isPublic;
 
     endLoading();
     notifyListeners();

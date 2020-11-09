@@ -2,8 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:recipe/common/text_dialog.dart';
-import 'package:recipe/domain/recipe.dart';
 import 'package:recipe/presentation/recipe/recipe_model.dart';
 import 'package:recipe/presentation/recipe_detail/recipe_detail_page.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_page.dart';
@@ -13,7 +11,6 @@ class RecipePage extends StatelessWidget {
 
   final String recipeDocumentId;
   final String recipeOwnerId;
-  Recipe recipe = null;
 
   @override
   Widget build(BuildContext context) {
@@ -23,80 +20,34 @@ class RecipePage extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             actions: <Widget>[
-              FlatButton(
-                  onPressed: () {
-                    if (model.recipe == null) {
-                      showTextDialog(context, "レシピの詳細を取得できませんでした。");
-                      return;
-                    }
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return RecipeDetailPage(model.recipe);
-                        },
-                      ),
-                    );
-                  },
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.loupe,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          "拡大する",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ])),
-            ],
-            centerTitle: true,
-            title: Icon(
-              Icons.restaurant,
-              color: Colors.white,
-            ),
-          ),
-          bottomNavigationBar: SafeArea(
-            bottom: false,
-            child: Container(
-              constraints:
-                  BoxConstraints(maxHeight: model.isMyRecipe ? 70.0 : 0),
-              padding:
-                  EdgeInsets.only(left: 20.0, top: 5, right: 20.0, bottom: 10),
-              child: FlatButton(
-                color: Colors.lightBlue,
-                disabledColor: Colors.grey,
-                disabledTextColor: Colors.black,
-                padding: EdgeInsets.all(2.0),
-                splashColor: Colors.blueAccent,
-                height: 45,
-                child: Text(
-                  'レシピを編集する',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              IconButton(
+                icon: Icon(Icons.loupe),
                 onPressed: () async {
-                  showModalBottomSheet(
-                      context: context,
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return RecipeDetailPage(model.recipe);
+                      },
+                    ),
+                  );
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
                       builder: (context) {
                         return RecipeEditPage(model.recipe);
                       },
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(16)),
-                      ));
+                      fullscreenDialog: true,
+                    ),
+                  );
                 },
               ),
-            ),
+            ],
+            centerTitle: true,
+            title: model.isLoading ? SizedBox() : Text('${model.recipe.name}'),
           ),
           body: Stack(
             children: [
@@ -106,38 +57,106 @@ class RecipePage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Card(
-                        elevation: 5.0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0),
-                          side: BorderSide(
-                            color: Color(0xFFDADADA),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 10.0,
-                                  bottom: 10.0,
-                                ),
-                                child: Text(
-                                  model.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                      model.isLoading
+                          ? SizedBox()
+                          : model.isMyRecipe
+                              ? model.isPublic
+                                  ? Container(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(4.0),
+                                            color: Colors.blue,
+                                            child: Text(
+                                              'わたしのレシピ',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 8,
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(4.0),
+                                            color: Color(0xFFFFCC00),
+                                            child: Text(
+                                              '公開中',
+                                              style: TextStyle(
+                                                color: Color(0xFF0033FF),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : Container(
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(4.0),
+                                            color: Colors.blue,
+                                            child: Text(
+                                              'わたしのレシピ',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 8,
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(4.0),
+                                            color: Colors.grey,
+                                            child: Text(
+                                              '非公開',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                              : Container(
+                                  alignment: Alignment.topRight,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4.0),
+                                    color: Colors.red,
+                                    child: Text(
+                                      'みんなのレシピ',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
                                   ),
-                                  textAlign: TextAlign.left,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      SizedBox(
+                        height: 16,
                       ),
+                      Text(
+                        'レシピ名',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                      Text('${model.name}'),
                       SizedBox(
                         height: 16,
                       ),
@@ -201,26 +220,26 @@ class RecipePage extends StatelessWidget {
                         height: 16,
                       ),
                       Text(
-                        "作り方・材料",
+                        '作り方・材料',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                         textAlign: TextAlign.left,
                       ),
-                      Text(model.content),
+                      Text('${model.content}'),
                       SizedBox(
                         height: 16,
                       ),
                       Text(
-                        "参考にしたレシピ",
+                        '参考にしたレシピ',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                         textAlign: TextAlign.left,
                       ),
-                      Text(model.content),
+                      Text('${model.content}'),
                     ],
                   ),
                 ),
