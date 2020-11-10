@@ -13,7 +13,9 @@ users:
     updatedAt: timestamp
     name: string
     thumbnailURL: string
+    thumbnailName: string
     imageURL: string
+    imageName: string
     content: string
     reference: string
     tokenMap: map

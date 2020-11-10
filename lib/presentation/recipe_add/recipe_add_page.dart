@@ -11,15 +11,37 @@ class RecipeAddPage extends StatelessWidget {
       child: Consumer<RecipeAddModel>(
         builder: (context, model, child) {
           return Scaffold(
-            appBar: AppBar(
-              centerTitle: true,
-              title: Text('レシピの追加'),
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(32.0),
+              child: AppBar(
+                iconTheme: IconThemeData(
+                  color: Colors.white,
+                ),
+                centerTitle: true,
+                title: Text(
+                  'レシピの追加',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.white,
+                  ),
+                ),
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    size: 20.0,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
             ),
             body: Stack(
               children: [
                 SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.only(
+                        top: 16.0, right: 16.0, bottom: 48.0, left: 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -27,15 +49,17 @@ class RecipeAddPage extends StatelessWidget {
                           text: TextSpan(
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                             children: [
-                              TextSpan(text: '1. レシピ名'),
+                              TextSpan(
+                                text: '1. レシピ名',
+                              ),
                               TextSpan(
                                 text: '（必須）',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 10.0,
                                   fontWeight: FontWeight.normal,
                                 ),
                               ),
@@ -59,7 +83,7 @@ class RecipeAddPage extends StatelessWidget {
                                 model.errorName == '' ? null : model.errorName,
                           ),
                           style: TextStyle(
-                            fontSize: 10.0,
+                            fontSize: 14.0,
                             height: 1.0,
                           ),
                         ),
@@ -69,7 +93,7 @@ class RecipeAddPage extends StatelessWidget {
                         Text(
                           '2. 写真',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -104,7 +128,7 @@ class RecipeAddPage extends StatelessWidget {
                                               Text(
                                                 'タップして画像を追加',
                                                 style: TextStyle(
-                                                  fontSize: 10,
+                                                  fontSize: 12.0,
                                                 ),
                                               ),
                                             ],
@@ -125,15 +149,17 @@ class RecipeAddPage extends StatelessWidget {
                           text: TextSpan(
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16.0,
                               fontWeight: FontWeight.bold,
                             ),
                             children: [
-                              TextSpan(text: '3. 作り方・材料'),
+                              TextSpan(
+                                text: '3. 作り方・材料',
+                              ),
                               TextSpan(
                                 text: '（必須）',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 10.0,
                                   fontWeight: FontWeight.normal,
                                 ),
                               ),
@@ -150,7 +176,7 @@ class RecipeAddPage extends StatelessWidget {
                             model.changeRecipeContent(text);
                           },
                           minLines: 12,
-                          maxLines: 12,
+                          maxLines: 20,
                           decoration: InputDecoration(
                             labelText: 'レシピの内容（作り方・材料）',
                             alignLabelWithHint: true,
@@ -160,7 +186,7 @@ class RecipeAddPage extends StatelessWidget {
                                 : model.errorContent,
                           ),
                           style: TextStyle(
-                            fontSize: 10.0,
+                            fontSize: 14.0,
                             height: 1.4,
                           ),
                         ),
@@ -170,7 +196,7 @@ class RecipeAddPage extends StatelessWidget {
                         Text(
                           '4. 参考にしたレシピ',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -183,13 +209,15 @@ class RecipeAddPage extends StatelessWidget {
                           onChanged: (text) {
                             model.changeRecipeReference(text);
                           },
-                          maxLines: 1,
+                          minLines: 3,
+                          maxLines: 3,
                           decoration: InputDecoration(
                             labelText: '参考にしたレシピのURLや書籍名を記入',
+                            alignLabelWithHint: true,
                             border: OutlineInputBorder(),
                           ),
                           style: TextStyle(
-                            fontSize: 10.0,
+                            fontSize: 14.0,
                             height: 1.0,
                           ),
                         ),
@@ -199,7 +227,7 @@ class RecipeAddPage extends StatelessWidget {
                         Text(
                           '5. 投稿',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -207,7 +235,7 @@ class RecipeAddPage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Checkbox(
-                              activeColor: Colors.red,
+                              activeColor: Color(0xFFF39800),
                               checkColor: Colors.white,
                               onChanged: (val) {
                                 model.tapPublishCheckbox(val);
@@ -219,7 +247,7 @@ class RecipeAddPage extends StatelessWidget {
                                 'みんなのレシピにも公開',
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 10,
+                                  fontSize: 12.0,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -231,7 +259,7 @@ class RecipeAddPage extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Checkbox(
-                                    activeColor: Colors.red,
+                                    activeColor: Color(0xFFF39800),
                                     checkColor: Colors.white,
                                     onChanged: (val) {
                                       model.tapAgreeCheckBox(val);
@@ -243,7 +271,7 @@ class RecipeAddPage extends StatelessWidget {
                                       text: TextSpan(
                                         style: TextStyle(
                                           color: Colors.black,
-                                          fontSize: 10,
+                                          fontSize: 12.0,
                                           fontWeight: FontWeight.bold,
                                         ),
                                         children: [
@@ -263,35 +291,35 @@ class RecipeAddPage extends StatelessWidget {
                                 ],
                               )
                             : SizedBox(),
+                        SizedBox(
+                          height: 16,
+                        ),
                         Center(
-                          child: RaisedButton(
-                            child: Text(
-                              'レシピを保存する',
-                              style: TextStyle(
-                                fontSize: 12,
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 40,
+                            child: RaisedButton(
+                              child: Text(
+                                'レシピを保存する',
                               ),
+                              color: Color(0xFFF39800),
+                              textColor: Colors.white,
+                              onPressed: model.isNameValid &&
+                                      model.isContentValid &&
+                                      model.isReferenceValid
+                                  ? model.willPublish
+                                      ? model.agreed
+                                          ? () async {
+                                              model.recipeAdd.isPublic = true;
+                                              await addRecipe(model, context);
+                                            }
+                                          : null
+                                      : () async {
+                                          model.recipeAdd.isPublic = false;
+                                          await addRecipe(model, context);
+                                        }
+                                  : null,
                             ),
-                            color: Colors.red,
-                            textColor: Colors.white,
-                            onPressed: model.isNameValid &&
-                                    model.isContentValid &&
-                                    model.isReferenceValid
-                                ? model.willPublish
-                                    ? model.agreed
-                                        ? () async {
-                                            model.startLoading();
-                                            model.recipeAdd.isPublic = true;
-                                            await addRecipe(model, context);
-                                            model.endLoading();
-                                          }
-                                        : null
-                                    : () async {
-                                        model.startLoading();
-                                        model.recipeAdd.isPublic = false;
-                                        await addRecipe(model, context);
-                                        model.endLoading();
-                                      }
-                                : null,
                           ),
                         ),
                       ],
@@ -342,8 +370,10 @@ class RecipeAddPage extends StatelessWidget {
 }
 
 Future addRecipe(RecipeAddModel model, BuildContext context) async {
+  model.startLoading();
   try {
     await model.addRecipeToFirebase();
+    model.endLoading();
     await showDialog(
       context: context,
       barrierDismissible: false,

@@ -39,8 +39,8 @@ class SignInPage extends StatelessWidget {
                             border: OutlineInputBorder(),
                           ),
                         ),
-                        const SizedBox(
-                          height: 20,
+                        SizedBox(
+                          height: 16,
                         ),
                         TextFormField(
                           controller: passwordController,
@@ -58,14 +58,14 @@ class SignInPage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 20,
+                          height: 16,
                         ),
                         SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: RaisedButton(
                             child: Text('ログイン'),
-                            color: Colors.blue,
+                            color: Color(0xFFF39800),
                             textColor: Colors.white,
                             onPressed:
                                 model.isMailValid && model.isPasswordValid
@@ -88,13 +88,13 @@ class SignInPage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 20,
+                          height: 16,
                         ),
                         FlatButton(
                           child: Text(
                             '新規登録はこちら',
                           ),
-                          textColor: Colors.blue,
+                          textColor: Color(0xFFF39800),
                           onPressed: () {
                             Navigator.pushReplacement(
                               context,

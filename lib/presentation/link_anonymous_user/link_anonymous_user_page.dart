@@ -15,9 +15,29 @@ class LinkAnonymousUserPage extends StatelessWidget {
     return ChangeNotifierProvider<LinkAnonymousUserModel>(
         create: (_) => LinkAnonymousUserModel(),
         child: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: Text("ユーザー登録"),
+          appBar: PreferredSize(
+            child: AppBar(
+              iconTheme: IconThemeData(
+                color: Colors.white,
+              ),
+              centerTitle: true,
+              title: Text(
+                "ユーザー登録",
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.white,
+                ),
+              ),
+              leading: IconButton(
+                icon: Icon(
+                  Icons.close,
+                  size: 20.0,
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
           ),
           body: Consumer<LinkAnonymousUserModel>(
             builder: (context, model, child) {
@@ -41,7 +61,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 16,
                       ),
                       TextFormField(
                         controller: passwordController,
@@ -59,7 +79,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 16,
                       ),
                       TextFormField(
                         controller: confirmController,
@@ -77,14 +97,14 @@ class LinkAnonymousUserPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 16,
                       ),
                       SizedBox(
                         width: double.infinity,
                         height: 50,
                         child: RaisedButton(
                           child: Text('ユーザー登録する'),
-                          color: Colors.blue,
+                          color: Color(0xFFF39800),
                           textColor: Colors.white,
                           onPressed: () async {
                             model.startLoading();
@@ -106,7 +126,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 16,
                       ),
                     ],
                   ),

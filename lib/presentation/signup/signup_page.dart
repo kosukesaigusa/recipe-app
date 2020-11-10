@@ -40,7 +40,7 @@ class SignUpPage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 20,
+                          height: 16,
                         ),
                         TextFormField(
                           controller: passwordController,
@@ -58,7 +58,7 @@ class SignUpPage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 20,
+                          height: 16,
                         ),
                         TextFormField(
                           controller: confirmController,
@@ -76,14 +76,14 @@ class SignUpPage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 20,
+                          height: 16,
                         ),
                         SizedBox(
                           width: double.infinity,
                           height: 50,
                           child: RaisedButton(
                             child: Text('新規登録'),
-                            color: Colors.blue,
+                            color: Color(0xFFF39800),
                             textColor: Colors.white,
                             onPressed: model.isMailValid &&
                                     model.isPasswordValid &&
@@ -108,13 +108,13 @@ class SignUpPage extends StatelessWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 20,
+                          height: 16,
                         ),
                         FlatButton(
                           child: Text(
                             'ログインはこちら',
                           ),
-                          textColor: Colors.blue,
+                          textColor: Color(0xFFF39800),
                           onPressed: () {
                             Navigator.pushReplacement(
                               context,

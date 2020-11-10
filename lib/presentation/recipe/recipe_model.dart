@@ -12,51 +12,49 @@ class RecipeModel extends ChangeNotifier {
   String name = '';
   String imageURL = '';
   String content = '';
+  String reference = '';
   String createdAt = '';
   bool isPublic = false;
   bool isMyRecipe;
   Recipe recipe;
 
-  RecipeModel(recipeDocumentId, recipeOwnerId) {
+  Future fetchRecipe(recipeDocumentId, recipeOwnerId) async {
+    startLoading();
     this.recipeDocumentId = recipeDocumentId;
     this.recipeOwnerId = recipeOwnerId;
     this.userId = _auth.currentUser.uid;
     this.isMyRecipe = recipeOwnerId == this.userId;
-    this.fetchRecipe();
-  }
-
-  Future fetchRecipe() async {
-    startLoading();
-    DocumentSnapshot doc;
+    DocumentSnapshot _doc;
     if (isMyRecipe == true) {
       this.isMyRecipe = true;
 
       /// レシピのドキュメント ID が "public_" から始まる場合は、
       /// それに対応する「わたしのレシピ」を取得する
       if (this.recipeDocumentId.startsWith('public_')) {
-        doc = await FirebaseFirestore.instance
+        _doc = await FirebaseFirestore.instance
             .collection('users/${this.userId}/recipes')
             .doc(this.recipeDocumentId.replaceFirst('public_', ''))
             .get();
       } else {
-        doc = await FirebaseFirestore.instance
+        _doc = await FirebaseFirestore.instance
             .collection('users/${this.userId}/recipes')
             .doc(this.recipeDocumentId)
             .get();
       }
     } else {
       this.isMyRecipe = false;
-      doc = await FirebaseFirestore.instance
+      _doc = await FirebaseFirestore.instance
           .collection('public_recipes')
           .doc(this.recipeDocumentId)
           .get();
     }
 
-    this.recipe = Recipe(doc);
+    this.recipe = Recipe(_doc);
     this.recipe.isMyRecipe = this.isMyRecipe;
     this.name = recipe.name;
     this.imageURL = recipe.imageURL;
     this.content = recipe.content;
+    this.reference = recipe.reference;
     this.createdAt = recipe.createdAt.toString();
     this.isPublic = recipe.isPublic;
 

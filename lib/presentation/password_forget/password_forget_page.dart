@@ -40,14 +40,14 @@ class ForgetPasswordPage extends StatelessWidget {
                             ),
                           ),
                           SizedBox(
-                            height: 20,
+                            height: 16,
                           ),
                           SizedBox(
                             width: double.infinity,
                             height: 50,
                             child: RaisedButton(
                               child: Text('再設定する'),
-                              color: Colors.blue,
+                              color: Color(0xFFF39800),
                               textColor: Colors.white,
                               onPressed: model.isMailValid
                                   ? () async {
@@ -71,13 +71,13 @@ class ForgetPasswordPage extends StatelessWidget {
                             ),
                           ),
                           SizedBox(
-                            height: 20,
+                            height: 16,
                           ),
                           FlatButton(
                             child: Text(
                               'ログイン画面に戻る',
                             ),
-                            textColor: Colors.blue,
+                            textColor: Color(0xFFF39800),
                             onPressed: () {
                               Navigator.pushReplacement(
                                 context,

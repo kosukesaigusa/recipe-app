@@ -21,6 +21,7 @@ class ContactModel extends ChangeNotifier {
   }
 
   Future<void> submitForm() async {
+    // todo: try {} catch (e) {} を書く
     await FirebaseFirestore.instance.collection('contacts').add({
       'email': this.mail,
       'category': this.category,

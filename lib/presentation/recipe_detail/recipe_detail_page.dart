@@ -13,8 +13,22 @@ class RecipeDetailPage extends StatelessWidget {
     return ChangeNotifierProvider<RecipeDetailModel>(
       create: (_) => RecipeDetailModel(recipe),
       child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(36.0),
+          child: AppBar(
+            iconTheme: IconThemeData(
+              color: Colors.white,
+            ),
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios,
+                size: 20.0,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
         ),
         body: Consumer<RecipeDetailModel>(builder: (context, model, child) {
           return Stack(

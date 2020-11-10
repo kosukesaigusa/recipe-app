@@ -13,9 +13,30 @@ class EmailUpdatePage extends StatelessWidget {
     return ChangeNotifierProvider<EmailUpdateModel>(
       create: (_) => EmailUpdateModel(),
       child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text('メールアドレスの更新'),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(36.0),
+          child: AppBar(
+            iconTheme: IconThemeData(
+              color: Colors.white,
+            ),
+            centerTitle: true,
+            title: Text(
+              'メールアドレスの変更',
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.white,
+              ),
+            ),
+            leading: IconButton(
+              icon: Icon(
+                Icons.close,
+                size: 20.0,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
         ),
         body: Consumer<EmailUpdateModel>(
           builder: (context, model, child) {
@@ -40,7 +61,7 @@ class EmailUpdatePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(
-                        height: 20,
+                        height: 16,
                       ),
                       TextFormField(
                         controller: confirmMailController,
@@ -54,7 +75,7 @@ class EmailUpdatePage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(
-                        height: 20,
+                        height: 16,
                       ),
                       TextFormField(
                         controller: passwordController,
@@ -72,14 +93,14 @@ class EmailUpdatePage extends StatelessWidget {
                         ),
                       ),
                       SizedBox(
-                        height: 20,
+                        height: 16,
                       ),
                       SizedBox(
                         width: double.infinity,
                         height: 50,
                         child: RaisedButton(
-                          child: Text('メールアドレスの更新'),
-                          color: Colors.blue,
+                          child: Text('メールアドレスを変更'),
+                          color: Color(0xFFF39800),
                           textColor: Colors.white,
                           onPressed: model.isMailValid &&
                                   model.isConfirmMailValid &&
@@ -89,7 +110,7 @@ class EmailUpdatePage extends StatelessWidget {
                                   try {
                                     await model.updateMail(context);
                                     await showTextDialog(
-                                        context, 'メールアドレスの変更をしました');
+                                        context, 'メールアドレスを変更しました');
                                     await Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(
