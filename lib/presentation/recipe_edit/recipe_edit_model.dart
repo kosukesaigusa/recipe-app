@@ -12,11 +12,8 @@ import 'package:recipe/domain/recipe.dart';
 
 class RecipeEditModel extends ChangeNotifier {
   RecipeEditModel(this.currentRecipe) {
-    this.editRecipe = currentRecipe;
+    this.editedRecipe = currentRecipe;
     fetchRecipe();
-    changeRecipeName(editRecipe.name);
-    changeRecipeContent(editRecipe.content);
-    changeRecipeReference(editRecipe.reference);
   }
 
   FirebaseAuth _auth = FirebaseAuth.instance;
@@ -24,81 +21,72 @@ class RecipeEditModel extends ChangeNotifier {
   File imageFile;
   File thumbnailImageFile;
   bool isLoading = false;
+  bool isSubmitting = false;
   bool isMyRecipe;
   bool isEdited = false;
   bool willPublish = false;
   bool agreed = false;
-  String documentId;
   Recipe currentRecipe;
-  Recipe editRecipe;
-  Map<String, dynamic> recipeUpdate;
-  Map<String, dynamic> recipeAdd;
+  Recipe editedRecipe;
   String errorName = '';
   String errorContent = '';
   String errorReference = '';
-  bool isNameValid = false;
-  bool isContentValid = false;
+  bool isNameValid = true;
+  bool isContentValid = true;
   bool isReferenceValid = true;
 
   Future fetchRecipe() async {
     startLoading();
-    DocumentSnapshot doc;
+    DocumentSnapshot _doc;
     if (currentRecipe.isMyRecipe == true) {
       this.isMyRecipe = true;
 
       /// レシピのドキュメント ID が "public_" から始まる場合は、
       /// それに対応する「わたしのレシピ」を取得する
       if (currentRecipe.documentId.startsWith('public_')) {
-        doc = await FirebaseFirestore.instance
+        _doc = await FirebaseFirestore.instance
             .collection('users/${currentRecipe.userId}/recipes')
-            .doc(currentRecipe.documentId.replaceFirst('public_', ''))
+            .doc('${currentRecipe.documentId}'.replaceFirst('public_', ''))
             .get();
       } else {
-        doc = await FirebaseFirestore.instance
+        _doc = await FirebaseFirestore.instance
             .collection('users/${currentRecipe.userId}/recipes')
-            .doc(this.currentRecipe.documentId)
+            .doc('${this.currentRecipe.documentId}')
             .get();
       }
     } else {
       this.isMyRecipe = false;
-      doc = await FirebaseFirestore.instance
+      _doc = await FirebaseFirestore.instance
           .collection('public_recipes')
-          .doc(currentRecipe.documentId)
+          .doc('${currentRecipe.documentId}')
           .get();
     }
 
-    currentRecipe = Recipe(doc);
-    currentRecipe.isMyRecipe = this.isMyRecipe;
-    editRecipe = Recipe(doc);
-    editRecipe.isMyRecipe = this.isMyRecipe;
-    documentId = currentRecipe.documentId;
+    this.currentRecipe = Recipe(_doc);
+    this.currentRecipe.isMyRecipe = this.isMyRecipe;
+    this.editedRecipe = Recipe(_doc);
+    this.editedRecipe.isMyRecipe = this.isMyRecipe;
 
     endLoading();
     notifyListeners();
   }
 
-  Future fetchRecipeEdit(context) async {
-    final docs = await FirebaseFirestore.instance.collection('recipes').get();
-    final recipes = docs.docs.map((doc) => Recipe(doc)).toList();
-    this.recipes = recipes;
-    notifyListeners();
-  }
-
-  Future showImagePicker() async {
-    ImagePicker picker = ImagePicker();
-    PickedFile pickedFile = await picker.getImage(source: ImageSource.gallery);
-    if (pickedFile == null) {
+  Future<void> showImagePicker() async {
+    ImagePicker _picker = ImagePicker();
+    PickedFile _pickedFile =
+        await _picker.getImage(source: ImageSource.gallery);
+    if (_pickedFile == null) {
       return;
     }
 
-    File pickedImage = File(pickedFile.path);
+    File _pickedImage = File(_pickedFile.path);
 
-    if (pickedImage == null) {
+    if (_pickedImage == null) {
       return;
     }
     // 画像をアスペクト比 4:3 で 切り抜く
     File _croppedImageFile = await ImageCropper.cropImage(
-      sourcePath: pickedImage.path,
+      sourcePath: _pickedImage.path,
       maxHeight: 150,
       aspectRatio: CropAspectRatio(ratioX: 4, ratioY: 3),
       compressFormat: ImageCompressFormat.jpg,
@@ -122,95 +110,89 @@ class RecipeEditModel extends ChangeNotifier {
       targetHeight: 150,
     );
 
-    isEdited = true;
+    this.isEdited = true;
     notifyListeners();
   }
 
-  // 修正ボタン押下時
-  editButtonTapped() async {
+  // レシピの更新
+  Future<void> updateRecipe() async {
     startLoading();
-    if (editRecipe.name.isEmpty) {
+    if (editedRecipe.name.isEmpty) {
       throw ('レシピ名を入力してください');
     }
-    if (editRecipe.content.isEmpty) {
+    if (editedRecipe.content.isEmpty) {
       throw ('作り方・材料を入力してください');
     }
 
     /// レシピ名とレシピの全文を検索対象にする場合
     List _preTokenizedList = [];
-    _preTokenizedList.add(editRecipe.name);
-    _preTokenizedList.add(editRecipe.content);
+    _preTokenizedList.add(editedRecipe.name);
+    _preTokenizedList.add(editedRecipe.content);
 
     List _tokenizeList = tokenize(_preTokenizedList);
-    editRecipe.tokenMap =
+    editedRecipe.tokenMap =
         Map.fromIterable(_tokenizeList, key: (e) => e, value: (_) => true);
-    print(editRecipe.tokenMap);
+    print(editedRecipe.tokenMap);
 
     // 画像が変更されている場合のみ実行する
     if (this.imageFile != null) {
       if (currentRecipe.imageURL.isNotEmpty) {
         await _deleteImage();
+        await _deleteThumbnail();
       }
-
       await _uploadImage();
       await _uploadThumbnail();
     }
 
-    recipeUpdate = {
-      'name': editRecipe.name,
-      'imageURL': editRecipe.imageURL,
-      'thumbnailURL': editRecipe.thumbnailURL,
-      'imageName': editRecipe.imageName,
-      'thumbnailName': editRecipe.thumbnailName,
-      'content': editRecipe.content,
-      'reference': editRecipe.reference,
-      'updateAt': FieldValue.serverTimestamp(),
-      'tokenMap': editRecipe.tokenMap,
-      'isPublic': editRecipe.isPublic,
+    Map<String, dynamic> _myRecipeFields = {
+      'documentId': this.currentRecipe.documentId,
+      'userId': this._auth.currentUser.uid,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'name': this.editedRecipe.name,
+      'thumbnailURL': this.editedRecipe.thumbnailURL,
+      'thumbnailName': this.editedRecipe.thumbnailName,
+      'imageURL': this.editedRecipe.imageURL,
+      'imageName': this.editedRecipe.imageName,
+      'content': this.editedRecipe.content,
+      'reference': this.editedRecipe.reference,
+      'tokenMap': this.editedRecipe.tokenMap,
+      'isPublic': this.editedRecipe.isPublic,
     };
 
-    recipeAdd = recipeUpdate;
-    recipeAdd.addAll({
-      'documentId': 'public_$documentId',
-      'userId': _auth.currentUser.uid,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+    Map<String, dynamic> _publicRecipeFields = {
+      'documentId': 'public_${this.currentRecipe.documentId}',
+      'userId': this._auth.currentUser.uid,
+      'name': this.editedRecipe.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+      'thumbnailURL': this.editedRecipe.thumbnailURL,
+      'thumbnailName': this.editedRecipe.thumbnailName,
+      'imageURL': this.editedRecipe.imageURL,
+      'imageName': this.editedRecipe.imageName,
+      'content': this.editedRecipe.content,
+      'reference': this.editedRecipe.reference,
+      'tokenMap': this.editedRecipe.tokenMap,
+      'isPublic': this.editedRecipe.isPublic,
+    };
 
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    WriteBatch batch = firestore.batch();
+    FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    WriteBatch _batch = _firestore.batch();
 
-    DocumentReference userRecipeGroup = firestore
-        .collection('users/${_auth.currentUser.uid}/recipes')
-        .doc(currentRecipe.documentId);
+    DocumentReference _usersRecipeCollection = _firestore
+        .collection('users/${this._auth.currentUser.uid}/recipes')
+        .doc('${this.currentRecipe.documentId}');
 
-    DocumentReference publicRecipeGroup =
-        firestore.collection('public_recipes').doc('public_$documentId');
+    DocumentReference _publicRecipeCollection = _firestore
+        .collection('public_recipes')
+        .doc('public_${this.currentRecipe.documentId}');
 
-    // 公開範囲が私のレシピ & その他
-    batch.update(userRecipeGroup, recipeUpdate);
+    /// users/{userId}/recipes コレクションをアップデート
+    _batch.update(_usersRecipeCollection, _myRecipeFields);
 
-    // 公開範囲がみんなのレシピのまま
-    if (this.editRecipe.isPublic == true &&
-        this.currentRecipe.isPublic == true) {
-      batch.update(publicRecipeGroup, recipeUpdate);
-    }
+    /// public_recipes コレクションをアップデート
+    _batch.update(_publicRecipeCollection, _publicRecipeFields);
 
-    // 公開範囲をみんなのレシピに変更
-    if (this.editRecipe.isPublic == true &&
-        this.currentRecipe.isPublic == false) {
-      batch.set(publicRecipeGroup, recipeAdd);
-    }
+    _batch.commit();
 
-    // 公開範囲をわたしのレシピに変更
-    if (this.editRecipe.isPublic == false &&
-        this.currentRecipe.isPublic == true) {
-      batch.delete(publicRecipeGroup);
-    }
-
-    batch.commit();
-//    .then((doc) {
-//      // 成功したときの処理を書きたいとき
-//    });
     endLoading();
     notifyListeners();
   }
@@ -228,8 +210,8 @@ class RecipeEditModel extends ChangeNotifier {
         .child('images/' + _fileName)
         .putFile(this.imageFile)
         .onComplete;
-    editRecipe.imageURL = await _snapshot.ref.getDownloadURL();
-    editRecipe.imageName = _fileName;
+    editedRecipe.imageURL = await _snapshot.ref.getDownloadURL();
+    editedRecipe.imageName = _fileName;
   }
 
   // Firestore にサムネイル用画像をアップロードする
@@ -245,20 +227,30 @@ class RecipeEditModel extends ChangeNotifier {
         .child('thumbnails/' + _fileName)
         .putFile(this.thumbnailImageFile)
         .onComplete;
-    editRecipe.thumbnailURL = await _snapshot.ref.getDownloadURL();
-    editRecipe.thumbnailName = _fileName;
+    editedRecipe.thumbnailURL = await _snapshot.ref.getDownloadURL();
+    editedRecipe.thumbnailName = _fileName;
   }
 
-  // Firebase Storageから画像を削除する
+  // Firebase Storageから通常画像を削除する
   Future _deleteImage() async {
-    String image = currentRecipe.imageName;
-    FirebaseStorage storage = FirebaseStorage.instance;
-    StorageReference desertRef = storage.ref().child('images/$image');
-    desertRef.delete();
+    String _image = this.currentRecipe.imageName;
+    FirebaseStorage _storage = FirebaseStorage.instance;
+    StorageReference _desertRef = _storage.ref().child('images/$_image');
+    _desertRef.delete();
+  }
+
+  // Firebase Storageからサムネイル画像を削除する
+  Future _deleteThumbnail() async {
+    String _thumbnail = this.currentRecipe.thumbnailName;
+    FirebaseStorage _storage = FirebaseStorage.instance;
+    StorageReference _desertRef =
+        _storage.ref().child('thumbnails/$_thumbnail');
+    _desertRef.delete();
   }
 
   changeRecipeName(text) {
-    this.editRecipe.name = text;
+    this.isEdited = true;
+    this.editedRecipe.name = text;
     if (text.isEmpty) {
       this.isNameValid = false;
       this.errorName = 'レシピ名を入力して下さい。';
@@ -273,7 +265,8 @@ class RecipeEditModel extends ChangeNotifier {
   }
 
   changeRecipeContent(text) {
-    this.editRecipe.content = text;
+    this.isEdited = true;
+    this.editedRecipe.content = text;
     if (text.isEmpty) {
       this.isContentValid = false;
       this.errorContent = 'レシピの内容を入力して下さい。';
@@ -288,21 +281,14 @@ class RecipeEditModel extends ChangeNotifier {
   }
 
   changeRecipeReference(text) {
-    this.editRecipe.reference = text;
+    this.isEdited = true;
+    this.editedRecipe.reference = text;
     if (text.length > 1000) {
       this.isReferenceValid = false;
       this.errorReference = '1000文字以内で入力して下さい。';
     } else {
       this.isReferenceValid = true;
       this.errorReference = '';
-    }
-    notifyListeners();
-  }
-
-  void tapPublishCheckbox(val) {
-    this.willPublish = val;
-    if (val == false) {
-      this.agreed = false;
     }
     notifyListeners();
   }
@@ -319,6 +305,16 @@ class RecipeEditModel extends ChangeNotifier {
 
   void endLoading() {
     this.isLoading = false;
+    notifyListeners();
+  }
+
+  void startSubmitting() {
+    this.isSubmitting = true;
+    notifyListeners();
+  }
+
+  void endSubmitting() {
+    this.isSubmitting = false;
     notifyListeners();
   }
 }

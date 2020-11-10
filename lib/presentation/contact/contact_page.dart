@@ -9,9 +9,30 @@ class ContactPage extends StatelessWidget {
     return ChangeNotifierProvider<ContactModel>(
       create: (_) => ContactModel()..fetchContact(),
       child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text("お問い合わせ"),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(36.0),
+          child: AppBar(
+            iconTheme: IconThemeData(
+              color: Colors.white,
+            ),
+            centerTitle: true,
+            title: Text(
+              "お問い合わせ",
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.white,
+              ),
+            ),
+            leading: IconButton(
+              icon: Icon(
+                Icons.close,
+                size: 20.0,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
         ),
         body: Consumer<ContactModel>(
           builder: (context, model, child) {
@@ -22,7 +43,7 @@ class ContactPage extends StatelessWidget {
                 children: [
                   TextFormField(
                     readOnly: true,
-                    initialValue: model.mail,
+                    initialValue: '${model.mail}',
                     maxLines: 1,
                     decoration: InputDecoration(
                       labelText: 'Eメール（編集不可）',
@@ -64,6 +85,7 @@ class ContactPage extends StatelessWidget {
                     maxLines: 15,
                     decoration: InputDecoration(
                       labelText: '本文',
+                      alignLabelWithHint: true,
                       border: OutlineInputBorder(),
                       errorText:
                           model.errorContent == '' ? null : model.errorContent,
@@ -77,7 +99,7 @@ class ContactPage extends StatelessWidget {
                     height: 40,
                     child: RaisedButton(
                       child: Text('お問い合わせを送信'),
-                      color: Colors.blue,
+                      color: Color(0xFFF39800),
                       textColor: Colors.white,
                       onPressed: model.isCategoryValid && model.isContentValid
                           ? () async {

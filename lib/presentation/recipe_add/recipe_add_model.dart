@@ -102,12 +102,14 @@ class RecipeAddModel extends ChangeNotifier {
           {
             'userId': _auth.currentUser.uid,
             'name': recipeAdd.name,
-            'imageURL': recipeAdd.imageURL,
-            'thumbnailURL': recipeAdd.thumbnailURL,
-            'content': recipeAdd.content,
-            'reference': recipeAdd.reference,
             'createdAt': FieldValue.serverTimestamp(),
             'updatedAt': FieldValue.serverTimestamp(),
+            'thumbnailURL': recipeAdd.thumbnailURL,
+            'thumbnailName': recipeAdd.thumbnailName,
+            'imageURL': recipeAdd.imageURL,
+            'imageName': recipeAdd.imageName,
+            'content': recipeAdd.content,
+            'reference': recipeAdd.reference,
             'tokenMap': recipeAdd.tokenMap,
             'isPublic': recipeAdd.isPublic,
           },
@@ -133,15 +135,15 @@ class RecipeAddModel extends ChangeNotifier {
         {
           'documentId': 'public_$generatedId',
           'userId': _auth.currentUser.uid,
-          'name': recipeAdd.name,
-          'imageURL': recipeAdd.imageURL,
-          'thumbnailURL': recipeAdd.thumbnailURL,
-          'imageName': recipeAdd.imageName,
-          'thumbnailName': recipeAdd.thumbnailName,
-          'content': recipeAdd.content,
-          'reference': recipeAdd.reference,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
+          'name': recipeAdd.name,
+          'thumbnailURL': recipeAdd.thumbnailURL,
+          'thumbnailName': recipeAdd.thumbnailName,
+          'imageURL': recipeAdd.imageURL,
+          'imageName': recipeAdd.imageName,
+          'content': recipeAdd.content,
+          'reference': recipeAdd.reference,
           'tokenMap': recipeAdd.tokenMap,
           'isPublic': recipeAdd.isPublic,
         },
@@ -187,7 +189,7 @@ class RecipeAddModel extends ChangeNotifier {
     return downloadURL;
   }
 
-  changeRecipeName(text) {
+  void changeRecipeName(text) {
     this.recipeAdd.name = text;
     if (text.isEmpty) {
       this.isNameValid = false;
@@ -202,7 +204,7 @@ class RecipeAddModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  changeRecipeContent(text) {
+  void changeRecipeContent(text) {
     this.recipeAdd.content = text;
     if (text.isEmpty) {
       this.isContentValid = false;
@@ -217,7 +219,7 @@ class RecipeAddModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  changeRecipeReference(text) {
+  void changeRecipeReference(text) {
     this.recipeAdd.reference = text;
     if (text.length > 1000) {
       this.isReferenceValid = false;

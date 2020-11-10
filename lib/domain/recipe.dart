@@ -10,6 +10,7 @@ class Recipe {
     thumbnailURL = doc.data()['thumbnailURL'];
     thumbnailName = doc.data()['thumbnailName'];
     imageURL = doc.data()['imageURL'];
+    imageName = doc.data()['imageName'];
     content = doc.data()['content'];
     ingredients = doc.data()['ingredients'];
     reference = doc.data()['reference'];
@@ -24,8 +25,8 @@ class Recipe {
   Timestamp updatedAt;
   String name;
   String thumbnailURL;
-  String imageURL;
   String thumbnailName;
+  String imageURL;
   String imageName;
   String content;
   List ingredients;

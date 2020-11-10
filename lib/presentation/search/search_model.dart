@@ -8,10 +8,8 @@ import 'package:recipe/presentation/signin/signin_page.dart';
 class SearchModel extends ChangeNotifier {
   FirebaseAuth _auth = FirebaseAuth.instance;
   String userId = '';
-  String mySearchWords = '';
-  String publicSearchWords = '';
-  String mySearchErrorText;
-  String publicSearchErrorText;
+  String mySearchErrorText = '';
+  String publicSearchErrorText = '';
   bool isLoading;
   bool isFiltering = false;
   int loadLimit = 10;
@@ -35,12 +33,11 @@ class SearchModel extends ChangeNotifier {
   bool isPublicRecipeFiltering = false;
   Query myFilterQuery;
   Query publicFilterQuery;
+  TextEditingController mySearchController = TextEditingController();
+  TextEditingController publicSearchController = TextEditingController();
 
   Future fetchRecipes(context) async {
     startLoading();
-
-    this.mySearchErrorText = '';
-    this.publicSearchErrorText = '';
 
     if (_auth.currentUser == null) {
       await Navigator.pushReplacement(
@@ -56,7 +53,7 @@ class SearchModel extends ChangeNotifier {
     /// わたしのレシピ
     QuerySnapshot _mySnap = await FirebaseFirestore.instance
         .collection('users/${this.userId}/recipes')
-        .orderBy('createdAt', descending: true)
+        .orderBy('updatedAt', descending: true)
         .limit(this.loadLimit)
         .get();
 
@@ -85,7 +82,8 @@ class SearchModel extends ChangeNotifier {
     /// みんなのレシピ
     QuerySnapshot _publicSnap = await FirebaseFirestore.instance
         .collection('public_recipes')
-        .orderBy('createdAt', descending: true)
+        .where('isPublic', isEqualTo: true)
+        .orderBy('updatedAt', descending: true)
         .limit(this.loadLimit)
         .get();
 
@@ -121,7 +119,7 @@ class SearchModel extends ChangeNotifier {
   Future loadMoreMyRecipes() async {
     QuerySnapshot _snap = await FirebaseFirestore.instance
         .collection('users/${this.userId}/recipes')
-        .orderBy('createdAt', descending: true)
+        .orderBy('updatedAt', descending: true)
         .startAfterDocument(this.myLastVisible)
         .limit(this.loadLimit)
         .get();
@@ -148,7 +146,8 @@ class SearchModel extends ChangeNotifier {
   Future loadMorePublicRecipes() async {
     QuerySnapshot _snap = await FirebaseFirestore.instance
         .collection('public_recipes')
-        .orderBy('createdAt', descending: true)
+        .where('isPublic', isEqualTo: true)
+        .orderBy('updatedAt', descending: true)
         .startAfterDocument(this.publicLastVisible)
         .limit(this.loadLimit)
         .get();
@@ -239,7 +238,9 @@ class SearchModel extends ChangeNotifier {
     List tokens = tokenize(_words);
 
     /// クエリの生成（bi-gram の結果のトークンマップを where 句に反映）
-    Query _query = FirebaseFirestore.instance.collection('public_recipes');
+    Query _query = FirebaseFirestore.instance
+        .collection('public_recipes')
+        .where('isPublic', isEqualTo: true);
     tokens.forEach((word) {
       _query =
           _query.where('tokenMap.$word', isEqualTo: true).limit(this.loadLimit);
@@ -351,6 +352,7 @@ class SearchModel extends ChangeNotifier {
 
   void endMyRecipeFiltering() {
     this.isMyRecipeFiltering = false;
+    this.mySearchErrorText = '';
     notifyListeners();
   }
 
@@ -361,14 +363,14 @@ class SearchModel extends ChangeNotifier {
 
   void endPublicRecipeFiltering() {
     this.isPublicRecipeFiltering = false;
+    this.publicSearchErrorText = '';
     notifyListeners();
   }
 
-  void changeMySearchWords(input) {
-    this.mySearchWords = input;
-    if (input.length == 1) {
+  void changeMySearchWords(text) {
+    if (text.length == 1) {
       this.mySearchErrorText = '検索ワードは2文字以上で入力して下さい。';
-    } else if (input.length > 50) {
+    } else if (text.length > 50) {
       this.mySearchErrorText = '検索ワードは50文字以内で入力して下さい。';
     } else {
       this.mySearchErrorText = '';
@@ -376,11 +378,10 @@ class SearchModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changePublicSearchWords(input) {
-    this.publicSearchWords = input;
-    if (input.length == 1) {
+  void changePublicSearchWords(text) {
+    if (text.length == 1) {
       this.publicSearchErrorText = '検索ワードは2文字以上で入力して下さい。';
-    } else if (input.length > 50) {
+    } else if (text.length > 50) {
       this.publicSearchErrorText = '検索ワードは50文字以内で入力して下さい。';
     } else {
       this.publicSearchErrorText = '';
