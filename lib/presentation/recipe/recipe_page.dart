@@ -45,21 +45,23 @@ class RecipePage extends StatelessWidget {
                       ),
                     ),
               actions: <Widget>[
-                IconButton(
-                  icon: Icon(
-                    Icons.loupe,
-                    size: 20.0,
-                  ),
-                  onPressed: () async {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return RecipeDetailPage(model.recipe);
+                model.isLoading
+                    ? SizedBox()
+                    : IconButton(
+                        icon: Icon(
+                          Icons.loupe,
+                          size: 20.0,
+                        ),
+                        onPressed: () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return RecipeDetailPage(model.recipe);
+                              },
+                            ),
+                          );
                         },
                       ),
-                    );
-                  },
-                ),
                 model.isLoading
                     ? SizedBox()
                     : model.recipe.isMyRecipe
