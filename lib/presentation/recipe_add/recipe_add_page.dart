@@ -58,7 +58,6 @@ class RecipeAddPage extends StatelessWidget {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => TopPage(),
-                                      fullscreenDialog: true,
                                     ),
                                   );
                                 },
@@ -426,7 +425,6 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
                   context,
                   MaterialPageRoute(
                     builder: (context) => TopPage(),
-                    fullscreenDialog: true,
                   ),
                 );
                 model.fetchRecipeAdd(context);
