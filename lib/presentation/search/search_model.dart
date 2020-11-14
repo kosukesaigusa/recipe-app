@@ -12,6 +12,7 @@ class SearchModel extends ChangeNotifier {
   PublicRecipeTab publicRecipeTab;
   String userId;
   int loadLimit;
+  bool canReload;
 
   SearchModel() {
     this.myRecipeTab = MyRecipeTab();
@@ -19,12 +20,12 @@ class SearchModel extends ChangeNotifier {
     this._auth = FirebaseAuth.instance;
     this.userId = '';
     this.loadLimit = 10;
+    this.canReload = true;
   }
 
   Future<void> fetchRecipes(context) async {
     startMyTabLoading();
     startPublicTabLoading();
-
     if (_auth.currentUser == null) {
       await Navigator.pushReplacement(
         context,
@@ -35,6 +36,13 @@ class SearchModel extends ChangeNotifier {
     } else {
       this.userId = _auth.currentUser.uid;
     }
+    await loadMyRecipes();
+    await loadPublicRecipes();
+    notifyListeners();
+  }
+
+  Future<void> loadMyRecipes() async {
+    startMyTabLoading();
 
     /// わたしのレシピ
     QuerySnapshot _mySnap = await FirebaseFirestore.instance
@@ -66,8 +74,12 @@ class SearchModel extends ChangeNotifier {
     }
 
     endMyTabLoading();
+    notifyListeners();
+  }
 
-    /// みんなのレシピ
+  Future<void> loadPublicRecipes() async {
+    startPublicTabLoading();
+
     QuerySnapshot _publicSnap = await FirebaseFirestore.instance
         .collection('public_recipes')
         .where('isPublic', isEqualTo: true)
