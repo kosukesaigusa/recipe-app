@@ -15,13 +15,17 @@ class ForgetPasswordPage extends StatelessWidget {
       child: ChangeNotifierProvider<ForgetPasswordModel>(
         create: (_) => ForgetPasswordModel(),
         child: Scaffold(
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(1.0),
+            child: AppBar(),
+          ),
           body: Consumer<ForgetPasswordModel>(
             builder: (context, model, child) {
               return Stack(
                 children: [
                   Container(
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
