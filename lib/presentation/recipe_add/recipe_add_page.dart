@@ -31,7 +31,45 @@ class RecipeAddPage extends StatelessWidget {
                     size: 20.0,
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    if (model.recipeAdd.name.isNotEmpty ||
+                        model.imageFile != null ||
+                        model.recipeAdd.content.isNotEmpty ||
+                        model.recipeAdd.reference.isNotEmpty) {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            content: Text(
+                              '編集中の内容は失われますが、'
+                              '作業を中止して前の画面に戻りますか？',
+                            ),
+                            actions: <Widget>[
+                              FlatButton(
+                                child: Text('キャンセル'),
+                                onPressed: () async {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              FlatButton(
+                                child: Text('OK'),
+                                onPressed: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TopPage(),
+                                      fullscreenDialog: true,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      Navigator.of(context).pop();
+                    }
                   },
                 ),
               ),
@@ -384,7 +422,6 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
             FlatButton(
               child: Text('OK'),
               onPressed: () async {
-                // Navigator.of(context).pop();
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -407,7 +444,7 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(e.toString()),
+          content: Text(e.toString()),
           actions: <Widget>[
             FlatButton(
               child: Text('OK'),
