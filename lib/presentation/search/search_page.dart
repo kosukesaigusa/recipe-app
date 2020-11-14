@@ -108,11 +108,12 @@ class SearchPage extends StatelessWidget {
                                     },
                                     maxLines: 1,
                                     decoration: InputDecoration(
+                                      prefixIcon: Icon(Icons.search),
                                       errorText:
                                           model.myRecipeTab.errorText == ''
                                               ? null
                                               : model.myRecipeTab.errorText,
-                                      labelText: 'レシピ名 や 材料名 で検索',
+                                      labelText: 'レシピ名・材料名（スペース区切りの複数単語可）',
                                       border: OutlineInputBorder(),
                                       suffixIcon: model.myRecipeTab
                                               .textController.text.isEmpty
@@ -299,11 +300,12 @@ class SearchPage extends StatelessWidget {
                                     },
                                     maxLines: 1,
                                     decoration: InputDecoration(
+                                      prefixIcon: Icon(Icons.search),
                                       errorText:
                                           model.publicRecipeTab.errorText == ''
                                               ? null
                                               : model.publicRecipeTab.errorText,
-                                      labelText: 'レシピ名 や 材料名 で検索',
+                                      labelText: 'レシピ名・材料名（スペース区切りの複数単語可）',
                                       border: OutlineInputBorder(),
                                       suffixIcon: model.publicRecipeTab
                                               .textController.text.isEmpty
