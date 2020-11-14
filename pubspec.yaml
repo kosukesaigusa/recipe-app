@@ -14,7 +14,7 @@ dependencies:
   firebase_core: ^0.5.0+1
   cloud_firestore: ^0.14.1+3
   firebase_auth: ^0.18.0+1
-  flutter_launcher_icons: ^0.7.5
+  flutter_launcher_icons: ^0.8.1
   enum_to_string: ^1.0.9
   simple_logger: ^1.7.0
   keyboard_actions: ^3.3.1+1
@@ -29,9 +29,16 @@ dependencies:
   firebase_storage: ^4.0.1
   flutter_native_image: ^0.0.5+3
   cached_network_image: ^2.3.3
+  vibrate: ^0.0.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 flutter:
   uses-material-design: true
+  assets:
+    - lib/assets/
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "lib/assets/icon_bg-white_1024.png"

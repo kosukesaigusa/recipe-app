@@ -5,7 +5,7 @@ class SplashPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Theme.of(context).primaryColor,
+        color: Colors.white,
         child: SafeArea(
           child: Container(
             width: double.infinity,
@@ -13,8 +13,8 @@ class SplashPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 SizedBox(
-                  width: 96,
-                  child: Text('スプラッシュアイコン'),
+                  width: 120,
+                  child: Image.asset('lib/assets/icon_1024.png'),
                 ),
               ],
             ),
