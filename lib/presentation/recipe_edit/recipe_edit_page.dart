@@ -14,39 +14,81 @@ class RecipeEditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<RecipeEditModel>(
       create: (_) => RecipeEditModel(this.recipe),
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(36.0),
-          child: AppBar(
-            iconTheme: IconThemeData(
-              color: Colors.white,
-            ),
-            centerTitle: true,
-            title: Text(
-              'レシピの編集',
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.white,
+      child: Consumer<RecipeEditModel>(
+        builder: (context, model, child) {
+          return Scaffold(
+            appBar: PreferredSize(
+              preferredSize: Size.fromHeight(36.0),
+              child: AppBar(
+                iconTheme: IconThemeData(
+                  color: Colors.white,
+                ),
+                centerTitle: true,
+                title: Text(
+                  'レシピの編集',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.white,
+                  ),
+                ),
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    size: 20.0,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                actions: <Widget>[
+                  model.isLoading
+                      ? SizedBox()
+                      : model.currentRecipe.isMyRecipe
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                size: 20.0,
+                              ),
+                              onPressed: () async {
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      content: Text('レシピを削除しますか？'),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: Text('OK'),
+                                          onPressed: () async {
+                                            await model.deleteRecipe();
+                                            await Navigator.pushAndRemoveUntil(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      TopPage(),
+                                                ),
+                                                (_) => false);
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            )
+                          : SizedBox(),
+                ],
               ),
             ),
-            leading: IconButton(
-              icon: Icon(
-                Icons.close,
-                size: 20.0,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-        ),
-        body: Consumer<RecipeEditModel>(
-          builder: (context, model, child) {
-            return Stack(
+            body: Stack(
               children: [
                 SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.only(
+                      top: 16.0,
+                      right: 16.0,
+                      bottom: 48.0,
+                      left: 16.0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -442,97 +484,117 @@ class RecipeEditPage extends StatelessWidget {
                                 ],
                               ),
 
+                        SizedBox(
+                          height: 16.0,
+                        ),
+
                         /// 元々公開されていたレシピの場合
                         model.currentRecipe.isPublic
-                            ? ButtonBar(
-                                alignment: MainAxisAlignment.spaceEvenly,
+                            ? Column(
                                 children: [
-                                  RaisedButton(
-                                    child: Text(
-                                      '公開を取り下げて更新する',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: RaisedButton(
+                                      child: Text(
+                                        'レシピを更新する',
                                       ),
+                                      color: Color(0xFFF39800),
+                                      textColor: Colors.white,
+                                      onPressed: model.isEdited &&
+                                              model.agreed &&
+                                              model.isNameValid &&
+                                              model.isContentValid &&
+                                              model.isReferenceValid
+                                          ? () async {
+                                              /// 公開で更新
+                                              model.editedRecipe.isPublic =
+                                                  true;
+                                              await updateRecipe(
+                                                  model, context);
+                                            }
+                                          : null,
                                     ),
-                                    color: Colors.grey,
-                                    textColor: Colors.white,
-                                    onPressed: model.isNameValid &&
-                                            model.isContentValid &&
-                                            model.isReferenceValid
-                                        ? () async {
-                                            /// 非公開で更新
-                                            model.editedRecipe.isPublic = false;
-                                            await updateRecipe(model, context);
-                                          }
-                                        : null,
                                   ),
-                                  RaisedButton(
-                                    child: Text(
-                                      'レシピを更新する',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
+                                  SizedBox(
+                                    height: 16.0,
+                                  ),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: RaisedButton(
+                                      child: Text(
+                                        '公開を取り下げて更新する',
                                       ),
+                                      color: Colors.grey,
+                                      textColor: Colors.white,
+                                      onPressed: model.isNameValid &&
+                                              model.isContentValid &&
+                                              model.isReferenceValid
+                                          ? () async {
+                                              /// 非公開で更新
+                                              model.editedRecipe.isPublic =
+                                                  false;
+                                              await updateRecipe(
+                                                  model, context);
+                                            }
+                                          : null,
                                     ),
-                                    color: Color(0xFFF39800),
-                                    textColor: Colors.white,
-                                    onPressed: model.isEdited &&
-                                            model.agreed &&
-                                            model.isNameValid &&
-                                            model.isContentValid &&
-                                            model.isReferenceValid
-                                        ? () async {
-                                            /// 公開で更新
-                                            model.editedRecipe.isPublic = true;
-                                            await updateRecipe(model, context);
-                                          }
-                                        : null,
                                   ),
                                 ],
                               )
 
                             /// 元々公開されていなかったレシピの場合
-                            : ButtonBar(
-                                alignment: MainAxisAlignment.spaceEvenly,
+                            : Column(
                                 children: [
-                                  RaisedButton(
-                                    child: Text(
-                                      'レシピを更新する',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: RaisedButton(
+                                      child: Text(
+                                        'みんなのレシピに公開する',
                                       ),
+                                      color: Color(0xFFF39800),
+                                      textColor: Colors.white,
+                                      onPressed: model.agreed &&
+                                              model.isNameValid &&
+                                              model.isContentValid &&
+                                              model.isReferenceValid
+                                          ? () async {
+                                              /// 公開で更新
+                                              model.editedRecipe.isPublic =
+                                                  true;
+                                              await updateRecipe(
+                                                  model, context);
+                                            }
+                                          : null,
                                     ),
-                                    color: Colors.grey,
-                                    textColor: Colors.white,
-                                    onPressed: model.isEdited &&
-                                            model.isNameValid &&
-                                            model.isContentValid &&
-                                            model.isReferenceValid
-                                        ? () async {
-                                            /// 非公開で更新
-                                            model.editedRecipe.isPublic = false;
-                                            await updateRecipe(model, context);
-                                          }
-                                        : null,
                                   ),
-                                  RaisedButton(
-                                    child: Text(
-                                      'みんなのレシピに公開する',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
+                                  SizedBox(
+                                    height: 16.0,
+                                  ),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: RaisedButton(
+                                      child: Text(
+                                        'レシピを更新する',
                                       ),
+                                      color: Colors.grey,
+                                      textColor: Colors.white,
+                                      onPressed: model.isEdited &&
+                                              model.isNameValid &&
+                                              model.isContentValid &&
+                                              model.isReferenceValid
+                                          ? () async {
+                                              /// 非公開で更新
+                                              model.editedRecipe.isPublic =
+                                                  false;
+                                              await updateRecipe(
+                                                  model, context);
+                                            }
+                                          : null,
                                     ),
-                                    color: Color(0xFFF39800),
-                                    textColor: Colors.white,
-                                    onPressed: model.agreed &&
-                                            model.isNameValid &&
-                                            model.isContentValid &&
-                                            model.isReferenceValid
-                                        ? () async {
-                                            /// 公開で更新
-                                            model.editedRecipe.isPublic = true;
-                                            await updateRecipe(model, context);
-                                          }
-                                        : null,
                                   ),
                                 ],
                               ),
@@ -583,9 +645,9 @@ class RecipeEditPage extends StatelessWidget {
                       )
                     : SizedBox(),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -248,6 +248,33 @@ class RecipeEditModel extends ChangeNotifier {
     _desertRef.delete();
   }
 
+  Future<void> deleteRecipe() async {
+    /// 画像の削除
+    await _deleteImage();
+    await _deleteThumbnail();
+    FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    WriteBatch _batch = _firestore.batch();
+
+    DocumentReference _usersRecipeCollection = _firestore
+        .collection('users/${this._auth.currentUser.uid}/recipes')
+        .doc('${this.currentRecipe.documentId}');
+
+    DocumentReference _publicRecipeCollection = _firestore
+        .collection('public_recipes')
+        .doc('public_${this.currentRecipe.documentId}');
+
+    /// users/{userId}/recipes のレシピを削除
+    _batch.delete(_usersRecipeCollection);
+
+    /// public_recipes のレシピを削除
+    _batch.delete(_publicRecipeCollection);
+
+    _batch.commit();
+
+    endLoading();
+    notifyListeners();
+  }
+
   changeRecipeName(text) {
     this.isEdited = true;
     this.editedRecipe.name = text;
