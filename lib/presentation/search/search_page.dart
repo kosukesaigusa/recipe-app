@@ -76,221 +76,352 @@ class SearchPage extends StatelessWidget {
                     ),
                     body: TabBarView(
                       children: [
-                        Column(
+                        /// 「わたしのレシピ」タブ
+                        Stack(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 16.0,
-                                left: 8.0,
-                                right: 8.0,
-                                bottom: 16.0,
-                              ),
-                              child: TextFormField(
-                                controller: model.mySearchController,
-                                textInputAction: TextInputAction.done,
-                                onChanged: (text) async {
-                                  model.changeMySearchWords(text);
-                                  if (text.isNotEmpty) {
-                                    model.startMyRecipeFiltering();
-                                    await model.filterMyRecipe(text);
-                                  } else {
-                                    model.endMyRecipeFiltering();
-                                  }
-                                },
-                                maxLines: 1,
-                                decoration: InputDecoration(
-                                  errorText: model.mySearchErrorText == ''
-                                      ? null
-                                      : model.mySearchErrorText,
-                                  labelText: 'レシピ名 や 材料名 で検索',
-                                  border: OutlineInputBorder(),
-                                  suffixIcon: model
-                                          .mySearchController.text.isEmpty
-                                      ? SizedBox()
-                                      : IconButton(
-                                          icon: Icon(
-                                            Icons.clear,
-                                            size: 18,
-                                          ),
-                                          onPressed: () {
-                                            model.mySearchController.clear();
-                                            model.endMyRecipeFiltering();
-                                          },
-                                        ),
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  height: 1.0,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: ListView(
-                                key: PageStorageKey(0), // スクロール位置の保存に必要
-                                children: [
-                                  /// わたしのレシピをFirestoreから取得
-                                  Column(
-                                    children: [
-                                      model.isMyRecipeFiltering
-                                          ? _recipeCards(
-                                              model.filteredMyRecipes,
-                                              _size,
-                                              model.userId,
-                                              'my_tab',
-                                              context)
-                                          : _recipeCards(model.myRecipes, _size,
-                                              model.userId, 'my_tab', context),
-                                      FlatButton(
-                                        onPressed: model.isMyRecipeFiltering
-                                            ? model.canLoadMoreFilteredMyRecipe
-                                                ? () async {
-                                                    await model
-                                                        .loadMoreFilteredMyRecipes();
-                                                  }
-                                                : null
-                                            : model.canLoadMoreMyRecipe
-                                                ? () async {
-                                                    await model
-                                                        .loadMoreMyRecipes();
-                                                  }
-                                                : null,
-                                        child: model.isFiltering
-                                            ? Text('検索中...')
-                                            : model.isLoading
-                                                ? SizedBox()
-                                                : model.isMyRecipeFiltering
-                                                    ? model
-                                                            .canLoadMoreFilteredMyRecipe
-                                                        ? Text('検索結果をさらに読み込む')
-                                                        : model
-                                                                .existsFilteredMyRecipe
-                                                            ? Text('検索結果は以上です')
-                                                            : Text(
-                                                                '検索結果が見つかりません')
-                                                    : model.canLoadMoreMyRecipe
-                                                        ? Text('さらに読み込む')
-                                                        : model.existsMyRecipe
-                                                            ? Text('以上です')
-                                                            : Text(
-                                                                'まだレシピが登録されていません'),
-                                      ),
-                                    ],
+                            Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 16.0,
+                                    left: 8.0,
+                                    right: 8.0,
+                                    bottom: 16.0,
                                   ),
-                                ],
-                              ),
+                                  child: TextFormField(
+                                    controller:
+                                        model.myRecipeTab.textController,
+                                    textInputAction: TextInputAction.done,
+                                    onChanged: (text) async {
+                                      model.changeMySearchWords(text);
+                                      if (text.isNotEmpty) {
+                                        model.myRecipeTab.showFilteredRecipe =
+                                            true;
+                                        model.startMyRecipeFiltering();
+                                        await model.filterMyRecipe(text);
+                                      } else {
+                                        model.myRecipeTab.showFilteredRecipe =
+                                            false;
+                                        model.endMyRecipeFiltering();
+                                      }
+                                    },
+                                    maxLines: 1,
+                                    decoration: InputDecoration(
+                                      errorText:
+                                          model.myRecipeTab.errorText == ''
+                                              ? null
+                                              : model.myRecipeTab.errorText,
+                                      labelText: 'レシピ名 や 材料名 で検索',
+                                      border: OutlineInputBorder(),
+                                      suffixIcon: model.myRecipeTab
+                                              .textController.text.isEmpty
+                                          ? SizedBox()
+                                          : IconButton(
+                                              icon: Icon(
+                                                Icons.clear,
+                                                size: 18,
+                                              ),
+                                              onPressed: () {
+                                                model.myRecipeTab.textController
+                                                    .clear();
+                                                model.myRecipeTab
+                                                    .showFilteredRecipe = false;
+                                                model.myRecipeTab.errorText =
+                                                    '';
+                                                model.endMyRecipeFiltering();
+                                              },
+                                            ),
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child:
+                                      NotificationListener<ScrollNotification>(
+                                    onNotification:
+                                        (ScrollNotification _notification) {
+                                      if (_notification.metrics.pixels ==
+                                          _notification
+                                              .metrics.maxScrollExtent) {
+                                        if (model.myRecipeTab.isLoadingMore) {
+                                          // 前のクエリを取得中の場合は待つ
+                                        } else {
+                                          if (model
+                                              .myRecipeTab.showFilteredRecipe) {
+                                            // 絞り込み中の場合
+                                            if (model.myRecipeTab
+                                                .canLoadMoreFiltered) {
+                                              model.loadMoreFilteredMyRecipes();
+                                            }
+                                          } else {
+                                            // 絞り込み中でない場合
+                                            if (model.myRecipeTab.canLoadMore) {
+                                              model.loadMoreMyRecipes();
+                                            }
+                                          }
+                                        }
+                                      }
+                                      return false;
+                                    },
+                                    child: ListView(
+                                      key: PageStorageKey(0), // スクロール位置の保存に必要
+                                      children: [
+                                        /// わたしのレシピをFirestoreから取得
+                                        Column(
+                                          children: [
+                                            model.myRecipeTab.showFilteredRecipe
+                                                ? _recipeCards(
+                                                    model.myRecipeTab
+                                                        .filteredRecipes,
+                                                    _size,
+                                                    model.userId,
+                                                    'my_tab',
+                                                    context)
+                                                : _recipeCards(
+                                                    model.myRecipeTab.recipes,
+                                                    _size,
+                                                    model.userId,
+                                                    'my_tab',
+                                                    context),
+                                            FlatButton(
+                                              onPressed: model.myRecipeTab
+                                                      .showFilteredRecipe
+                                                  ? model.myRecipeTab
+                                                          .canLoadMoreFiltered
+                                                      ? () async {
+                                                          await model
+                                                              .loadMoreFilteredMyRecipes();
+                                                        }
+                                                      : null
+                                                  : model.myRecipeTab
+                                                          .canLoadMore
+                                                      ? () async {
+                                                          await model
+                                                              .loadMoreMyRecipes();
+                                                        }
+                                                      : null,
+                                              child: model
+                                                      .myRecipeTab.isFiltering
+                                                  ? Text('検索中...')
+                                                  : model.myRecipeTab.isLoading
+                                                      ? SizedBox()
+                                                      : model.myRecipeTab
+                                                              .showFilteredRecipe
+                                                          ? model.myRecipeTab
+                                                                  .canLoadMoreFiltered
+                                                              ? Text(
+                                                                  '検索結果をさらに読み込む')
+                                                              : model.myRecipeTab
+                                                                      .existsFilteredRecipe
+                                                                  ? Text(
+                                                                      '検索結果は以上です')
+                                                                  : Text(
+                                                                      '検索結果が見つかりません')
+                                                          : model.myRecipeTab
+                                                                  .canLoadMore
+                                                              ? Text('さらに読み込む')
+                                                              : model.myRecipeTab
+                                                                      .existsRecipe
+                                                                  ? Text('以上です')
+                                                                  : Text(
+                                                                      'まだレシピが登録されていません'),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                            model.myRecipeTab.isLoading
+                                ? Container(
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : SizedBox(),
                           ],
                         ),
-                        Column(
+
+                        /// 「みんなのレシピ」タブ
+                        Stack(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 16.0,
-                                left: 8.0,
-                                right: 8.0,
-                                bottom: 16.0,
-                              ),
-                              child: TextFormField(
-                                controller: model.publicSearchController,
-                                textInputAction: TextInputAction.done,
-                                onChanged: (text) async {
-                                  model.changePublicSearchWords(text);
-                                  if (text.isNotEmpty) {
-                                    model.startPublicRecipeFiltering();
-                                    await model.filterPublicRecipe(text);
-                                  } else {
-                                    model.endPublicRecipeFiltering();
-                                  }
-                                },
-                                maxLines: 1,
-                                decoration: InputDecoration(
-                                  errorText: model.publicSearchErrorText == ''
-                                      ? null
-                                      : model.publicSearchErrorText,
-                                  labelText: 'レシピ名 や 材料名 で検索',
-                                  border: OutlineInputBorder(),
-                                  suffixIcon: model
-                                          .publicSearchController.text.isEmpty
-                                      ? SizedBox()
-                                      : IconButton(
-                                          icon: Icon(
-                                            Icons.clear,
-                                            size: 18,
-                                          ),
-                                          onPressed: () {
-                                            model.publicSearchController
-                                                .clear();
-                                            model.endPublicRecipeFiltering();
-                                          },
-                                        ),
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  height: 1.0,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: ListView(
-                                key: PageStorageKey(1), // スクロール位置の保存に必要
-                                children: [
-                                  /// みんなのレシピをFirestoreから取得
-                                  Column(
-                                    children: [
-                                      model.isPublicRecipeFiltering
-                                          ? _recipeCards(
-                                              model.filteredPublicRecipes,
-                                              _size,
-                                              model.userId,
-                                              'public_tab',
-                                              context)
-                                          : _recipeCards(
-                                              model.publicRecipes,
-                                              _size,
-                                              model.userId,
-                                              'public_tab',
-                                              context),
-                                      FlatButton(
-                                        onPressed: model.isPublicRecipeFiltering
-                                            ? model.canLoadMoreFilteredPublicRecipe
-                                                ? () async {
-                                                    await model
-                                                        .loadMoreFilteredPublicRecipes();
-                                                  }
-                                                : null
-                                            : model.canLoadMorePublicRecipe
-                                                ? () async {
-                                                    await model
-                                                        .loadMorePublicRecipes();
-                                                  }
-                                                : null,
-                                        child: model.isFiltering
-                                            ? Text('検索中...')
-                                            : model.isLoading
-                                                ? SizedBox()
-                                                : model.isPublicRecipeFiltering
-                                                    ? model
-                                                            .canLoadMoreFilteredPublicRecipe
-                                                        ? Text('検索結果をさらに読み込む')
-                                                        : model
-                                                                .existsFilteredPublicRecipe
-                                                            ? Text('検索結果は以上です')
-                                                            : Text(
-                                                                '検索結果が見つかりません')
-                                                    : model
-                                                            .canLoadMorePublicRecipe
-                                                        ? Text('さらに読み込む')
-                                                        : model
-                                                                .existsPublicRecipe
-                                                            ? Text('以上です')
-                                                            : Text(
-                                                                'まだレシピが登録されていません'),
-                                      ),
-                                    ],
+                            Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 16.0,
+                                    left: 8.0,
+                                    right: 8.0,
+                                    bottom: 16.0,
                                   ),
-                                ],
-                              ),
+                                  child: TextFormField(
+                                    controller:
+                                        model.publicRecipeTab.textController,
+                                    textInputAction: TextInputAction.done,
+                                    onChanged: (text) async {
+                                      model.changePublicSearchWords(text);
+                                      if (text.isNotEmpty) {
+                                        model.publicRecipeTab
+                                            .showFilteredRecipe = true;
+                                        model.startPublicRecipeFiltering();
+                                        await model.filterPublicRecipe(text);
+                                      } else {
+                                        model.publicRecipeTab
+                                            .showFilteredRecipe = false;
+                                        model.endPublicRecipeFiltering();
+                                      }
+                                    },
+                                    maxLines: 1,
+                                    decoration: InputDecoration(
+                                      errorText:
+                                          model.publicRecipeTab.errorText == ''
+                                              ? null
+                                              : model.publicRecipeTab.errorText,
+                                      labelText: 'レシピ名 や 材料名 で検索',
+                                      border: OutlineInputBorder(),
+                                      suffixIcon: model.publicRecipeTab
+                                              .textController.text.isEmpty
+                                          ? SizedBox()
+                                          : IconButton(
+                                              icon: Icon(
+                                                Icons.clear,
+                                                size: 18,
+                                              ),
+                                              onPressed: () {
+                                                model.publicRecipeTab
+                                                    .textController
+                                                    .clear();
+                                                model.publicRecipeTab
+                                                    .showFilteredRecipe = false;
+                                                model.publicRecipeTab
+                                                    .errorText = '';
+                                                model
+                                                    .endPublicRecipeFiltering();
+                                              },
+                                            ),
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child:
+                                      NotificationListener<ScrollNotification>(
+                                    onNotification:
+                                        (ScrollNotification _notification) {
+                                      if (_notification.metrics.pixels ==
+                                          _notification
+                                              .metrics.maxScrollExtent) {
+                                        if (model
+                                            .publicRecipeTab.isLoadingMore) {
+                                          // 前のクエリを取得中の場合は待つ
+                                        } else {
+                                          if (model.publicRecipeTab
+                                              .showFilteredRecipe) {
+                                            // 絞り込み中の場合
+                                            if (model.publicRecipeTab
+                                                .canLoadMoreFiltered) {
+                                              model
+                                                  .loadMoreFilteredPublicRecipes();
+                                            }
+                                          } else {
+                                            // 絞り込み中でない場合
+                                            if (model
+                                                .publicRecipeTab.canLoadMore) {
+                                              model.loadMorePublicRecipes();
+                                            }
+                                          }
+                                        }
+                                      }
+                                      return false;
+                                    },
+                                    child: ListView(
+                                      key: PageStorageKey(1), // スクロール位置の保存に必要
+                                      children: [
+                                        Column(
+                                          children: [
+                                            model.publicRecipeTab
+                                                    .showFilteredRecipe
+                                                ? _recipeCards(
+                                                    model.publicRecipeTab
+                                                        .filteredRecipes,
+                                                    _size,
+                                                    model.userId,
+                                                    'public_tab',
+                                                    context)
+                                                : _recipeCards(
+                                                    model.publicRecipeTab
+                                                        .recipes,
+                                                    _size,
+                                                    model.userId,
+                                                    'public_tab',
+                                                    context),
+                                            FlatButton(
+                                              onPressed: model.publicRecipeTab
+                                                      .showFilteredRecipe
+                                                  ? model.publicRecipeTab
+                                                          .canLoadMoreFiltered
+                                                      ? () async {
+                                                          await model
+                                                              .loadMoreFilteredPublicRecipes();
+                                                        }
+                                                      : null
+                                                  : model.publicRecipeTab
+                                                          .canLoadMore
+                                                      ? () async {
+                                                          await model
+                                                              .loadMorePublicRecipes();
+                                                        }
+                                                      : null,
+                                              child: model.publicRecipeTab
+                                                      .isFiltering
+                                                  ? Text('検索中...')
+                                                  : model.publicRecipeTab
+                                                          .isLoading
+                                                      ? SizedBox()
+                                                      : model.publicRecipeTab
+                                                              .showFilteredRecipe
+                                                          ? model.publicRecipeTab
+                                                                  .canLoadMoreFiltered
+                                                              ? Text(
+                                                                  '検索結果をさらに読み込む')
+                                                              : model.publicRecipeTab
+                                                                      .existsFilteredRecipe
+                                                                  ? Text(
+                                                                      '検索結果は以上です')
+                                                                  : Text(
+                                                                      '検索結果が見つかりません')
+                                                          : model.publicRecipeTab
+                                                                  .canLoadMore
+                                                              ? Text('さらに読み込む')
+                                                              : model.publicRecipeTab
+                                                                      .existsRecipe
+                                                                  ? Text('以上です')
+                                                                  : Text(
+                                                                      'まだレシピが登録されていません'),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                            model.publicRecipeTab.isLoading
+                                ? Container(
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : SizedBox(),
                           ],
                         ),
                       ],
@@ -312,13 +443,6 @@ class SearchPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                model.isLoading
-                    ? Container(
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    : SizedBox(),
               ],
             ),
           );

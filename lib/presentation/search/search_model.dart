@@ -3,41 +3,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:recipe/common/text_process.dart';
 import 'package:recipe/domain/recipe.dart';
+import 'package:recipe/domain/recipe_tab.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
 
 class SearchModel extends ChangeNotifier {
   FirebaseAuth _auth = FirebaseAuth.instance;
-  String userId = '';
-  String mySearchErrorText = '';
-  String publicSearchErrorText = '';
-  bool isLoading;
-  bool isFiltering = false;
-  int loadLimit = 10;
-  List myRecipes = [];
-  List publicRecipes = [];
-  List filteredMyRecipes = [];
-  List filteredPublicRecipes = [];
-  QueryDocumentSnapshot myLastVisible;
-  QueryDocumentSnapshot publicLastVisible;
-  QueryDocumentSnapshot filteredMyLastVisible;
-  QueryDocumentSnapshot filteredPublicLastVisible;
-  bool canLoadMoreMyRecipe = true;
-  bool canLoadMorePublicRecipe = true;
-  bool canLoadMoreFilteredMyRecipe = true;
-  bool canLoadMoreFilteredPublicRecipe = true;
-  bool existsMyRecipe;
-  bool existsPublicRecipe;
-  bool existsFilteredMyRecipe;
-  bool existsFilteredPublicRecipe;
-  bool isMyRecipeFiltering = false;
-  bool isPublicRecipeFiltering = false;
-  Query myFilterQuery;
-  Query publicFilterQuery;
-  TextEditingController mySearchController = TextEditingController();
-  TextEditingController publicSearchController = TextEditingController();
+  MyRecipeTab myRecipeTab;
+  PublicRecipeTab publicRecipeTab;
+  String userId;
+  int loadLimit;
 
-  Future fetchRecipes(context) async {
-    startLoading();
+  SearchModel() {
+    this.myRecipeTab = MyRecipeTab();
+    this.publicRecipeTab = PublicRecipeTab();
+    this._auth = FirebaseAuth.instance;
+    this.userId = '';
+    this.loadLimit = 10;
+  }
+
+  Future<void> fetchRecipes(context) async {
+    startMyTabLoading();
+    startPublicTabLoading();
 
     if (_auth.currentUser == null) {
       await Navigator.pushReplacement(
@@ -60,24 +46,26 @@ class SearchModel extends ChangeNotifier {
     /// 取得するレシピが1件以上あるか確認
     if (_mySnap.docs.length == 0) {
       /// 1件も存在しない場合
-      this.existsMyRecipe = false;
-      this.canLoadMoreMyRecipe = false;
-      this.myRecipes = [];
+      this.myRecipeTab.existsRecipe = false;
+      this.myRecipeTab.canLoadMore = false;
+      this.myRecipeTab.recipes = [];
     } else if (_mySnap.docs.length < this.loadLimit) {
       /// 1件以上10件未満存在する場合
-      this.existsMyRecipe = true;
-      this.canLoadMoreMyRecipe = false;
-      this.myLastVisible = _mySnap.docs[_mySnap.docs.length - 1];
+      this.myRecipeTab.existsRecipe = true;
+      this.myRecipeTab.canLoadMore = false;
+      this.myRecipeTab.lastVisible = _mySnap.docs[_mySnap.docs.length - 1];
       final _myRecipes = _mySnap.docs.map((doc) => Recipe(doc)).toList();
-      this.myRecipes = _myRecipes;
+      this.myRecipeTab.recipes = _myRecipes;
     } else {
       /// 10件以上存在する場合
-      this.existsMyRecipe = true;
-      this.canLoadMoreMyRecipe = true;
-      this.myLastVisible = _mySnap.docs[_mySnap.docs.length - 1];
+      this.myRecipeTab.existsRecipe = true;
+      this.myRecipeTab.canLoadMore = true;
+      this.myRecipeTab.lastVisible = _mySnap.docs[_mySnap.docs.length - 1];
       final _myRecipes = _mySnap.docs.map((doc) => Recipe(doc)).toList();
-      this.myRecipes = _myRecipes;
+      this.myRecipeTab.recipes = _myRecipes;
     }
+
+    endMyTabLoading();
 
     /// みんなのレシピ
     QuerySnapshot _publicSnap = await FirebaseFirestore.instance
@@ -90,94 +78,104 @@ class SearchModel extends ChangeNotifier {
     /// 取得するレシピが1件以上あるか確認
     if (_publicSnap.docs.length == 0) {
       /// 1件も存在しない場合
-      this.existsPublicRecipe = false;
-      this.canLoadMorePublicRecipe = false;
-      this.publicRecipes = [];
+      this.publicRecipeTab.existsRecipe = false;
+      this.publicRecipeTab.canLoadMore = false;
+      this.publicRecipeTab.recipes = [];
     } else if (_publicSnap.docs.length < this.loadLimit) {
       /// 1件以上10件未満存在する場合
-      this.existsPublicRecipe = true;
-      this.canLoadMorePublicRecipe = false;
-      this.publicLastVisible = _publicSnap.docs[_publicSnap.docs.length - 1];
+      this.publicRecipeTab.existsRecipe = true;
+      this.publicRecipeTab.canLoadMore = false;
+      this.publicRecipeTab.lastVisible =
+          _publicSnap.docs[_publicSnap.docs.length - 1];
       final _publicRecipes =
           _publicSnap.docs.map((doc) => Recipe(doc)).toList();
-      this.publicRecipes = _publicRecipes;
+      this.publicRecipeTab.recipes = _publicRecipes;
     } else {
       /// 10件以上存在する場合
-      this.existsPublicRecipe = true;
-      this.canLoadMorePublicRecipe = true;
-      this.publicLastVisible = _publicSnap.docs[_publicSnap.docs.length - 1];
+      this.publicRecipeTab.existsRecipe = true;
+      this.publicRecipeTab.canLoadMore = true;
+      this.publicRecipeTab.lastVisible =
+          _publicSnap.docs[_publicSnap.docs.length - 1];
       final _publicRecipes =
           _publicSnap.docs.map((doc) => Recipe(doc)).toList();
-      this.publicRecipes = _publicRecipes;
+      this.publicRecipeTab.recipes = _publicRecipes;
     }
 
-    endLoading();
+    endPublicTabLoading();
     notifyListeners();
   }
 
   /// わたしのレシピをさらに10件取得
-  Future loadMoreMyRecipes() async {
+  Future<void> loadMoreMyRecipes() async {
+    startLoadingMoreMyRecipe();
+
     QuerySnapshot _snap = await FirebaseFirestore.instance
         .collection('users/${this.userId}/recipes')
         .orderBy('updatedAt', descending: true)
-        .startAfterDocument(this.myLastVisible)
+        .startAfterDocument(this.myRecipeTab.lastVisible)
         .limit(this.loadLimit)
         .get();
 
     /// 新たに取得するレシピが残っているか確認
     if (_snap.docs.length == 0) {
-      this.canLoadMoreMyRecipe = false;
+      this.myRecipeTab.canLoadMore = false;
     } else if (_snap.docs.length < this.loadLimit) {
-      this.canLoadMoreMyRecipe = false;
-      this.myLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.myRecipeTab.canLoadMore = false;
+      this.myRecipeTab.lastVisible = _snap.docs[_snap.docs.length - 1];
       final _moreRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.myRecipes.addAll(_moreRecipes);
+      this.myRecipeTab.recipes.addAll(_moreRecipes);
     } else {
-      this.canLoadMoreMyRecipe = true;
-      this.myLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.myRecipeTab.canLoadMore = true;
+      this.myRecipeTab.lastVisible = _snap.docs[_snap.docs.length - 1];
       final _moreRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.myRecipes.addAll(_moreRecipes);
+      this.myRecipeTab.recipes.addAll(_moreRecipes);
     }
 
+    endLoadingMoreMyRecipe();
     notifyListeners();
   }
 
   /// みんなのレシピをさらに10件取得
   Future loadMorePublicRecipes() async {
+    startLoadingMorePublicRecipe();
+
     QuerySnapshot _snap = await FirebaseFirestore.instance
         .collection('public_recipes')
         .where('isPublic', isEqualTo: true)
         .orderBy('updatedAt', descending: true)
-        .startAfterDocument(this.publicLastVisible)
+        .startAfterDocument(this.publicRecipeTab.lastVisible)
         .limit(this.loadLimit)
         .get();
 
     /// 新たに取得するレシピが残っているか確認
     if (_snap.docs.length == 0) {
-      this.canLoadMorePublicRecipe = false;
+      this.publicRecipeTab.canLoadMore = false;
     } else if (_snap.docs.length < this.loadLimit) {
-      this.canLoadMorePublicRecipe = false;
-      this.publicLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.publicRecipeTab.canLoadMore = false;
+      this.publicRecipeTab.lastVisible = _snap.docs[_snap.docs.length - 1];
       final _moreRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.publicRecipes.addAll(_moreRecipes);
+      this.publicRecipeTab.recipes.addAll(_moreRecipes);
     } else {
-      this.canLoadMorePublicRecipe = true;
-      this.publicLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.publicRecipeTab.canLoadMore = true;
+      this.publicRecipeTab.lastVisible = _snap.docs[_snap.docs.length - 1];
       final _moreRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.publicRecipes.addAll(_moreRecipes);
+      this.publicRecipeTab.recipes.addAll(_moreRecipes);
     }
 
+    endLoadingMorePublicRecipe();
     notifyListeners();
   }
 
   Future filterMyRecipe(String input) async {
-    /// ひとつ前の検索処理が終わっていない場合は少し待つ
-    if (this.isFiltering) {
-      await Future.delayed(new Duration(milliseconds: 500));
-    }
-
     /// ステイタスを検索中に更新
-    startFiltering();
+    startMyRecipeFiltering();
+
+    /// 検索文字数が2文字に満たない場合は検索を行わず、検索結果のリストを空にする
+    if (input.length < 2) {
+      this.myRecipeTab.filteredRecipes = [];
+      endMyRecipeFiltering();
+      return;
+    }
 
     /// 検索用フィールドに入力された文字列の前処理
     List<String> _words = input.trim().split(' ');
@@ -194,42 +192,44 @@ class SearchModel extends ChangeNotifier {
     });
 
     /// 検索に用いたクエリをクラス変数に保存
-    this.myFilterQuery = _query;
+    this.myRecipeTab.filterQuery = _query;
 
     QuerySnapshot _snap = await _query.get();
 
     /// 絞り込んだレシピが1件以上あるか確認
     if (_snap.docs.length == 0) {
-      this.existsFilteredMyRecipe = false;
-      this.canLoadMoreFilteredMyRecipe = false;
-      this.filteredMyRecipes = [];
+      this.myRecipeTab.existsFilteredRecipe = false;
+      this.myRecipeTab.canLoadMoreFiltered = false;
+      this.myRecipeTab.filteredRecipes = [];
     } else if (_snap.docs.length < this.loadLimit) {
-      this.existsFilteredMyRecipe = true;
-      this.canLoadMoreFilteredMyRecipe = false;
-      this.filteredMyLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.myRecipeTab.existsFilteredRecipe = true;
+      this.myRecipeTab.canLoadMoreFiltered = false;
+      this.myRecipeTab.filteredLastVisible = _snap.docs[_snap.docs.length - 1];
       final _filteredRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.filteredMyRecipes = _filteredRecipes;
+      this.myRecipeTab.filteredRecipes = _filteredRecipes;
     } else {
-      this.existsFilteredMyRecipe = true;
-      this.canLoadMoreFilteredMyRecipe = true;
-      this.filteredMyLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.myRecipeTab.existsFilteredRecipe = true;
+      this.myRecipeTab.canLoadMoreFiltered = true;
+      this.myRecipeTab.filteredLastVisible = _snap.docs[_snap.docs.length - 1];
       final _filteredRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.filteredMyRecipes = _filteredRecipes;
+      this.myRecipeTab.filteredRecipes = _filteredRecipes;
     }
 
     /// ステイタスを検索終了に更新
-    endFiltering();
+    endMyRecipeFiltering();
     notifyListeners();
   }
 
-  Future filterPublicRecipe(String input) async {
-    /// ひとつ前の検索処理が終わっていない場合は少し待つ
-    if (this.isFiltering) {
-      await Future.delayed(new Duration(milliseconds: 500));
-    }
-
+  Future<void> filterPublicRecipe(String input) async {
     /// ステイタスを検索中に更新
-    startFiltering();
+    startPublicRecipeFiltering();
+
+    /// 検索文字数が2文字に満たない場合は検索を行わず、検索結果のリストを空にする
+    if (input.length < 2) {
+      this.publicRecipeTab.filteredRecipes = [];
+      endPublicRecipeFiltering();
+      return;
+    }
 
     /// 検索用フィールドに入力された文字列の前処理
     List<String> _words = input.trim().split(' ');
@@ -247,144 +247,174 @@ class SearchModel extends ChangeNotifier {
     });
 
     /// 検索に用いたクエリをクラス変数に保存
-    this.publicFilterQuery = _query;
+    this.publicRecipeTab.filterQuery = _query;
 
     QuerySnapshot _snap = await _query.get();
 
     /// 絞り込んだレシピが1件以上あるか確認
     if (_snap.docs.length == 0) {
-      this.existsFilteredPublicRecipe = false;
-      this.canLoadMoreFilteredPublicRecipe = false;
-      this.filteredPublicRecipes = [];
+      this.publicRecipeTab.existsFilteredRecipe = false;
+      this.publicRecipeTab.canLoadMoreFiltered = false;
+      this.publicRecipeTab.filteredRecipes = [];
     } else if (_snap.docs.length < this.loadLimit) {
-      this.existsFilteredPublicRecipe = true;
-      this.canLoadMoreFilteredPublicRecipe = false;
-      this.filteredPublicLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.publicRecipeTab.existsFilteredRecipe = true;
+      this.publicRecipeTab.canLoadMoreFiltered = false;
+      this.publicRecipeTab.filteredLastVisible =
+          _snap.docs[_snap.docs.length - 1];
       final _filteredRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.filteredPublicRecipes = _filteredRecipes;
+      this.publicRecipeTab.filteredRecipes = _filteredRecipes;
     } else {
-      this.existsFilteredPublicRecipe = true;
-      this.canLoadMoreFilteredPublicRecipe = true;
-      this.filteredPublicLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.publicRecipeTab.existsFilteredRecipe = true;
+      this.publicRecipeTab.canLoadMoreFiltered = true;
+      this.publicRecipeTab.filteredLastVisible =
+          _snap.docs[_snap.docs.length - 1];
       final _filteredRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.filteredPublicRecipes = _filteredRecipes;
+      this.publicRecipeTab.filteredRecipes = _filteredRecipes;
     }
 
     /// ステイタスを検索終了に更新
-    endFiltering();
+    endPublicRecipeFiltering();
     notifyListeners();
   }
 
-  Future loadMoreFilteredMyRecipes() async {
+  Future<void> loadMoreFilteredMyRecipes() async {
+    startLoadingMoreMyRecipe();
+
     /// 前回の検索クエリを元にスナップショットを取得
     QuerySnapshot _snap = await this
-        .myFilterQuery
-        .startAfterDocument(this.filteredMyLastVisible)
+        .myRecipeTab
+        .filterQuery
+        .startAfterDocument(this.myRecipeTab.filteredLastVisible)
         .get();
 
     /// 新たに取得するレシピが残っているか確認
     if (_snap.docs.length == 0) {
-      this.canLoadMoreFilteredMyRecipe = false;
+      this.myRecipeTab.canLoadMoreFiltered = false;
     } else if (_snap.docs.length < this.loadLimit) {
-      this.canLoadMoreFilteredMyRecipe = false;
-      this.filteredMyLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.myRecipeTab.canLoadMoreFiltered = false;
+      this.myRecipeTab.filteredLastVisible = _snap.docs[_snap.docs.length - 1];
       final _filteredRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.filteredMyRecipes.addAll(_filteredRecipes);
+      this.myRecipeTab.filteredRecipes.addAll(_filteredRecipes);
     } else {
-      this.canLoadMoreFilteredMyRecipe = true;
-      this.filteredMyLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.myRecipeTab.canLoadMoreFiltered = true;
+      this.myRecipeTab.filteredLastVisible = _snap.docs[_snap.docs.length - 1];
       final _filteredRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.filteredMyRecipes.addAll(_filteredRecipes);
+      this.myRecipeTab.filteredRecipes.addAll(_filteredRecipes);
     }
 
+    endLoadingMoreMyRecipe();
     notifyListeners();
   }
 
-  Future loadMoreFilteredPublicRecipes() async {
+  Future<void> loadMoreFilteredPublicRecipes() async {
+    startLoadingMorePublicRecipe();
+
     /// 前回の検索クエリを元にスナップショットを取得
     QuerySnapshot _snap = await this
-        .publicFilterQuery
-        .startAfterDocument(this.filteredPublicLastVisible)
+        .publicRecipeTab
+        .filterQuery
+        .startAfterDocument(this.publicRecipeTab.filteredLastVisible)
         .get();
 
     /// 新たに取得するレシピが残っているか確認
     if (_snap.docs.length == 0) {
-      this.canLoadMoreFilteredPublicRecipe = false;
+      this.publicRecipeTab.canLoadMoreFiltered = false;
     } else if (_snap.docs.length < this.loadLimit) {
-      this.canLoadMoreFilteredPublicRecipe = false;
-      this.filteredPublicLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.publicRecipeTab.canLoadMoreFiltered = false;
+      this.publicRecipeTab.filteredLastVisible =
+          _snap.docs[_snap.docs.length - 1];
       final _filteredRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.filteredPublicRecipes.addAll(_filteredRecipes);
+      this.publicRecipeTab.filteredRecipes.addAll(_filteredRecipes);
     } else {
-      this.canLoadMoreFilteredPublicRecipe = true;
-      this.filteredPublicLastVisible = _snap.docs[_snap.docs.length - 1];
+      this.publicRecipeTab.canLoadMoreFiltered = true;
+      this.publicRecipeTab.filteredLastVisible =
+          _snap.docs[_snap.docs.length - 1];
       final _filteredRecipes = _snap.docs.map((doc) => Recipe(doc)).toList();
-      this.filteredPublicRecipes.addAll(_filteredRecipes);
+      this.publicRecipeTab.filteredRecipes.addAll(_filteredRecipes);
     }
 
+    endLoadingMorePublicRecipe();
     notifyListeners();
   }
 
-  void startLoading() {
-    this.isLoading = true;
+  void startMyTabLoading() {
+    this.myRecipeTab.isLoading = true;
     notifyListeners();
   }
 
-  void endLoading() {
-    this.isLoading = false;
+  void endMyTabLoading() {
+    this.myRecipeTab.isLoading = false;
     notifyListeners();
   }
 
-  void startFiltering() {
-    this.isFiltering = true;
+  void startPublicTabLoading() {
+    this.publicRecipeTab.isLoading = true;
     notifyListeners();
   }
 
-  void endFiltering() {
-    this.isFiltering = false;
+  void endPublicTabLoading() {
+    this.publicRecipeTab.isLoading = false;
     notifyListeners();
   }
 
   void startMyRecipeFiltering() {
-    this.isMyRecipeFiltering = true;
+    this.myRecipeTab.isFiltering = true;
+    notifyListeners();
+  }
+
+  void startLoadingMoreMyRecipe() {
+    this.myRecipeTab.isLoadingMore = true;
+    notifyListeners();
+  }
+
+  void endLoadingMoreMyRecipe() {
+    this.myRecipeTab.isLoadingMore = false;
+    notifyListeners();
+  }
+
+  void startLoadingMorePublicRecipe() {
+    this.publicRecipeTab.isLoadingMore = true;
+    notifyListeners();
+  }
+
+  void endLoadingMorePublicRecipe() {
+    this.publicRecipeTab.isLoadingMore = false;
     notifyListeners();
   }
 
   void endMyRecipeFiltering() {
-    this.isMyRecipeFiltering = false;
-    this.mySearchErrorText = '';
+    this.myRecipeTab.isFiltering = false;
     notifyListeners();
   }
 
   void startPublicRecipeFiltering() {
-    this.isPublicRecipeFiltering = true;
+    this.publicRecipeTab.isFiltering = true;
     notifyListeners();
   }
 
   void endPublicRecipeFiltering() {
-    this.isPublicRecipeFiltering = false;
-    this.publicSearchErrorText = '';
+    this.publicRecipeTab.isFiltering = false;
     notifyListeners();
   }
 
   void changeMySearchWords(text) {
     if (text.length == 1) {
-      this.mySearchErrorText = '検索ワードは2文字以上で入力して下さい。';
+      this.myRecipeTab.errorText = '検索ワードは2文字以上で入力して下さい。';
     } else if (text.length > 50) {
-      this.mySearchErrorText = '検索ワードは50文字以内で入力して下さい。';
+      this.myRecipeTab.errorText = '検索ワードは50文字以内で入力して下さい。';
     } else {
-      this.mySearchErrorText = '';
+      this.myRecipeTab.errorText = '';
     }
     notifyListeners();
   }
 
   void changePublicSearchWords(text) {
     if (text.length == 1) {
-      this.publicSearchErrorText = '検索ワードは2文字以上で入力して下さい。';
+      this.publicRecipeTab.errorText = '検索ワードは2文字以上で入力して下さい。';
     } else if (text.length > 50) {
-      this.publicSearchErrorText = '検索ワードは50文字以内で入力して下さい。';
+      this.publicRecipeTab.errorText = '検索ワードは50文字以内で入力して下さい。';
     } else {
-      this.publicSearchErrorText = '';
+      this.publicRecipeTab.errorText = '';
     }
     notifyListeners();
   }

@@ -297,7 +297,7 @@ class RecipeAddPage extends StatelessWidget {
                         Center(
                           child: SizedBox(
                             width: double.infinity,
-                            height: 40,
+                            height: 50,
                             child: RaisedButton(
                               child: Text(
                                 'レシピを保存する',

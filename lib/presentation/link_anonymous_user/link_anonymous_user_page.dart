@@ -16,6 +16,7 @@ class LinkAnonymousUserPage extends StatelessWidget {
         create: (_) => LinkAnonymousUserModel(),
         child: Scaffold(
           appBar: PreferredSize(
+            preferredSize: Size.fromHeight(36.0),
             child: AppBar(
               iconTheme: IconThemeData(
                 color: Colors.white,
