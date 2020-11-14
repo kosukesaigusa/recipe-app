@@ -6,6 +6,7 @@ import 'package:recipe/presentation/my_account/my_account_page.dart';
 import 'package:recipe/presentation/recipe/recipe_page.dart';
 import 'package:recipe/presentation/recipe_add/recipe_add_page.dart';
 import 'package:recipe/presentation/search/search_model.dart';
+import 'package:vibrate/vibrate.dart';
 
 class SearchPage extends StatelessWidget {
   @override
@@ -138,11 +139,18 @@ class SearchPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
+                                // Container(
+                                //   width: 30,
+                                //   height: 30,
+                                //   color: Colors.red,
+                                //   child: CircularProgressIndicator(),
+                                // ),
                                 Expanded(
                                   child:
                                       NotificationListener<ScrollNotification>(
                                     onNotification:
                                         (ScrollNotification _notification) {
+                                      /// Load more:
                                       if (_notification.metrics.pixels ==
                                           _notification
                                               .metrics.maxScrollExtent) {
@@ -162,6 +170,19 @@ class SearchPage extends StatelessWidget {
                                               model.loadMoreMyRecipes();
                                             }
                                           }
+                                        }
+                                      }
+
+                                      /// Reload:
+                                      if (_notification.metrics.pixels == 0) {
+                                        model.canReload = true;
+                                      }
+                                      if (_notification.metrics.pixels < -100) {
+                                        if (model.canReload &&
+                                            !model.myRecipeTab.isLoading) {
+                                          model.canReload = false;
+                                          Vibrate.feedback(FeedbackType.medium);
+                                          model.loadMyRecipes();
                                         }
                                       }
                                       return false;
@@ -316,6 +337,7 @@ class SearchPage extends StatelessWidget {
                                       NotificationListener<ScrollNotification>(
                                     onNotification:
                                         (ScrollNotification _notification) {
+                                      /// Load more:
                                       if (_notification.metrics.pixels ==
                                           _notification
                                               .metrics.maxScrollExtent) {
@@ -338,6 +360,19 @@ class SearchPage extends StatelessWidget {
                                               model.loadMorePublicRecipes();
                                             }
                                           }
+                                        }
+                                      }
+
+                                      /// Reload:
+                                      if (_notification.metrics.pixels == 0) {
+                                        model.canReload = true;
+                                      }
+                                      if (_notification.metrics.pixels < -100) {
+                                        if (model.canReload &&
+                                            !model.myRecipeTab.isLoading) {
+                                          model.canReload = false;
+                                          Vibrate.feedback(FeedbackType.medium);
+                                          model.loadPublicRecipes();
                                         }
                                       }
                                       return false;
