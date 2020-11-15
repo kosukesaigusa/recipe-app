@@ -88,225 +88,241 @@ class RecipePage extends StatelessWidget {
           body: Stack(
             children: [
               SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 16.0,
-                    right: 16.0,
-                    bottom: 48.0,
-                    left: 16.0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      model.isLoading
-                          ? SizedBox()
-                          : model.isMyRecipe
-                              ? model.isPublic
-                                  ? Container(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(4.0),
-                                            color: Color(0xFFF39800),
-                                            child: Text(
-                                              'わたしのレシピ',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    // 右スワイプ
+                    if (details.delta.dx > 20) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Container(
+                    color: Colors.transparent,
+                    padding: const EdgeInsets.only(
+                      top: 16.0,
+                      right: 16.0,
+                      bottom: 48.0,
+                      left: 16.0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        model.isLoading
+                            ? SizedBox()
+                            : model.isMyRecipe
+                                ? model.isPublic
+                                    ? Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.all(4.0),
+                                              color: Color(0xFFF39800),
+                                              child: Text(
+                                                'わたしのレシピ',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          SizedBox(
-                                            width: 8,
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.all(4.0),
-                                            color: Color(0xFFF39800),
-                                            child: Text(
-                                              '公開中',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
+                                            SizedBox(
+                                              width: 8,
+                                            ),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.all(4.0),
+                                              color: Color(0xFFF39800),
+                                              child: Text(
+                                                '公開中',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  : Container(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(4.0),
-                                            color: Color(0xFFF39800),
-                                            child: Text(
-                                              'わたしのレシピ',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
+                                          ],
+                                        ),
+                                      )
+                                    : Container(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.all(4.0),
+                                              color: Color(0xFFF39800),
+                                              child: Text(
+                                                'わたしのレシピ',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          SizedBox(
-                                            width: 8,
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.all(4.0),
-                                            color: Colors.grey,
-                                            child: Text(
-                                              '非公開',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
+                                            SizedBox(
+                                              width: 8,
+                                            ),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.all(4.0),
+                                              color: Colors.grey,
+                                              child: Text(
+                                                '非公開',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                              : Container(
-                                  alignment: Alignment.topLeft,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4.0),
-                                    color: Colors.grey,
-                                    child: Text(
-                                      'みんなのレシピ',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                      SizedBox(
-                        height: 16,
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'レシピ名',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
-                          Text('${model.name}'),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 16,
-                      ),
-                      Center(
-                        child: SizedBox(
-                          width: 200,
-                          height: 150,
-                          child: model.isLoading
-                              ? Container(
-                                  color: Color(0xFFDADADA),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
+                                          ],
+                                        ),
+                                      )
+                                : Container(
+                                    alignment: Alignment.topLeft,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4.0),
+                                      color: Colors.grey,
                                       child: Text(
-                                        'Loading...',
+                                        'みんなのレシピ',
                                         style: TextStyle(
-                                          fontSize: 12.0,
+                                          color: Colors.white,
+                                          fontSize: 12,
                                         ),
                                       ),
                                     ),
                                   ),
-                                )
-                              : '${model.imageURL}' == ''
-                                  ? Container(
-                                      color: Color(0xFFDADADA),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            'No photo',
-                                            style: TextStyle(
-                                              fontSize: 12.0,
-                                            ),
+                        SizedBox(
+                          height: 16,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'レシピ名',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.left,
+                            ),
+                            Text('${model.name}'),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 16,
+                        ),
+                        Center(
+                          child: SizedBox(
+                            width: 200,
+                            height: 150,
+                            child: model.isLoading
+                                ? Container(
+                                    color: Color(0xFFDADADA),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'Loading...',
+                                          style: TextStyle(
+                                            fontSize: 12.0,
                                           ),
                                         ),
                                       ),
-                                    )
-                                  : CachedNetworkImage(
-                                      imageUrl: '${model.imageURL}',
-                                      placeholder: (context, url) => Container(
+                                    ),
+                                  )
+                                : '${model.imageURL}' == ''
+                                    ? Container(
                                         color: Color(0xFFDADADA),
                                         child: Center(
                                           child: Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(
-                                              'Loading...',
+                                              'No photo',
                                               style: TextStyle(
                                                 fontSize: 12.0,
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      errorWidget: (context, url, error) =>
-                                          //Icon(Icons.error),
-                                          Container(
-                                        color: Color(0xFFDADADA),
-                                        child: Center(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Icon(Icons.error_outline),
+                                      )
+                                    : CachedNetworkImage(
+                                        imageUrl: '${model.imageURL}',
+                                        placeholder: (context, url) =>
+                                            Container(
+                                          color: Color(0xFFDADADA),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                'Loading...',
+                                                style: TextStyle(
+                                                  fontSize: 12.0,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            //Icon(Icons.error),
+                                            Container(
+                                          color: Color(0xFFDADADA),
+                                          child: Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Icon(Icons.error_outline),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 16,
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '作り方・材料',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                            textAlign: TextAlign.left,
                           ),
-                          Text('${model.content}'),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 16,
-                      ),
-                      model.reference == ''
-                          ? SizedBox()
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '参考にしたレシピ',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                  textAlign: TextAlign.left,
-                                ),
-                                Text('${model.reference}'),
-                              ],
+                        ),
+                        SizedBox(
+                          height: 16,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '作り方・材料',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.left,
                             ),
-                    ],
+                            Text('${model.content}'),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 16,
+                        ),
+                        model.reference == ''
+                            ? SizedBox()
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '参考にしたレシピ',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                  Text('${model.reference}'),
+                                ],
+                              ),
+                      ],
+                    ),
                   ),
                 ),
               ),
