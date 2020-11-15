@@ -4,6 +4,7 @@ import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/presentation/recipe_add/recipe_add_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
+import 'package:vibrate/vibrate.dart';
 
 class RecipeAddPage extends StatelessWidget {
   final FocusNode _focusNodeContent = FocusNode();
@@ -480,6 +481,7 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
   try {
     await model.addRecipeToFirebase();
     model.endLoading();
+    Vibrate.feedback(FeedbackType.medium);
     await showDialog(
       context: context,
       barrierDismissible: false,

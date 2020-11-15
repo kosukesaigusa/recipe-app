@@ -6,6 +6,7 @@ import 'package:recipe/common/text_dialog.dart';
 import 'package:recipe/domain/recipe.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
+import 'package:vibrate/vibrate.dart';
 
 class RecipeEditPage extends StatelessWidget {
   RecipeEditPage(this.recipe);
@@ -710,6 +711,7 @@ Future updateRecipe(RecipeEditModel model, BuildContext context) async {
   try {
     await model.updateRecipe();
     model.endSubmitting();
+    Vibrate.feedback(FeedbackType.medium);
     await showDialog(
       context: context,
       builder: (BuildContext context) {
