@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/convert_weekday_name.dart';
 import 'package:recipe/common/will_pop_scope.dart';
 import 'package:recipe/presentation/my_account/my_account_page.dart';
 import 'package:recipe/presentation/recipe/recipe_page.dart';
@@ -140,12 +141,6 @@ class SearchPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                // Container(
-                                //   width: 30,
-                                //   height: 30,
-                                //   color: Colors.red,
-                                //   child: CircularProgressIndicator(),
-                                // ),
                                 Expanded(
                                   child:
                                       NotificationListener<ScrollNotification>(
@@ -560,7 +555,7 @@ class SearchPage extends StatelessWidget {
                             height: 16,
                             child: Text(
                               '${'${recipes[i].updatedAt.toDate()}'.substring(0, 10)} '
-                              '${_convertWeekdayName(recipes[i].updatedAt.toDate().weekday)}',
+                              '${convertWeekdayName(recipes[i].updatedAt.toDate().weekday)}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -699,27 +694,5 @@ class SearchPage extends StatelessWidget {
     return Column(
       children: list,
     );
-  }
-
-  // 1〜7の数値を入力して、日本語の曜日名を返す
-  String _convertWeekdayName(int weekday) {
-    switch (weekday) {
-      case 1:
-        return '(月)';
-      case 2:
-        return '(火)';
-      case 3:
-        return '(水)';
-      case 4:
-        return '(木)';
-      case 5:
-        return '(金)';
-      case 6:
-        return '(土)';
-      case 7:
-        return '(日)';
-      default:
-        return '';
-    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/convert_weekday_name.dart';
 import 'package:recipe/presentation/recipe/recipe_model.dart';
 import 'package:recipe/presentation/recipe_detail/recipe_detail_page.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_page.dart';
@@ -199,7 +200,18 @@ class RecipePage extends StatelessWidget {
                                     ),
                                   ),
                         SizedBox(
-                          height: 16,
+                          height: 8,
+                        ),
+                        model.isLoading
+                            ? SizedBox()
+                            : Text(
+                                '更新：'
+                                '${'${model.recipe.updatedAt.toDate()}'.substring(0, 10)} '
+                                '${convertWeekdayName(model.recipe.updatedAt.toDate().weekday)}'
+                                ' ${'${model.recipe.updatedAt.toDate()}'.substring(11, 16)} ',
+                              ),
+                        SizedBox(
+                          height: 8,
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
