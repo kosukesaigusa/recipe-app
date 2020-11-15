@@ -459,9 +459,15 @@ class SearchPage extends StatelessWidget {
                       ],
                     ),
                     floatingActionButton: FloatingActionButton(
-                      child: Icon(
-                        Icons.add,
-                        color: Colors.white,
+                      // child: Icon(
+                      //   Icons.add,
+                      //   color: Colors.white,
+                      // ),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        child: Image.asset(
+                            'lib/assets/floating_action_button_160.png'),
                       ),
                       onPressed: () async {
                         await Navigator.push(
