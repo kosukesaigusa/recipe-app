@@ -174,9 +174,13 @@ class SearchPage extends StatelessWidget {
                                         model.canReload = true;
                                       }
                                       if (_notification.metrics.pixels < -100) {
-                                        if (model.canReload &&
+                                        if (!model.myRecipeTab
+                                                .showFilteredRecipe &&
+                                            model.canReload &&
                                             !model.myRecipeTab.isLoading) {
                                           model.canReload = false;
+                                          model.myRecipeTab.showReloadWidget =
+                                              true;
                                           Vibrate.feedback(FeedbackType.medium);
                                           model.loadMyRecipes();
                                         }
@@ -189,6 +193,18 @@ class SearchPage extends StatelessWidget {
                                         /// わたしのレシピをFirestoreから取得
                                         Column(
                                           children: [
+                                            model.myRecipeTab.showReloadWidget
+                                                ? Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                      4.0,
+                                                    ),
+                                                    width: 30,
+                                                    height: 30,
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  )
+                                                : SizedBox(),
                                             model.myRecipeTab.showFilteredRecipe
                                                 ? _recipeCards(
                                                     model.myRecipeTab
@@ -254,7 +270,8 @@ class SearchPage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            model.myRecipeTab.isLoading
+                            model.myRecipeTab.isLoading &&
+                                    !model.myRecipeTab.showReloadWidget
                                 ? Container(
                                     child: Center(
                                       child: CircularProgressIndicator(),
@@ -365,9 +382,13 @@ class SearchPage extends StatelessWidget {
                                         model.canReload = true;
                                       }
                                       if (_notification.metrics.pixels < -100) {
-                                        if (model.canReload &&
-                                            !model.myRecipeTab.isLoading) {
+                                        if (!model.publicRecipeTab
+                                                .showFilteredRecipe &&
+                                            model.canReload &&
+                                            !model.publicRecipeTab.isLoading) {
                                           model.canReload = false;
+                                          model.publicRecipeTab
+                                              .showReloadWidget = true;
                                           Vibrate.feedback(FeedbackType.medium);
                                           model.loadPublicRecipes();
                                         }
@@ -379,6 +400,19 @@ class SearchPage extends StatelessWidget {
                                       children: [
                                         Column(
                                           children: [
+                                            model.publicRecipeTab
+                                                    .showReloadWidget
+                                                ? Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                      4.0,
+                                                    ),
+                                                    width: 30,
+                                                    height: 30,
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  )
+                                                : SizedBox(),
                                             model.publicRecipeTab
                                                     .showFilteredRecipe
                                                 ? _recipeCards(
@@ -447,7 +481,8 @@ class SearchPage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            model.publicRecipeTab.isLoading
+                            model.publicRecipeTab.isLoading &&
+                                    !model.publicRecipeTab.showReloadWidget
                                 ? Container(
                                     child: Center(
                                       child: CircularProgressIndicator(),
@@ -459,10 +494,6 @@ class SearchPage extends StatelessWidget {
                       ],
                     ),
                     floatingActionButton: FloatingActionButton(
-                      // child: Icon(
-                      //   Icons.add,
-                      //   color: Colors.white,
-                      // ),
                       child: Container(
                         width: 40,
                         height: 40,
@@ -528,7 +559,6 @@ class SearchPage extends StatelessWidget {
                     child: SizedBox(
                       width: size.width - 156,
                       height: 100,
-                      //height: ,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
