@@ -1,9 +1,72 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/presentation/recipe_add/recipe_add_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
 
 class RecipeAddPage extends StatelessWidget {
+  final FocusNode _focusNodeContent = FocusNode();
+  final FocusNode _focusNodeReference = FocusNode();
+
+  KeyboardActionsConfig _buildConfig(BuildContext context) {
+    return KeyboardActionsConfig(
+      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
+      keyboardBarColor: Colors.grey[200],
+      nextFocus: false,
+      actions: [
+        _keyboardActionItems(_focusNodeContent),
+        _keyboardActionItems(_focusNodeReference),
+      ],
+    );
+  }
+
+  _keyboardActionItems(_focusNode) {
+    return KeyboardActionsItem(
+      focusNode: _focusNode,
+      toolbarButtons: [
+        /// 「完了」ボタン
+        (node) {
+          return GestureDetector(
+            onTap: () {
+              _focusNode.unfocus();
+            },
+            child: Container(
+              color: Colors.transparent,
+              padding: EdgeInsets.only(left: 8.0, right: 16.0),
+              child: Text(
+                '完了',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontSize: 16.0,
+                ),
+              ),
+            ),
+          );
+        },
+      ],
+    );
+  }
+
+  Widget _customDoneButton(FocusNode _focusNode) {
+    return GestureDetector(
+      onTap: () {
+        _focusNode.unfocus();
+      },
+      child: Container(
+        color: Colors.transparent,
+        padding: EdgeInsets.only(left: 8.0, right: 16.0),
+        child: Text(
+          '完了',
+          style: TextStyle(
+            color: Colors.blue,
+            fontSize: 16.0,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<RecipeAddModel>(
@@ -75,291 +138,297 @@ class RecipeAddPage extends StatelessWidget {
             ),
             body: Stack(
               children: [
-                SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        top: 16.0, right: 16.0, bottom: 48.0, left: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '1. レシピ名',
+                KeyboardActions(
+                  config: _buildConfig(context),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          top: 16.0, right: 16.0, bottom: 48.0, left: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              TextSpan(
-                                text: '（必須）',
-                                style: TextStyle(
-                                  fontSize: 10.0,
-                                  fontWeight: FontWeight.normal,
+                              children: [
+                                TextSpan(
+                                  text: '1. レシピ名',
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        TextFormField(
-                          initialValue: model.recipeAdd.name,
-                          textInputAction: TextInputAction.done,
-                          onChanged: (text) {
-                            model.changeRecipeName(text);
-                          },
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            labelText: 'レシピ名',
-                            border: OutlineInputBorder(),
-                            errorText:
-                                model.errorName == '' ? null : model.errorName,
-                          ),
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            height: 1.0,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        Text(
-                          '2. 写真',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Container(
-                          alignment: Alignment.center,
-                          height: 150,
-                          child: InkWell(
-                            onTap: () {
-                              model.showImagePicker();
-                            },
-                            child: model.imageFile == null
-                                ? SizedBox(
-                                    width: 200,
-                                    height: 150,
-                                    child: Stack(
-                                      children: [
-                                        Container(
-                                          color: Color(0xFFDADADA),
-                                        ),
-                                        Center(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(Icons.add_photo_alternate),
-                                              SizedBox(
-                                                height: 8,
-                                              ),
-                                              Text(
-                                                'タップして画像を追加',
-                                                style: TextStyle(
-                                                  fontSize: 12.0,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : Image.file(
-                                    model.imageFile,
+                                TextSpan(
+                                  text: '（必須）',
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                    fontWeight: FontWeight.normal,
                                   ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        RichText(
-                          text: TextSpan(
+                          SizedBox(
+                            height: 8,
+                          ),
+                          TextFormField(
+                            initialValue: model.recipeAdd.name,
+                            textInputAction: TextInputAction.done,
+                            onChanged: (text) {
+                              model.changeRecipeName(text);
+                            },
+                            maxLines: 1,
+                            decoration: InputDecoration(
+                              labelText: 'レシピ名',
+                              border: OutlineInputBorder(),
+                              errorText: model.errorName == ''
+                                  ? null
+                                  : model.errorName,
+                            ),
                             style: TextStyle(
-                              color: Colors.black,
+                              fontSize: 14.0,
+                              height: 1.0,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(
+                            '2. 写真',
+                            style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
                             ),
-                            children: [
-                              TextSpan(
-                                text: '3. 作り方・材料',
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            height: 150,
+                            child: InkWell(
+                              onTap: () {
+                                model.showImagePicker();
+                              },
+                              child: model.imageFile == null
+                                  ? SizedBox(
+                                      width: 200,
+                                      height: 150,
+                                      child: Stack(
+                                        children: [
+                                          Container(
+                                            color: Color(0xFFDADADA),
+                                          ),
+                                          Center(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.add_photo_alternate),
+                                                SizedBox(
+                                                  height: 8,
+                                                ),
+                                                Text(
+                                                  'タップして画像を追加',
+                                                  style: TextStyle(
+                                                    fontSize: 12.0,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : Image.file(
+                                      model.imageFile,
+                                    ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
                               ),
-                              TextSpan(
-                                text: '（必須）',
-                                style: TextStyle(
-                                  fontSize: 10.0,
-                                  fontWeight: FontWeight.normal,
+                              children: [
+                                TextSpan(
+                                  text: '3. 作り方・材料',
+                                ),
+                                TextSpan(
+                                  text: '（必須）',
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          TextFormField(
+                            focusNode: this._focusNodeContent,
+                            keyboardType: TextInputType.multiline,
+                            initialValue: model.recipeAdd.content,
+                            onChanged: (text) {
+                              model.changeRecipeContent(text);
+                            },
+                            minLines: 12,
+                            maxLines: null,
+                            decoration: InputDecoration(
+                              labelText: 'レシピの内容（作り方・材料）',
+                              alignLabelWithHint: true,
+                              border: OutlineInputBorder(),
+                              errorText: model.errorContent == ''
+                                  ? null
+                                  : model.errorContent,
+                            ),
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              height: 1.4,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(
+                            '4. 参考にしたレシピ',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          TextFormField(
+                            focusNode: this._focusNodeReference,
+                            keyboardType: TextInputType.multiline,
+                            initialValue: model.recipeAdd.reference,
+                            onChanged: (text) {
+                              model.changeRecipeReference(text);
+                            },
+                            minLines: 1,
+                            maxLines: null,
+                            decoration: InputDecoration(
+                              labelText: '参考にしたレシピのURLや書籍名を記入',
+                              alignLabelWithHint: true,
+                              border: OutlineInputBorder(),
+                            ),
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              height: 1.0,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(
+                            '5. 投稿',
+                            style: TextStyle(
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Checkbox(
+                                activeColor: Color(0xFFF39800),
+                                checkColor: Colors.white,
+                                onChanged: (val) {
+                                  model.tapPublishCheckbox(val);
+                                },
+                                value: model.willPublish,
+                              ),
+                              Flexible(
+                                child: Text(
+                                  'みんなのレシピにも公開',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        TextFormField(
-                          textInputAction: TextInputAction.done,
-                          initialValue: model.recipeAdd.content,
-                          onChanged: (text) {
-                            model.changeRecipeContent(text);
-                          },
-                          minLines: 12,
-                          maxLines: 20,
-                          decoration: InputDecoration(
-                            labelText: 'レシピの内容（作り方・材料）',
-                            alignLabelWithHint: true,
-                            border: OutlineInputBorder(),
-                            errorText: model.errorContent == ''
-                                ? null
-                                : model.errorContent,
-                          ),
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            height: 1.4,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        Text(
-                          '4. 参考にしたレシピ',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        TextFormField(
-                          textInputAction: TextInputAction.done,
-                          initialValue: model.recipeAdd.reference,
-                          onChanged: (text) {
-                            model.changeRecipeReference(text);
-                          },
-                          minLines: 3,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            labelText: '参考にしたレシピのURLや書籍名を記入',
-                            alignLabelWithHint: true,
-                            border: OutlineInputBorder(),
-                          ),
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            height: 1.0,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        Text(
-                          '5. 投稿',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              activeColor: Color(0xFFF39800),
-                              checkColor: Colors.white,
-                              onChanged: (val) {
-                                model.tapPublishCheckbox(val);
-                              },
-                              value: model.willPublish,
-                            ),
-                            Flexible(
-                              child: Text(
-                                'みんなのレシピにも公開',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        model.willPublish
-                            ? Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Checkbox(
-                                    activeColor: Color(0xFFF39800),
-                                    checkColor: Colors.white,
-                                    onChanged: (val) {
-                                      model.tapAgreeCheckBox(val);
-                                    },
-                                    value: model.agreed,
-                                  ),
-                                  Flexible(
-                                    child: RichText(
-                                      text: TextSpan(
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 12.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        children: [
-                                          TextSpan(text: '公開するレシピの'),
-                                          TextSpan(
-                                            text: 'ガイドライン',
-                                            style: TextStyle(
-                                              decoration:
-                                                  TextDecoration.underline,
-                                            ),
+                          model.willPublish
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Checkbox(
+                                      activeColor: Color(0xFFF39800),
+                                      checkColor: Colors.white,
+                                      onChanged: (val) {
+                                        model.tapAgreeCheckBox(val);
+                                      },
+                                      value: model.agreed,
+                                    ),
+                                    Flexible(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 12.0,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          TextSpan(text: 'を読んで同意しました。'),
-                                        ],
+                                          children: [
+                                            TextSpan(text: '公開するレシピの'),
+                                            TextSpan(
+                                              text: 'ガイドライン',
+                                              style: TextStyle(
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                            ),
+                                            TextSpan(text: 'を読んで同意しました。'),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              )
-                            : SizedBox(),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        Center(
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: RaisedButton(
-                              child: Text(
-                                'レシピを保存する',
+                                  ],
+                                )
+                              : SizedBox(),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Center(
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: RaisedButton(
+                                child: Text(
+                                  'レシピを保存する',
+                                ),
+                                color: Color(0xFFF39800),
+                                textColor: Colors.white,
+                                onPressed: model.isNameValid &&
+                                        model.isContentValid &&
+                                        model.isReferenceValid
+                                    ? model.willPublish
+                                        ? model.agreed
+                                            ? () async {
+                                                model.recipeAdd.isPublic = true;
+                                                await addRecipe(model, context);
+                                              }
+                                            : null
+                                        : () async {
+                                            model.recipeAdd.isPublic = false;
+                                            await addRecipe(model, context);
+                                          }
+                                    : null,
                               ),
-                              color: Color(0xFFF39800),
-                              textColor: Colors.white,
-                              onPressed: model.isNameValid &&
-                                      model.isContentValid &&
-                                      model.isReferenceValid
-                                  ? model.willPublish
-                                      ? model.agreed
-                                          ? () async {
-                                              model.recipeAdd.isPublic = true;
-                                              await addRecipe(model, context);
-                                            }
-                                          : null
-                                      : () async {
-                                          model.recipeAdd.isPublic = false;
-                                          await addRecipe(model, context);
-                                        }
-                                  : null,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/common/text_dialog.dart';
 import 'package:recipe/domain/recipe.dart';
@@ -9,6 +10,48 @@ import 'package:recipe/presentation/top/top_page.dart';
 class RecipeEditPage extends StatelessWidget {
   RecipeEditPage(this.recipe);
   final Recipe recipe;
+
+  final FocusNode _focusNodeContent = FocusNode();
+  final FocusNode _focusNodeReference = FocusNode();
+
+  KeyboardActionsConfig _buildConfig(BuildContext context) {
+    return KeyboardActionsConfig(
+      keyboardActionsPlatform: KeyboardActionsPlatform.ALL,
+      keyboardBarColor: Colors.grey[200],
+      nextFocus: false,
+      actions: [
+        _keyboardActionItems(_focusNodeContent),
+        _keyboardActionItems(_focusNodeReference),
+      ],
+    );
+  }
+
+  _keyboardActionItems(_focusNode) {
+    return KeyboardActionsItem(
+      focusNode: _focusNode,
+      toolbarButtons: [
+        /// 「完了」ボタン
+        (node) {
+          return GestureDetector(
+            onTap: () {
+              _focusNode.unfocus();
+            },
+            child: Container(
+              color: Colors.transparent,
+              padding: EdgeInsets.only(left: 8.0, right: 16.0),
+              child: Text(
+                '完了',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontSize: 16.0,
+                ),
+              ),
+            ),
+          );
+        },
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,524 +124,533 @@ class RecipeEditPage extends StatelessWidget {
             ),
             body: Stack(
               children: [
-                SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      top: 16.0,
-                      right: 16.0,
-                      bottom: 48.0,
-                      left: 16.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        model.currentRecipe.isPublic
-                            ? Container(
-                                alignment: Alignment.topLeft,
-                                child: Container(
+                KeyboardActions(
+                  config: _buildConfig(context),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: 16.0,
+                        right: 16.0,
+                        bottom: 48.0,
+                        left: 16.0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          model.currentRecipe.isPublic
+                              ? Container(
+                                  alignment: Alignment.topLeft,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4.0),
+                                    color: Color(0xFFF39800),
+                                    child: Text(
+                                      '公開中',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Container(
                                   padding: const EdgeInsets.all(4.0),
-                                  color: Color(0xFFF39800),
+                                  color: Colors.grey,
                                   child: Text(
-                                    '公開中',
+                                    '非公開',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 12,
                                     ),
                                   ),
                                 ),
-                              )
-                            : Container(
-                                padding: const EdgeInsets.all(4.0),
-                                color: Colors.grey,
-                                child: Text(
-                                  '非公開',
+                          SizedBox(
+                            height: 16,
+                          ),
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '1. レシピ名',
+                                ),
+                                TextSpan(
+                                  text: '（必須）',
                                   style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
+                                    fontSize: 10.0,
+                                    fontWeight: FontWeight.normal,
                                   ),
                                 ),
-                              ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
+                              ],
                             ),
-                            children: [
-                              TextSpan(
-                                text: '1. レシピ名',
-                              ),
-                              TextSpan(
-                                text: '（必須）',
-                                style: TextStyle(
-                                  fontSize: 10.0,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                            ],
                           ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        TextFormField(
-                          initialValue: model.editedRecipe.name,
-                          textInputAction: TextInputAction.done,
-                          onChanged: (text) {
-                            model.changeRecipeName(text);
-                          },
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            labelText: 'レシピ名',
-                            border: OutlineInputBorder(),
-                            errorText:
-                                model.errorName == '' ? null : model.errorName,
+                          SizedBox(
+                            height: 8,
                           ),
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            height: 1.0,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '2. 写真',
-                              ),
-                              TextSpan(
-                                text: '（タップして変更可能）',
-                                style: TextStyle(
-                                  fontSize: 10.0,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        Container(
-                          alignment: Alignment.center,
-                          height: 150,
-                          child: InkWell(
-                            onTap: () async {
-                              await model.showImagePicker();
+                          TextFormField(
+                            initialValue: model.editedRecipe.name,
+                            textInputAction: TextInputAction.done,
+                            onChanged: (text) {
+                              model.changeRecipeName(text);
                             },
-                            child: SizedBox(
-                              width: 200,
-                              height: 150,
-                              child: model.isLoading
-                                  ? Container(
-                                      color: Color(0xFFDADADA),
-                                      child: Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            'Loading...',
-                                            style: TextStyle(
-                                              fontSize: 12.0,
+                            maxLines: 1,
+                            decoration: InputDecoration(
+                              labelText: 'レシピ名',
+                              border: OutlineInputBorder(),
+                              errorText: model.errorName == ''
+                                  ? null
+                                  : model.errorName,
+                            ),
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              height: 1.0,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '2. 写真',
+                                ),
+                                TextSpan(
+                                  text: '（タップして変更可能）',
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            height: 150,
+                            child: InkWell(
+                              onTap: () async {
+                                await model.showImagePicker();
+                              },
+                              child: SizedBox(
+                                width: 200,
+                                height: 150,
+                                child: model.isLoading
+                                    ? Container(
+                                        color: Color(0xFFDADADA),
+                                        child: Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Loading...',
+                                              style: TextStyle(
+                                                fontSize: 12.0,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    )
-                                  : model?.imageFile == null
-                                      ? model.currentRecipe.imageURL == null ||
-                                              model.currentRecipe.imageURL
-                                                  .isEmpty
-                                          ? SizedBox(
-                                              width: 200,
-                                              height: 150,
-                                              child: Stack(
-                                                children: [
-                                                  Container(
-                                                    color: Color(0xFFDADADA),
-                                                  ),
-                                                  Center(
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Icon(
-                                                          Icons
-                                                              .add_photo_alternate,
-                                                        ),
-                                                        SizedBox(
-                                                          height: 8,
-                                                        ),
-                                                        Text(
-                                                          'タップして画像を追加',
-                                                          style: TextStyle(
-                                                            fontSize: 12.0,
-                                                          ),
-                                                        ),
-                                                      ],
+                                      )
+                                    : model?.imageFile == null
+                                        ? model.currentRecipe.imageURL ==
+                                                    null ||
+                                                model.currentRecipe.imageURL
+                                                    .isEmpty
+                                            ? SizedBox(
+                                                width: 200,
+                                                height: 150,
+                                                child: Stack(
+                                                  children: [
+                                                    Container(
+                                                      color: Color(0xFFDADADA),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                            )
-                                          : CachedNetworkImage(
-                                              imageUrl:
-                                                  '${model.currentRecipe.imageURL}',
-                                              placeholder: (context, url) =>
-                                                  Container(
-                                                color: Color(0xFFDADADA),
-                                                child: Center(
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Text(
-                                                      'Loading...',
-                                                      style: TextStyle(
-                                                        fontSize: 12.0,
+                                                    Center(
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          Icon(
+                                                            Icons
+                                                                .add_photo_alternate,
+                                                          ),
+                                                          SizedBox(
+                                                            height: 8,
+                                                          ),
+                                                          Text(
+                                                            'タップして画像を追加',
+                                                            style: TextStyle(
+                                                              fontSize: 12.0,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            : CachedNetworkImage(
+                                                imageUrl:
+                                                    '${model.currentRecipe.imageURL}',
+                                                placeholder: (context, url) =>
+                                                    Container(
+                                                  color: Color(0xFFDADADA),
+                                                  child: Center(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Text(
+                                                        'Loading...',
+                                                        style: TextStyle(
+                                                          fontSize: 12.0,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                      //Icon(Icons.error),
-                                                      Container(
-                                                color: Color(0xFFDADADA),
-                                                child: Center(
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                      8.0,
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.error_outline,
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        //Icon(Icons.error),
+                                                        Container(
+                                                  color: Color(0xFFDADADA),
+                                                  child: Center(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                        8.0,
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.error_outline,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            )
-                                      : Image.file(
-                                          model?.imageFile,
-                                        ),
+                                              )
+                                        : Image.file(
+                                            model?.imageFile,
+                                          ),
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        RichText(
-                          text: TextSpan(
+                          SizedBox(
+                            height: 16,
+                          ),
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              children: [
+                                TextSpan(text: '3. 作り方・材料'),
+                                TextSpan(
+                                  text: '（必須）',
+                                  style: TextStyle(
+                                    fontSize: 10.0,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          TextFormField(
+                            focusNode: this._focusNodeContent,
+                            keyboardType: TextInputType.multiline,
+                            initialValue: model.editedRecipe.content,
+                            onChanged: (text) {
+                              model.changeRecipeContent(text);
+                            },
+                            minLines: 12,
+                            maxLines: null,
+                            decoration: InputDecoration(
+                              labelText: 'レシピの内容（作り方・材料）',
+                              alignLabelWithHint: true,
+                              border: OutlineInputBorder(),
+                              errorText: model.errorContent == ''
+                                  ? null
+                                  : model.errorContent,
+                            ),
                             style: TextStyle(
-                              color: Colors.black,
+                              fontSize: 14.0,
+                              height: 1.4,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          Text(
+                            '4. 参考にしたレシピ',
+                            style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
                             ),
-                            children: [
-                              TextSpan(text: '3. 作り方・材料'),
-                              TextSpan(
-                                text: '（必須）',
-                                style: TextStyle(
-                                  fontSize: 10.0,
-                                  fontWeight: FontWeight.normal,
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          TextFormField(
+                            focusNode: this._focusNodeReference,
+                            keyboardType: TextInputType.multiline,
+                            initialValue: model.editedRecipe.reference,
+                            onChanged: (text) {
+                              model.changeRecipeReference(text);
+                            },
+                            minLines: 1,
+                            maxLines: null,
+                            decoration: InputDecoration(
+                              labelText: '参考にしたレシピのURLや書籍名を記入',
+                              alignLabelWithHint: true,
+                              border: OutlineInputBorder(),
+                            ),
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              height: 1.0,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          model.currentRecipe.isPublic
+
+                              /// 元々公開されていたレシピの場合
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '5. 確認',
+                                      style: TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Checkbox(
+                                          activeColor: Color(0xFFF39800),
+                                          checkColor: Colors.white,
+                                          value: model.agreed,
+                                          onChanged: (val) {
+                                            model.tapAgreeCheckBox(val);
+                                          },
+                                        ),
+                                        Flexible(
+                                          child: RichText(
+                                            text: TextSpan(
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 12.0,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: '公開するレシピの',
+                                                ),
+                                                TextSpan(
+                                                  text: 'ガイドライン',
+                                                  style: TextStyle(
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: 'を読んで同意しました。',
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                )
+
+                              /// 元々公開されていなかったレシピの場合
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '5. 公開',
+                                      style: TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Checkbox(
+                                          activeColor: Color(0xFFF39800),
+                                          checkColor: Colors.white,
+                                          value: model.agreed,
+                                          onChanged: (val) {
+                                            model.tapAgreeCheckBox(val);
+                                          },
+                                        ),
+                                        Flexible(
+                                          child: RichText(
+                                            text: TextSpan(
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 12.0,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: '公開するレシピの',
+                                                ),
+                                                TextSpan(
+                                                  text: 'ガイドライン',
+                                                  style: TextStyle(
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: 'を読んで同意しました。',
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        TextFormField(
-                          textInputAction: TextInputAction.done,
-                          initialValue: model.editedRecipe.content,
-                          onChanged: (text) {
-                            model.changeRecipeContent(text);
-                          },
-                          minLines: 12,
-                          maxLines: 20,
-                          decoration: InputDecoration(
-                            labelText: 'レシピの内容（作り方・材料）',
-                            alignLabelWithHint: true,
-                            border: OutlineInputBorder(),
-                            errorText: model.errorContent == ''
-                                ? null
-                                : model.errorContent,
-                          ),
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            height: 1.4,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        Text(
-                          '4. 参考にしたレシピ',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 8,
-                        ),
-                        TextFormField(
-                          textInputAction: TextInputAction.done,
-                          initialValue: model.editedRecipe.reference,
-                          onChanged: (text) {
-                            model.changeRecipeReference(text);
-                          },
-                          minLines: 3,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            labelText: '参考にしたレシピのURLや書籍名を記入',
-                            alignLabelWithHint: true,
-                            border: OutlineInputBorder(),
-                          ),
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            height: 1.0,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        model.currentRecipe.isPublic
 
-                            /// 元々公開されていたレシピの場合
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '5. 確認',
-                                    style: TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Checkbox(
-                                        activeColor: Color(0xFFF39800),
-                                        checkColor: Colors.white,
-                                        value: model.agreed,
-                                        onChanged: (val) {
-                                          model.tapAgreeCheckBox(val);
-                                        },
-                                      ),
-                                      Flexible(
-                                        child: RichText(
-                                          text: TextSpan(
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 12.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                text: '公開するレシピの',
-                                              ),
-                                              TextSpan(
-                                                text: 'ガイドライン',
-                                                style: TextStyle(
-                                                  decoration:
-                                                      TextDecoration.underline,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: 'を読んで同意しました。',
-                                              ),
-                                            ],
-                                          ),
+                          SizedBox(
+                            height: 16.0,
+                          ),
+
+                          /// 元々公開されていたレシピの場合
+                          model.currentRecipe.isPublic
+                              ? Column(
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: RaisedButton(
+                                        child: Text(
+                                          'レシピを更新する',
                                         ),
+                                        color: Color(0xFFF39800),
+                                        textColor: Colors.white,
+                                        onPressed: model.isEdited &&
+                                                model.agreed &&
+                                                model.isNameValid &&
+                                                model.isContentValid &&
+                                                model.isReferenceValid
+                                            ? () async {
+                                                /// 公開で更新
+                                                model.editedRecipe.isPublic =
+                                                    true;
+                                                await updateRecipe(
+                                                    model, context);
+                                              }
+                                            : null,
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              )
-
-                            /// 元々公開されていなかったレシピの場合
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '5. 公開',
-                                    style: TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Checkbox(
-                                        activeColor: Color(0xFFF39800),
-                                        checkColor: Colors.white,
-                                        value: model.agreed,
-                                        onChanged: (val) {
-                                          model.tapAgreeCheckBox(val);
-                                        },
-                                      ),
-                                      Flexible(
-                                        child: RichText(
-                                          text: TextSpan(
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 12.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                text: '公開するレシピの',
-                                              ),
-                                              TextSpan(
-                                                text: 'ガイドライン',
-                                                style: TextStyle(
-                                                  decoration:
-                                                      TextDecoration.underline,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: 'を読んで同意しました。',
-                                              ),
-                                            ],
-                                          ),
+                                    SizedBox(
+                                      height: 16.0,
+                                    ),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: RaisedButton(
+                                        child: Text(
+                                          '公開を取り下げて更新する',
                                         ),
+                                        color: Colors.grey,
+                                        textColor: Colors.white,
+                                        onPressed: model.isNameValid &&
+                                                model.isContentValid &&
+                                                model.isReferenceValid
+                                            ? () async {
+                                                /// 非公開で更新
+                                                model.editedRecipe.isPublic =
+                                                    false;
+                                                await updateRecipe(
+                                                    model, context);
+                                              }
+                                            : null,
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                    ),
+                                  ],
+                                )
 
-                        SizedBox(
-                          height: 16.0,
-                        ),
-
-                        /// 元々公開されていたレシピの場合
-                        model.currentRecipe.isPublic
-                            ? Column(
-                                children: [
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: RaisedButton(
-                                      child: Text(
-                                        'レシピを更新する',
+                              /// 元々公開されていなかったレシピの場合
+                              : Column(
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: RaisedButton(
+                                        child: Text(
+                                          'みんなのレシピに公開する',
+                                        ),
+                                        color: Color(0xFFF39800),
+                                        textColor: Colors.white,
+                                        onPressed: model.agreed &&
+                                                model.isNameValid &&
+                                                model.isContentValid &&
+                                                model.isReferenceValid
+                                            ? () async {
+                                                /// 公開で更新
+                                                model.editedRecipe.isPublic =
+                                                    true;
+                                                await updateRecipe(
+                                                    model, context);
+                                              }
+                                            : null,
                                       ),
-                                      color: Color(0xFFF39800),
-                                      textColor: Colors.white,
-                                      onPressed: model.isEdited &&
-                                              model.agreed &&
-                                              model.isNameValid &&
-                                              model.isContentValid &&
-                                              model.isReferenceValid
-                                          ? () async {
-                                              /// 公開で更新
-                                              model.editedRecipe.isPublic =
-                                                  true;
-                                              await updateRecipe(
-                                                  model, context);
-                                            }
-                                          : null,
                                     ),
-                                  ),
-                                  SizedBox(
-                                    height: 16.0,
-                                  ),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: RaisedButton(
-                                      child: Text(
-                                        '公開を取り下げて更新する',
+                                    SizedBox(
+                                      height: 16.0,
+                                    ),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 50,
+                                      child: RaisedButton(
+                                        child: Text(
+                                          'レシピを更新する',
+                                        ),
+                                        color: Colors.grey,
+                                        textColor: Colors.white,
+                                        onPressed: model.isEdited &&
+                                                model.isNameValid &&
+                                                model.isContentValid &&
+                                                model.isReferenceValid
+                                            ? () async {
+                                                /// 非公開で更新
+                                                model.editedRecipe.isPublic =
+                                                    false;
+                                                await updateRecipe(
+                                                    model, context);
+                                              }
+                                            : null,
                                       ),
-                                      color: Colors.grey,
-                                      textColor: Colors.white,
-                                      onPressed: model.isNameValid &&
-                                              model.isContentValid &&
-                                              model.isReferenceValid
-                                          ? () async {
-                                              /// 非公開で更新
-                                              model.editedRecipe.isPublic =
-                                                  false;
-                                              await updateRecipe(
-                                                  model, context);
-                                            }
-                                          : null,
                                     ),
-                                  ),
-                                ],
-                              )
-
-                            /// 元々公開されていなかったレシピの場合
-                            : Column(
-                                children: [
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: RaisedButton(
-                                      child: Text(
-                                        'みんなのレシピに公開する',
-                                      ),
-                                      color: Color(0xFFF39800),
-                                      textColor: Colors.white,
-                                      onPressed: model.agreed &&
-                                              model.isNameValid &&
-                                              model.isContentValid &&
-                                              model.isReferenceValid
-                                          ? () async {
-                                              /// 公開で更新
-                                              model.editedRecipe.isPublic =
-                                                  true;
-                                              await updateRecipe(
-                                                  model, context);
-                                            }
-                                          : null,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 16.0,
-                                  ),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: RaisedButton(
-                                      child: Text(
-                                        'レシピを更新する',
-                                      ),
-                                      color: Colors.grey,
-                                      textColor: Colors.white,
-                                      onPressed: model.isEdited &&
-                                              model.isNameValid &&
-                                              model.isContentValid &&
-                                              model.isReferenceValid
-                                          ? () async {
-                                              /// 非公開で更新
-                                              model.editedRecipe.isPublic =
-                                                  false;
-                                              await updateRecipe(
-                                                  model, context);
-                                            }
-                                          : null,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ],
+                                  ],
+                                ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
