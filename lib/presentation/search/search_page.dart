@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/convert_weekday_name.dart';
 import 'package:recipe/common/will_pop_scope.dart';
 import 'package:recipe/presentation/my_account/my_account_page.dart';
 import 'package:recipe/presentation/recipe/recipe_page.dart';
@@ -108,11 +109,12 @@ class SearchPage extends StatelessWidget {
                                     },
                                     maxLines: 1,
                                     decoration: InputDecoration(
+                                      prefixIcon: Icon(Icons.search),
                                       errorText:
                                           model.myRecipeTab.errorText == ''
                                               ? null
                                               : model.myRecipeTab.errorText,
-                                      labelText: 'レシピ名 や 材料名 で検索',
+                                      labelText: 'レシピ名・材料名（スペース区切りの複数単語可）',
                                       border: OutlineInputBorder(),
                                       suffixIcon: model.myRecipeTab
                                               .textController.text.isEmpty
@@ -139,12 +141,6 @@ class SearchPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                // Container(
-                                //   width: 30,
-                                //   height: 30,
-                                //   color: Colors.red,
-                                //   child: CircularProgressIndicator(),
-                                // ),
                                 Expanded(
                                   child:
                                       NotificationListener<ScrollNotification>(
@@ -178,9 +174,13 @@ class SearchPage extends StatelessWidget {
                                         model.canReload = true;
                                       }
                                       if (_notification.metrics.pixels < -100) {
-                                        if (model.canReload &&
+                                        if (!model.myRecipeTab
+                                                .showFilteredRecipe &&
+                                            model.canReload &&
                                             !model.myRecipeTab.isLoading) {
                                           model.canReload = false;
+                                          model.myRecipeTab.showReloadWidget =
+                                              true;
                                           Vibrate.feedback(FeedbackType.medium);
                                           model.loadMyRecipes();
                                         }
@@ -193,6 +193,18 @@ class SearchPage extends StatelessWidget {
                                         /// わたしのレシピをFirestoreから取得
                                         Column(
                                           children: [
+                                            model.myRecipeTab.showReloadWidget
+                                                ? Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                      4.0,
+                                                    ),
+                                                    width: 30,
+                                                    height: 30,
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  )
+                                                : SizedBox(),
                                             model.myRecipeTab.showFilteredRecipe
                                                 ? _recipeCards(
                                                     model.myRecipeTab
@@ -258,7 +270,8 @@ class SearchPage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            model.myRecipeTab.isLoading
+                            model.myRecipeTab.isLoading &&
+                                    !model.myRecipeTab.showReloadWidget
                                 ? Container(
                                     child: Center(
                                       child: CircularProgressIndicator(),
@@ -299,11 +312,12 @@ class SearchPage extends StatelessWidget {
                                     },
                                     maxLines: 1,
                                     decoration: InputDecoration(
+                                      prefixIcon: Icon(Icons.search),
                                       errorText:
                                           model.publicRecipeTab.errorText == ''
                                               ? null
                                               : model.publicRecipeTab.errorText,
-                                      labelText: 'レシピ名 や 材料名 で検索',
+                                      labelText: 'レシピ名・材料名（スペース区切りの複数単語可）',
                                       border: OutlineInputBorder(),
                                       suffixIcon: model.publicRecipeTab
                                               .textController.text.isEmpty
@@ -368,9 +382,13 @@ class SearchPage extends StatelessWidget {
                                         model.canReload = true;
                                       }
                                       if (_notification.metrics.pixels < -100) {
-                                        if (model.canReload &&
-                                            !model.myRecipeTab.isLoading) {
+                                        if (!model.publicRecipeTab
+                                                .showFilteredRecipe &&
+                                            model.canReload &&
+                                            !model.publicRecipeTab.isLoading) {
                                           model.canReload = false;
+                                          model.publicRecipeTab
+                                              .showReloadWidget = true;
                                           Vibrate.feedback(FeedbackType.medium);
                                           model.loadPublicRecipes();
                                         }
@@ -382,6 +400,19 @@ class SearchPage extends StatelessWidget {
                                       children: [
                                         Column(
                                           children: [
+                                            model.publicRecipeTab
+                                                    .showReloadWidget
+                                                ? Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                      4.0,
+                                                    ),
+                                                    width: 30,
+                                                    height: 30,
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  )
+                                                : SizedBox(),
                                             model.publicRecipeTab
                                                     .showFilteredRecipe
                                                 ? _recipeCards(
@@ -450,7 +481,8 @@ class SearchPage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            model.publicRecipeTab.isLoading
+                            model.publicRecipeTab.isLoading &&
+                                    !model.publicRecipeTab.showReloadWidget
                                 ? Container(
                                     child: Center(
                                       child: CircularProgressIndicator(),
@@ -462,9 +494,11 @@ class SearchPage extends StatelessWidget {
                       ],
                     ),
                     floatingActionButton: FloatingActionButton(
-                      child: Icon(
-                        Icons.add,
-                        color: Colors.white,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        child: Image.asset(
+                            'lib/assets/floating_action_button_160.png'),
                       ),
                       onPressed: () async {
                         await Navigator.push(
@@ -525,7 +559,6 @@ class SearchPage extends StatelessWidget {
                     child: SizedBox(
                       width: size.width - 156,
                       height: 100,
-                      //height: ,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -558,7 +591,7 @@ class SearchPage extends StatelessWidget {
                             height: 16,
                             child: Text(
                               '${'${recipes[i].updatedAt.toDate()}'.substring(0, 10)} '
-                              '${_convertWeekdayName(recipes[i].updatedAt.toDate().weekday)}',
+                              '${convertWeekdayName(recipes[i].updatedAt.toDate().weekday)}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -697,27 +730,5 @@ class SearchPage extends StatelessWidget {
     return Column(
       children: list,
     );
-  }
-
-  // 1〜7の数値を入力して、日本語の曜日名を返す
-  String _convertWeekdayName(int weekday) {
-    switch (weekday) {
-      case 1:
-        return '(月)';
-      case 2:
-        return '(火)';
-      case 3:
-        return '(水)';
-      case 4:
-        return '(木)';
-      case 5:
-        return '(金)';
-      case 6:
-        return '(土)';
-      case 7:
-        return '(日)';
-      default:
-        return '';
-    }
   }
 }

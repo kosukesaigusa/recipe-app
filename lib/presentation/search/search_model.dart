@@ -74,6 +74,7 @@ class SearchModel extends ChangeNotifier {
     }
 
     endMyTabLoading();
+    hideMyLoadingWidget();
     notifyListeners();
   }
 
@@ -114,6 +115,7 @@ class SearchModel extends ChangeNotifier {
     }
 
     endPublicTabLoading();
+    hidePublicLoadingWidget();
     notifyListeners();
   }
 
@@ -406,6 +408,16 @@ class SearchModel extends ChangeNotifier {
 
   void endPublicRecipeFiltering() {
     this.publicRecipeTab.isFiltering = false;
+    notifyListeners();
+  }
+
+  void hideMyLoadingWidget() {
+    this.myRecipeTab.showReloadWidget = false;
+    notifyListeners();
+  }
+
+  void hidePublicLoadingWidget() {
+    this.publicRecipeTab.showReloadWidget = false;
     notifyListeners();
   }
 

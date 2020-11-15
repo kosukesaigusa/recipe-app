@@ -17,6 +17,7 @@ class MyRecipeTab {
     this.isFiltering = false;
     this.showFilteredRecipe = false;
     this.filterQuery = null;
+    this.showReloadWidget = false;
     this.textController = TextEditingController();
   }
 
@@ -34,6 +35,7 @@ class MyRecipeTab {
   bool isFiltering;
   bool showFilteredRecipe;
   Query filterQuery;
+  bool showReloadWidget;
   TextEditingController textController = TextEditingController();
 }
 
@@ -53,6 +55,7 @@ class PublicRecipeTab {
     this.isFiltering = false;
     this.showFilteredRecipe = false;
     this.filterQuery = null;
+    this.showReloadWidget = false;
     this.textController = TextEditingController();
   }
 
@@ -70,5 +73,6 @@ class PublicRecipeTab {
   bool isFiltering = false;
   Query filterQuery;
   bool showFilteredRecipe;
+  bool showReloadWidget;
   TextEditingController textController = TextEditingController();
 }

@@ -19,6 +19,14 @@ class RecipeDetailPage extends StatelessWidget {
             iconTheme: IconThemeData(
               color: Colors.white,
             ),
+            centerTitle: true,
+            title: Text(
+              '調理時の閲覧モード',
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.white,
+              ),
+            ),
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back_ios,
@@ -34,33 +42,42 @@ class RecipeDetailPage extends StatelessWidget {
           return Stack(
             children: [
               SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'レシピ名',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                child: GestureDetector(
+                  onHorizontalDragUpdate: (details) {
+                    // 右スワイプ
+                    if (details.delta.dx > 20) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Container(
+                    color: Colors.transparent,
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'レシピ名',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.left,
                         ),
-                        textAlign: TextAlign.left,
-                      ),
-                      Text('${model.name}'),
-                      SizedBox(
-                        height: 16,
-                      ),
-                      Text(
-                        "作り方・材料",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                        Text('${model.name}'),
+                        SizedBox(
+                          height: 16,
                         ),
-                        textAlign: TextAlign.left,
-                      ),
-                      Text('${model.content}'),
-                    ],
+                        Text(
+                          "作り方・材料",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                        Text('${model.content}'),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -107,23 +107,28 @@ class LinkAnonymousUserPage extends StatelessWidget {
                           child: Text('ユーザー登録する'),
                           color: Color(0xFFF39800),
                           textColor: Colors.white,
-                          onPressed: () async {
-                            model.startLoading();
-                            try {
-                              await model.linkAnonymousUser();
-                              await model.login();
-                              await showTextDialog(context, 'ユーザー登録が完了しました。');
-                              await Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TopPage(),
-                                ),
-                              );
-                            } catch (e) {
-                              showTextDialog(context, e);
-                              model.endLoading();
-                            }
-                          },
+                          onPressed: model.isMailValid &&
+                                  model.isPasswordValid &&
+                                  model.isConfirmValid
+                              ? () async {
+                                  model.startLoading();
+                                  try {
+                                    await model.linkAnonymousUser();
+                                    await model.login();
+                                    await showTextDialog(
+                                        context, 'ユーザー登録が完了しました。');
+                                    await Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => TopPage(),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    showTextDialog(context, e);
+                                    model.endLoading();
+                                  }
+                                }
+                              : null,
                         ),
                       ),
                       SizedBox(
