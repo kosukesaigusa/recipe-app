@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/convert_error_message.dart';
+import 'package:recipe/common/done_button.dart';
 import 'package:recipe/common/text_dialog.dart';
 import 'package:recipe/domain/recipe.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_model.dart';
@@ -32,22 +34,7 @@ class RecipeEditPage extends StatelessWidget {
       toolbarButtons: [
         /// 「完了」ボタン
         (node) {
-          return GestureDetector(
-            onTap: () {
-              _focusNode.unfocus();
-            },
-            child: Container(
-              color: Colors.transparent,
-              padding: EdgeInsets.only(left: 8.0, right: 16.0),
-              child: Text(
-                '完了',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 16.0,
-                ),
-              ),
-            ),
-          );
+          return customDoneButton(_focusNode);
         },
       ],
     );
@@ -86,39 +73,36 @@ class RecipeEditPage extends StatelessWidget {
                 actions: <Widget>[
                   model.isLoading
                       ? SizedBox()
-                      : model.currentRecipe.isMyRecipe
-                          ? IconButton(
-                              icon: Icon(
-                                Icons.delete,
-                                size: 20.0,
-                              ),
-                              onPressed: () async {
-                                await showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      content: Text('レシピを削除しますか？'),
-                                      actions: <Widget>[
-                                        FlatButton(
-                                          child: Text('OK'),
-                                          onPressed: () async {
-                                            await model.deleteRecipe();
-                                            await Navigator.pushAndRemoveUntil(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      TopPage(),
-                                                ),
-                                                (_) => false);
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  },
+                      : IconButton(
+                          icon: Icon(
+                            Icons.delete,
+                            size: 20.0,
+                          ),
+                          onPressed: () async {
+                            await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  content: Text('レシピを削除しますか？'),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      child: Text('OK'),
+                                      onPressed: () async {
+                                        await model.deleteRecipe();
+                                        await Navigator.pushAndRemoveUntil(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => TopPage(),
+                                            ),
+                                            (_) => false);
+                                      },
+                                    ),
+                                  ],
                                 );
                               },
-                            )
-                          : SizedBox(),
+                            );
+                          },
+                        ),
                 ],
               ),
             ),
@@ -200,9 +184,9 @@ class RecipeEditPage extends StatelessWidget {
                             decoration: InputDecoration(
                               labelText: 'レシピ名',
                               border: OutlineInputBorder(),
-                              errorText: model.errorName == ''
+                              errorText: model.editedRecipe.errorName == ''
                                   ? null
-                                  : model.errorName,
+                                  : model.editedRecipe.errorName,
                             ),
                             style: TextStyle(
                               fontSize: 14.0,
@@ -261,10 +245,9 @@ class RecipeEditPage extends StatelessWidget {
                                           ),
                                         ),
                                       )
-                                    : model?.imageFile == null
-                                        ? model.currentRecipe.imageURL ==
-                                                    null ||
-                                                model.currentRecipe.imageURL
+                                    : model.imageFile == null
+                                        ? model.editedRecipe.imageURL == null ||
+                                                model.editedRecipe.imageURL
                                                     .isEmpty
                                             ? SizedBox(
                                                 width: 200,
@@ -301,7 +284,7 @@ class RecipeEditPage extends StatelessWidget {
                                               )
                                             : CachedNetworkImage(
                                                 imageUrl:
-                                                    '${model.currentRecipe.imageURL}',
+                                                    '${model.editedRecipe.imageURL}',
                                                 placeholder: (context, url) =>
                                                     Container(
                                                   color: Color(0xFFDADADA),
@@ -309,7 +292,8 @@ class RecipeEditPage extends StatelessWidget {
                                                     child: Padding(
                                                       padding:
                                                           const EdgeInsets.all(
-                                                              8.0),
+                                                        8.0,
+                                                      ),
                                                       child: Text(
                                                         'Loading...',
                                                         style: TextStyle(
@@ -321,7 +305,6 @@ class RecipeEditPage extends StatelessWidget {
                                                 ),
                                                 errorWidget:
                                                     (context, url, error) =>
-                                                        //Icon(Icons.error),
                                                         Container(
                                                   color: Color(0xFFDADADA),
                                                   child: Center(
@@ -338,7 +321,7 @@ class RecipeEditPage extends StatelessWidget {
                                                 ),
                                               )
                                         : Image.file(
-                                            model?.imageFile,
+                                            model.imageFile,
                                           ),
                               ),
                             ),
@@ -381,9 +364,9 @@ class RecipeEditPage extends StatelessWidget {
                               labelText: 'レシピの内容（作り方・材料）',
                               alignLabelWithHint: true,
                               border: OutlineInputBorder(),
-                              errorText: model.errorContent == ''
+                              errorText: model.editedRecipe.errorContent == ''
                                   ? null
-                                  : model.errorContent,
+                                  : model.editedRecipe.errorContent,
                             ),
                             style: TextStyle(
                               fontSize: 14.0,
@@ -445,7 +428,8 @@ class RecipeEditPage extends StatelessWidget {
                                         Checkbox(
                                           activeColor: Color(0xFFF39800),
                                           checkColor: Colors.white,
-                                          value: model.agreed,
+                                          value:
+                                              model.editedRecipe.agreeGuideline,
                                           onChanged: (val) {
                                             model.tapAgreeCheckBox(val);
                                           },
@@ -499,7 +483,8 @@ class RecipeEditPage extends StatelessWidget {
                                         Checkbox(
                                           activeColor: Color(0xFFF39800),
                                           checkColor: Colors.white,
-                                          value: model.agreed,
+                                          value:
+                                              model.editedRecipe.agreeGuideline,
                                           onChanged: (val) {
                                             model.tapAgreeCheckBox(val);
                                           },
@@ -552,19 +537,24 @@ class RecipeEditPage extends StatelessWidget {
                                         ),
                                         color: Color(0xFFF39800),
                                         textColor: Colors.white,
-                                        onPressed: model.isEdited &&
-                                                model.agreed &&
-                                                model.isNameValid &&
-                                                model.isContentValid &&
-                                                model.isReferenceValid
-                                            ? () async {
-                                                /// 公開で更新
-                                                model.editedRecipe.isPublic =
-                                                    true;
-                                                await updateRecipe(
-                                                    model, context);
-                                              }
-                                            : null,
+                                        onPressed:
+                                            model.editedRecipe.isEdited &&
+                                                    model.editedRecipe
+                                                        .agreeGuideline &&
+                                                    model.editedRecipe
+                                                        .isNameValid &&
+                                                    model.editedRecipe
+                                                        .isContentValid &&
+                                                    model.editedRecipe
+                                                        .isReferenceValid
+                                                ? () async {
+                                                    /// 公開で更新
+                                                    model.editedRecipe
+                                                        .willPublish = true;
+                                                    await updateRecipe(
+                                                        model, context);
+                                                  }
+                                                : null,
                                       ),
                                     ),
                                     SizedBox(
@@ -579,17 +569,20 @@ class RecipeEditPage extends StatelessWidget {
                                         ),
                                         color: Colors.grey,
                                         textColor: Colors.white,
-                                        onPressed: model.isNameValid &&
-                                                model.isContentValid &&
-                                                model.isReferenceValid
-                                            ? () async {
-                                                /// 非公開で更新
-                                                model.editedRecipe.isPublic =
-                                                    false;
-                                                await updateRecipe(
-                                                    model, context);
-                                              }
-                                            : null,
+                                        onPressed:
+                                            model.editedRecipe.isNameValid &&
+                                                    model.editedRecipe
+                                                        .isContentValid &&
+                                                    model.editedRecipe
+                                                        .isReferenceValid
+                                                ? () async {
+                                                    /// 非公開で更新
+                                                    model.editedRecipe
+                                                        .willPublish = false;
+                                                    await updateRecipe(
+                                                        model, context);
+                                                  }
+                                                : null,
                                       ),
                                     ),
                                   ],
@@ -607,13 +600,17 @@ class RecipeEditPage extends StatelessWidget {
                                         ),
                                         color: Color(0xFFF39800),
                                         textColor: Colors.white,
-                                        onPressed: model.agreed &&
-                                                model.isNameValid &&
-                                                model.isContentValid &&
-                                                model.isReferenceValid
+                                        onPressed: model.editedRecipe
+                                                    .agreeGuideline &&
+                                                model
+                                                    .editedRecipe.isNameValid &&
+                                                model.editedRecipe
+                                                    .isContentValid &&
+                                                model.editedRecipe
+                                                    .isReferenceValid
                                             ? () async {
                                                 /// 公開で更新
-                                                model.editedRecipe.isPublic =
+                                                model.editedRecipe.willPublish =
                                                     true;
                                                 await updateRecipe(
                                                     model, context);
@@ -633,18 +630,22 @@ class RecipeEditPage extends StatelessWidget {
                                         ),
                                         color: Colors.grey,
                                         textColor: Colors.white,
-                                        onPressed: model.isEdited &&
-                                                model.isNameValid &&
-                                                model.isContentValid &&
-                                                model.isReferenceValid
-                                            ? () async {
-                                                /// 非公開で更新
-                                                model.editedRecipe.isPublic =
-                                                    false;
-                                                await updateRecipe(
-                                                    model, context);
-                                              }
-                                            : null,
+                                        onPressed:
+                                            model.editedRecipe.isEdited &&
+                                                    model.editedRecipe
+                                                        .isNameValid &&
+                                                    model.editedRecipe
+                                                        .isContentValid &&
+                                                    model.editedRecipe
+                                                        .isReferenceValid
+                                                ? () async {
+                                                    /// 非公開で更新
+                                                    model.editedRecipe
+                                                        .willPublish = false;
+                                                    await updateRecipe(
+                                                        model, context);
+                                                  }
+                                                : null,
                                       ),
                                     ),
                                   ],
@@ -733,7 +734,8 @@ Future updateRecipe(RecipeEditModel model, BuildContext context) async {
     );
     Navigator.of(context).pop();
   } catch (e) {
+    print(e);
     model.endSubmitting();
-    showTextDialog(context, e.toString());
+    showTextDialog(context, convertErrorMessage(e.code));
   }
 }
