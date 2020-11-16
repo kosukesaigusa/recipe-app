@@ -74,11 +74,11 @@ class RecipeAddModel extends ChangeNotifier {
   Future<void> addRecipeToFirebase() async {
     // 画像が追加されている場合のみ実行
     if (this.imageFile != null) {
-      this.recipeAdd.imageURL = await _uploadImage();
+      await _uploadImage();
     }
     // サムネイル用画像が追加されている場合のみ実行
     if (this.thumbnailImageFile != null) {
-      this.recipeAdd.thumbnailURL = await _uploadThumbnail();
+      await _uploadThumbnail();
     }
 
     /// tokenMap を作成するための入力となる文字列のリスト
@@ -151,7 +151,7 @@ class RecipeAddModel extends ChangeNotifier {
   }
 
   // Firestore に画像をアップロードしてその URL を返す
-  Future<String> _uploadImage() async {
+  Future<void> _uploadImage() async {
     String _fileName = "image_" +
         DateTime.now().toString() +
         "_" +
@@ -163,13 +163,12 @@ class RecipeAddModel extends ChangeNotifier {
         .child('images/' + _fileName)
         .putFile(this.imageFile)
         .onComplete;
-    String downloadURL = await _snapshot.ref.getDownloadURL();
+    this.recipeAdd.imageURL = await _snapshot.ref.getDownloadURL();
     this.recipeAdd.imageName = _fileName;
-    return downloadURL;
   }
 
   // Firestore にサムネイル用画像をアップロードしてその URL を返す
-  Future<String> _uploadThumbnail() async {
+  Future<void> _uploadThumbnail() async {
     String _fileName = "thumbnail_" +
         DateTime.now().toString() +
         "_" +
@@ -181,9 +180,8 @@ class RecipeAddModel extends ChangeNotifier {
         .child('thumbnails/' + _fileName)
         .putFile(this.thumbnailImageFile)
         .onComplete;
-    String downloadURL = await _snapshot.ref.getDownloadURL();
+    this.recipeAdd.thumbnailURL = await _snapshot.ref.getDownloadURL();
     this.recipeAdd.thumbnailName = _fileName;
-    return downloadURL;
   }
 
   void changeRecipeName(text) {
