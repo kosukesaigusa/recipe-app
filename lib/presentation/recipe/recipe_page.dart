@@ -3,21 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/common/convert_weekday_name.dart';
+import 'package:recipe/domain/recipe.dart';
 import 'package:recipe/presentation/recipe/recipe_model.dart';
 import 'package:recipe/presentation/recipe_detail/recipe_detail_page.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_page.dart';
 
 class RecipePage extends StatelessWidget {
-  RecipePage(this.recipeDocumentId, this.recipeOwnerId);
-
-  final String recipeDocumentId;
-  final String recipeOwnerId;
+  RecipePage(this.recipe);
+  final Recipe recipe;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<RecipeModel>(
-      create: (_) =>
-          RecipeModel()..fetchRecipe(recipeDocumentId, recipeOwnerId),
+      create: (_) => RecipeModel(this.recipe),
       child: Consumer<RecipeModel>(builder: (context, model, child) {
         return Scaffold(
           appBar: PreferredSize(
@@ -109,8 +107,8 @@ class RecipePage extends StatelessWidget {
                       children: [
                         model.isLoading
                             ? SizedBox()
-                            : model.isMyRecipe
-                                ? model.isPublic
+                            : model.recipe.isMyRecipe
+                                ? model.recipe.isPublic
                                     ? Container(
                                         child: Row(
                                           mainAxisAlignment:
@@ -224,7 +222,7 @@ class RecipePage extends StatelessWidget {
                               ),
                               textAlign: TextAlign.left,
                             ),
-                            Text('${model.name}'),
+                            Text('${model.recipe.name}'),
                           ],
                         ),
                         SizedBox(
@@ -249,7 +247,7 @@ class RecipePage extends StatelessWidget {
                                       ),
                                     ),
                                   )
-                                : '${model.imageURL}' == ''
+                                : '${model.recipe.imageURL}' == ''
                                     ? Container(
                                         color: Color(0xFFDADADA),
                                         child: Center(
@@ -265,7 +263,7 @@ class RecipePage extends StatelessWidget {
                                         ),
                                       )
                                     : CachedNetworkImage(
-                                        imageUrl: '${model.imageURL}',
+                                        imageUrl: '${model.recipe.imageURL}',
                                         placeholder: (context, url) =>
                                             Container(
                                           color: Color(0xFFDADADA),
@@ -311,13 +309,13 @@ class RecipePage extends StatelessWidget {
                               ),
                               textAlign: TextAlign.left,
                             ),
-                            Text('${model.content}'),
+                            Text('${model.recipe.content}'),
                           ],
                         ),
                         SizedBox(
                           height: 16,
                         ),
-                        model.reference == ''
+                        model.recipe.reference == ''
                             ? SizedBox()
                             : Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,7 +328,7 @@ class RecipePage extends StatelessWidget {
                                     ),
                                     textAlign: TextAlign.left,
                                   ),
-                                  Text('${model.reference}'),
+                                  Text('${model.recipe.reference}'),
                                 ],
                               ),
                       ],

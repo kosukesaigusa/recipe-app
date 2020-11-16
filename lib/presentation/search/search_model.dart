@@ -7,7 +7,7 @@ import 'package:recipe/domain/recipe_tab.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
 
 class SearchModel extends ChangeNotifier {
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth _auth;
   MyRecipeTab myRecipeTab;
   PublicRecipeTab publicRecipeTab;
   String userId;

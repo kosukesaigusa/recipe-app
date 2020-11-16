@@ -112,7 +112,7 @@ class RecipeEditModel extends ChangeNotifier {
       throw ('作り方・材料を入力してください。');
     }
 
-    /// レシピ名とレシピの全文を検索対象にする場合
+    /// tokenMap を作成するための入力となる文字列のリスト
     List _preTokenizedList = [];
     _preTokenizedList.add(this.editedRecipe.name);
     _preTokenizedList.add(this.editedRecipe.content);

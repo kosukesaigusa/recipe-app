@@ -523,11 +523,11 @@ class SearchPage extends StatelessWidget {
   /// レシピのカード一覧のウィジェトを返す関数
   Widget _recipeCards(
       List recipes, Size size, String userId, String tab, context) {
-    bool isMyRecipe;
+    bool _isMyRecipe;
     // 画面に表示するカードのリスト
     List<Widget> list = List<Widget>();
     for (int i = 0; i < recipes.length; i++) {
-      isMyRecipe = recipes[i].userId == userId;
+      _isMyRecipe = recipes[i].userId == userId;
       // Card ウィジェットをループの個数だけリストに追加する
       list.add(
         Card(
@@ -544,7 +544,8 @@ class SearchPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) {
-                    return RecipePage(recipes[i].documentId, recipes[i].userId);
+                    // return RecipePage(recipes[i].documentId, recipes[i].userId);
+                    return RecipePage(recipes[i]);
                   },
                 ),
               );
@@ -658,7 +659,7 @@ class SearchPage extends StatelessWidget {
                                   ),
                                 ),
                         ),
-                        tab == 'my_tab' && isMyRecipe && recipes[i].isPublic
+                        tab == 'my_tab' && _isMyRecipe && recipes[i].isPublic
                             ? Positioned(
                                 top: 0.0,
                                 right: 0.0,
@@ -678,7 +679,7 @@ class SearchPage extends StatelessWidget {
                               )
                             : SizedBox(),
                         tab == 'my_tab' &&
-                                isMyRecipe &&
+                                _isMyRecipe &&
                                 recipes[i].isPublic == false
                             ? Positioned(
                                 top: 0.0,
@@ -698,7 +699,9 @@ class SearchPage extends StatelessWidget {
                                 ),
                               )
                             : SizedBox(),
-                        tab == 'public_tab' && isMyRecipe && recipes[i].isPublic
+                        tab == 'public_tab' &&
+                                _isMyRecipe &&
+                                recipes[i].isPublic
                             ? Positioned(
                                 top: 0.0,
                                 right: 0.0,
