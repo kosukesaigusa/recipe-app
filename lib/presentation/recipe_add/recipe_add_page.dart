@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe/common/done_button.dart';
 import 'package:recipe/presentation/recipe_add/recipe_add_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
 import 'package:vibrate/vibrate.dart';
@@ -28,43 +29,9 @@ class RecipeAddPage extends StatelessWidget {
       toolbarButtons: [
         /// 「完了」ボタン
         (node) {
-          return GestureDetector(
-            onTap: () {
-              _focusNode.unfocus();
-            },
-            child: Container(
-              color: Colors.transparent,
-              padding: EdgeInsets.only(left: 8.0, right: 16.0),
-              child: Text(
-                '完了',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 16.0,
-                ),
-              ),
-            ),
-          );
+          return customDoneButton(_focusNode);
         },
       ],
-    );
-  }
-
-  Widget _customDoneButton(FocusNode _focusNode) {
-    return GestureDetector(
-      onTap: () {
-        _focusNode.unfocus();
-      },
-      child: Container(
-        color: Colors.transparent,
-        padding: EdgeInsets.only(left: 8.0, right: 16.0),
-        child: Text(
-          '完了',
-          style: TextStyle(
-            color: Colors.blue,
-            fontSize: 16.0,
-          ),
-        ),
-      ),
     );
   }
 
@@ -182,9 +149,9 @@ class RecipeAddPage extends StatelessWidget {
                             decoration: InputDecoration(
                               labelText: 'レシピ名',
                               border: OutlineInputBorder(),
-                              errorText: model.errorName == ''
+                              errorText: model.recipeAdd.errorName == ''
                                   ? null
-                                  : model.errorName,
+                                  : model.recipeAdd.errorName,
                             ),
                             style: TextStyle(
                               fontSize: 14.0,
@@ -286,9 +253,9 @@ class RecipeAddPage extends StatelessWidget {
                               labelText: 'レシピの内容（作り方・材料）',
                               alignLabelWithHint: true,
                               border: OutlineInputBorder(),
-                              errorText: model.errorContent == ''
+                              errorText: model.recipeAdd.errorContent == ''
                                   ? null
-                                  : model.errorContent,
+                                  : model.recipeAdd.errorContent,
                             ),
                             style: TextStyle(
                               fontSize: 14.0,
@@ -346,7 +313,7 @@ class RecipeAddPage extends StatelessWidget {
                                 onChanged: (val) {
                                   model.tapPublishCheckbox(val);
                                 },
-                                value: model.willPublish,
+                                value: model.recipeAdd.willPublish,
                               ),
                               Flexible(
                                 child: Text(
@@ -360,7 +327,7 @@ class RecipeAddPage extends StatelessWidget {
                               ),
                             ],
                           ),
-                          model.willPublish
+                          model.recipeAdd.willPublish
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
@@ -370,7 +337,7 @@ class RecipeAddPage extends StatelessWidget {
                                       onChanged: (val) {
                                         model.tapAgreeCheckBox(val);
                                       },
-                                      value: model.agreed,
+                                      value: model.recipeAdd.agreeGuideline,
                                     ),
                                     Flexible(
                                       child: RichText(
@@ -410,18 +377,19 @@ class RecipeAddPage extends StatelessWidget {
                                 ),
                                 color: Color(0xFFF39800),
                                 textColor: Colors.white,
-                                onPressed: model.isNameValid &&
-                                        model.isContentValid &&
-                                        model.isReferenceValid
-                                    ? model.willPublish
-                                        ? model.agreed
+                                onPressed: model.recipeAdd.isNameValid &&
+                                        model.recipeAdd.isContentValid &&
+                                        model.recipeAdd.isReferenceValid
+                                    ? model.recipeAdd.willPublish
+                                        ? model.recipeAdd.agreeGuideline
                                             ? () async {
-                                                model.recipeAdd.isPublic = true;
+                                                model.recipeAdd.willPublish =
+                                                    true;
                                                 await addRecipe(model, context);
                                               }
                                             : null
                                         : () async {
-                                            model.recipeAdd.isPublic = false;
+                                            model.recipeAdd.willPublish = false;
                                             await addRecipe(model, context);
                                           }
                                     : null,
@@ -498,7 +466,6 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
                     builder: (context) => TopPage(),
                   ),
                 );
-                model.fetchRecipeAdd(context);
               },
             ),
           ],

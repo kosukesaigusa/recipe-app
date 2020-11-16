@@ -5,13 +5,12 @@ import 'package:recipe/presentation/recipe_detail/recipe_detail_model.dart';
 
 class RecipeDetailPage extends StatelessWidget {
   RecipeDetailPage(this.recipe);
-
   final Recipe recipe;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<RecipeDetailModel>(
-      create: (_) => RecipeDetailModel(recipe),
+      create: (_) => RecipeDetailModel(this.recipe),
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(36.0),
@@ -38,60 +37,50 @@ class RecipeDetailPage extends StatelessWidget {
             ),
           ),
         ),
-        body: Consumer<RecipeDetailModel>(builder: (context, model, child) {
-          return Stack(
-            children: [
-              SingleChildScrollView(
-                child: GestureDetector(
-                  onHorizontalDragUpdate: (details) {
-                    // 右スワイプ
-                    if (details.delta.dx > 20) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Container(
-                    color: Colors.transparent,
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'レシピ名',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.left,
+        body: Consumer<RecipeDetailModel>(
+          builder: (context, model, child) {
+            return SingleChildScrollView(
+              child: GestureDetector(
+                onHorizontalDragUpdate: (details) {
+                  // 右スワイプ
+                  if (details.delta.dx > 20) {
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: Container(
+                  color: Colors.transparent,
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'レシピ名',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        Text('${model.name}'),
-                        SizedBox(
-                          height: 16,
+                        textAlign: TextAlign.left,
+                      ),
+                      Text('${model.name}'),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Text(
+                        "作り方・材料",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        Text(
-                          "作り方・材料",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
-                        Text('${model.content}'),
-                      ],
-                    ),
+                        textAlign: TextAlign.left,
+                      ),
+                      Text('${model.content}'),
+                    ],
                   ),
                 ),
               ),
-              model.isLoading
-                  ? Container(
-                      color: Colors.black.withOpacity(0.3),
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  : SizedBox(),
-            ],
-          );
-        }),
+            );
+          },
+        ),
       ),
     );
   }
