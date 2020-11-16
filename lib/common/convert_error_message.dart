@@ -14,6 +14,8 @@ String convertErrorMessage(eCode) {
       return 'そのメールアドレスは既に使用されています。';
     case 'requires-recent-login':
       return '一度ログアウトしてから再度お試し下さい。';
+    case 'network-request-failed':
+      return 'ネットワーク環境を確認の上、再度お試しください。';
     default:
       return 'エラーが発生しました。';
   }

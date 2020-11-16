@@ -8,48 +8,43 @@ import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:recipe/common/text_process.dart';
-import 'package:recipe/domain/recipe.dart';
 import 'package:recipe/domain/recipe_add.dart';
 
 class RecipeAddModel extends ChangeNotifier {
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  RecipeAdd recipeAdd = RecipeAdd();
-  List<Recipe> recipes = [];
+  RecipeAdd recipeAdd;
+  FirebaseAuth _auth;
   File imageFile;
   File thumbnailImageFile;
-  bool isUploading = false;
-  bool willPublish = false;
-  bool agreed = false;
-  String errorName = '';
-  String errorContent = '';
-  String errorReference = '';
-  bool isNameValid = false;
-  bool isContentValid = false;
-  bool isReferenceValid = true;
+  bool isUploading;
 
-  Future fetchRecipeAdd(context) async {
-    QuerySnapshot docs =
-        await FirebaseFirestore.instance.collection('recipes').get();
-    List<Recipe> recipes = docs.docs.map((doc) => Recipe(doc)).toList();
-    this.recipes = recipes;
-    notifyListeners();
+  RecipeAddModel() {
+    this.recipeAdd = RecipeAdd();
+    this._auth = FirebaseAuth.instance;
+    this.imageFile = null;
+    this.thumbnailImageFile = null;
+    this.isUploading = false;
   }
 
-  Future showImagePicker() async {
-    ImagePicker picker = ImagePicker();
-    PickedFile pickedFile = await picker.getImage(source: ImageSource.gallery);
-    if (pickedFile == null) {
+  Future<void> showImagePicker() async {
+    ImagePicker _picker = ImagePicker();
+    PickedFile _pickedFile =
+        await _picker.getImage(source: ImageSource.gallery);
+
+    // 画像ファイルを端末から選択しなかった場合は処理を終了
+    if (_pickedFile == null) {
       return;
     }
 
-    File pickedImage = File(pickedFile.path);
+    // 選択した画像ファイルのパスを保存
+    File _pickedImage = File(_pickedFile.path);
 
-    if (pickedImage == null) {
+    if (_pickedImage == null) {
       return;
     }
+
     // 画像をアスペクト比 4:3 で 切り抜く
     File _croppedImageFile = await ImageCropper.cropImage(
-      sourcePath: pickedImage.path,
+      sourcePath: _pickedImage.path,
       maxHeight: 150,
       aspectRatio: CropAspectRatio(ratioX: 4, ratioY: 3),
       compressFormat: ImageCompressFormat.jpg,
@@ -59,14 +54,14 @@ class RecipeAddModel extends ChangeNotifier {
       ),
     );
 
-    // レシピ画像（W: 400, H:300 @2x）
+    // レシピ画像（W: 400, H:300 @2x）をインスタンス変数に保存
     this.imageFile = await FlutterNativeImage.compressImage(
       _croppedImageFile.path,
       targetWidth: 400,
       targetHeight: 300,
     );
 
-    // サムネイル用画像（W: 200, H: 30 @2x）
+    // サムネイル用画像（W: 200, H: 30 @2x）を
     this.thumbnailImageFile = await FlutterNativeImage.compressImage(
       _croppedImageFile.path,
       targetWidth: 200,
@@ -76,76 +71,78 @@ class RecipeAddModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future addRecipeToFirebase() async {
-    // 画像が変更されている場合のみ実行する
+  Future<void> addRecipeToFirebase() async {
+    // 画像が追加されている場合のみ実行
     if (this.imageFile != null) {
-      recipeAdd.imageURL = await _uploadImage();
-      recipeAdd.thumbnailURL = await _uploadThumbnail();
+      await _uploadImage();
+    }
+    // サムネイル用画像が追加されている場合のみ実行
+    if (this.thumbnailImageFile != null) {
+      await _uploadThumbnail();
     }
 
-    // tokenMap を作成するための入力となる文字列のリスト
-    /// レシピ名とレシピの全文を検索対象にする場合
+    /// tokenMap を作成するための入力となる文字列のリスト
     List _preTokenizedList = [];
-    _preTokenizedList.add(recipeAdd.name);
-    _preTokenizedList.add(recipeAdd.content);
+    _preTokenizedList.add(this.recipeAdd.name);
+    _preTokenizedList.add(this.recipeAdd.content);
 
     List _tokenizedList = tokenize(_preTokenizedList);
-    recipeAdd.tokenMap =
+    this.recipeAdd.tokenMap =
         Map.fromIterable(_tokenizedList, key: (e) => e, value: (_) => true);
-    print(recipeAdd.tokenMap);
+    print(this.recipeAdd.tokenMap);
 
-    String generatedId;
+    String _generatedId;
 
     await FirebaseFirestore.instance
-        .collection('users/${_auth.currentUser.uid}/recipes')
+        .collection('users/${this._auth.currentUser.uid}/recipes')
         .add(
           {
-            'userId': _auth.currentUser.uid,
-            'name': recipeAdd.name,
+            'userId': this._auth.currentUser.uid,
+            'name': this.recipeAdd.name,
             'createdAt': FieldValue.serverTimestamp(),
             'updatedAt': FieldValue.serverTimestamp(),
-            'thumbnailURL': recipeAdd.thumbnailURL,
-            'thumbnailName': recipeAdd.thumbnailName,
-            'imageURL': recipeAdd.imageURL,
-            'imageName': recipeAdd.imageName,
-            'content': recipeAdd.content,
-            'reference': recipeAdd.reference,
-            'tokenMap': recipeAdd.tokenMap,
-            'isPublic': recipeAdd.isPublic,
+            'thumbnailURL': this.recipeAdd.thumbnailURL,
+            'thumbnailName': this.recipeAdd.thumbnailName,
+            'imageURL': this.recipeAdd.imageURL,
+            'imageName': this.recipeAdd.imageName,
+            'content': this.recipeAdd.content,
+            'reference': this.recipeAdd.reference,
+            'tokenMap': this.recipeAdd.tokenMap,
+            'isPublic': this.recipeAdd.willPublish,
           },
         )
-        .then((docRef) async => {generatedId = docRef.id})
+        .then((docRef) async => {_generatedId = docRef.id})
         .then((_) async => {
               await FirebaseFirestore.instance
                   .collection('users/${_auth.currentUser.uid}/recipes')
-                  .doc(generatedId)
+                  .doc(_generatedId)
                   .update(
                 {
-                  'documentId': generatedId,
+                  'documentId': _generatedId,
                 },
               )
             });
 
-    if (recipeAdd.isPublic) {
+    if (this.recipeAdd.willPublish) {
       /// みんなのレシピの ID は、public_{わたしのレシピのID} の形にする
       await FirebaseFirestore.instance
           .collection('public_recipes')
-          .doc('public_$generatedId')
+          .doc('public_$_generatedId')
           .set(
         {
-          'documentId': 'public_$generatedId',
-          'userId': _auth.currentUser.uid,
+          'documentId': 'public_$_generatedId',
+          'userId': this._auth.currentUser.uid,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
-          'name': recipeAdd.name,
-          'thumbnailURL': recipeAdd.thumbnailURL,
-          'thumbnailName': recipeAdd.thumbnailName,
-          'imageURL': recipeAdd.imageURL,
-          'imageName': recipeAdd.imageName,
-          'content': recipeAdd.content,
-          'reference': recipeAdd.reference,
-          'tokenMap': recipeAdd.tokenMap,
-          'isPublic': recipeAdd.isPublic,
+          'name': this.recipeAdd.name,
+          'thumbnailURL': this.recipeAdd.thumbnailURL,
+          'thumbnailName': this.recipeAdd.thumbnailName,
+          'imageURL': this.recipeAdd.imageURL,
+          'imageName': this.recipeAdd.imageName,
+          'content': this.recipeAdd.content,
+          'reference': this.recipeAdd.reference,
+          'tokenMap': this.recipeAdd.tokenMap,
+          'isPublic': this.recipeAdd.willPublish,
         },
       );
     }
@@ -153,8 +150,8 @@ class RecipeAddModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Firestore に画像をアップロードする
-  Future<String> _uploadImage() async {
+  // Firestore に画像をアップロードしてその URL を返す
+  Future<void> _uploadImage() async {
     String _fileName = "image_" +
         DateTime.now().toString() +
         "_" +
@@ -166,13 +163,12 @@ class RecipeAddModel extends ChangeNotifier {
         .child('images/' + _fileName)
         .putFile(this.imageFile)
         .onComplete;
-    String downloadURL = await _snapshot.ref.getDownloadURL();
-    recipeAdd.imageName = _fileName;
-    return downloadURL;
+    this.recipeAdd.imageURL = await _snapshot.ref.getDownloadURL();
+    this.recipeAdd.imageName = _fileName;
   }
 
-  // Firestore にサムネイル用画像をアップロードする
-  Future<String> _uploadThumbnail() async {
+  // Firestore にサムネイル用画像をアップロードしてその URL を返す
+  Future<void> _uploadThumbnail() async {
     String _fileName = "thumbnail_" +
         DateTime.now().toString() +
         "_" +
@@ -184,22 +180,21 @@ class RecipeAddModel extends ChangeNotifier {
         .child('thumbnails/' + _fileName)
         .putFile(this.thumbnailImageFile)
         .onComplete;
-    String downloadURL = await _snapshot.ref.getDownloadURL();
-    recipeAdd.thumbnailName = _fileName;
-    return downloadURL;
+    this.recipeAdd.thumbnailURL = await _snapshot.ref.getDownloadURL();
+    this.recipeAdd.thumbnailName = _fileName;
   }
 
   void changeRecipeName(text) {
     this.recipeAdd.name = text;
     if (text.isEmpty) {
-      this.isNameValid = false;
-      this.errorName = 'レシピ名を入力して下さい。';
+      this.recipeAdd.isNameValid = false;
+      this.recipeAdd.errorName = 'レシピ名を入力して下さい。';
     } else if (text.length > 30) {
-      this.isNameValid = false;
-      this.errorName = '30文字以内で入力して下さい。';
+      this.recipeAdd.isNameValid = false;
+      this.recipeAdd.errorName = '30文字以内で入力して下さい。';
     } else {
-      this.isNameValid = true;
-      this.errorName = '';
+      this.recipeAdd.isNameValid = true;
+      this.recipeAdd.errorName = '';
     }
     notifyListeners();
   }
@@ -207,14 +202,14 @@ class RecipeAddModel extends ChangeNotifier {
   void changeRecipeContent(text) {
     this.recipeAdd.content = text;
     if (text.isEmpty) {
-      this.isContentValid = false;
-      this.errorContent = 'レシピの内容を入力して下さい。';
+      this.recipeAdd.isContentValid = false;
+      this.recipeAdd.errorContent = 'レシピの内容を入力して下さい。';
     } else if (text.length > 1000) {
-      this.isContentValid = false;
-      this.errorContent = '1000文字以内で入力して下さい。';
+      this.recipeAdd.isContentValid = false;
+      this.recipeAdd.errorContent = '1000文字以内で入力して下さい。';
     } else {
-      this.isContentValid = true;
-      this.errorContent = '';
+      this.recipeAdd.isContentValid = true;
+      this.recipeAdd.errorContent = '';
     }
     notifyListeners();
   }
@@ -222,25 +217,25 @@ class RecipeAddModel extends ChangeNotifier {
   void changeRecipeReference(text) {
     this.recipeAdd.reference = text;
     if (text.length > 1000) {
-      this.isReferenceValid = false;
-      this.errorReference = '1000文字以内で入力して下さい。';
+      this.recipeAdd.isReferenceValid = false;
+      this.recipeAdd.errorReference = '1000文字以内で入力して下さい。';
     } else {
-      this.isReferenceValid = true;
-      this.errorReference = '';
+      this.recipeAdd.isReferenceValid = true;
+      this.recipeAdd.errorReference = '';
     }
     notifyListeners();
   }
 
   void tapPublishCheckbox(val) {
-    this.willPublish = val;
+    this.recipeAdd.willPublish = val;
     if (val == false) {
-      this.agreed = false;
+      this.recipeAdd.agreeGuideline = false;
     }
     notifyListeners();
   }
 
   void tapAgreeCheckBox(val) {
-    this.agreed = val;
+    this.recipeAdd.agreeGuideline = val;
     notifyListeners();
   }
 
