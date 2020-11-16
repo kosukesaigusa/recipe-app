@@ -566,13 +566,24 @@ class SearchPage extends StatelessWidget {
                         children: [
                           Container(
                             height: 26,
-                            child: Text(
-                              '${recipes[i].name}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '${recipes[i].name}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                // ToDo: recipes[i].isFavorite がtrueなら塗りつぶす
+                                Icon(
+                                  Icons.favorite_border,
+                                  size: 16.0,
+                                  color: Color(0xFFF39800),
+                                )
+                              ],
                             ),
                           ),
                           SizedBox(height: 4.0),
