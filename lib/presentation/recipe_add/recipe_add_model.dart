@@ -81,6 +81,12 @@ class RecipeAddModel extends ChangeNotifier {
       await _uploadThumbnail();
     }
 
+    /// content, reference から不要な空行を取り除く
+    this.recipeAdd.content =
+        removeUnnecessaryBlankLines(this.recipeAdd.content);
+    this.recipeAdd.reference =
+        removeUnnecessaryBlankLines(this.recipeAdd.reference);
+
     /// tokenMap を作成するための入力となる文字列のリスト
     List _preTokenizedList = [];
     _preTokenizedList.add(this.recipeAdd.name);

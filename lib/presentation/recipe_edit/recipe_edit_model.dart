@@ -112,6 +112,12 @@ class RecipeEditModel extends ChangeNotifier {
       throw ('作り方・材料を入力してください。');
     }
 
+    /// content, reference から不要な空行を取り除く
+    this.editedRecipe.content =
+        removeUnnecessaryBlankLines(this.editedRecipe.content);
+    this.editedRecipe.reference =
+        removeUnnecessaryBlankLines(this.editedRecipe.reference);
+
     /// tokenMap を作成するための入力となる文字列のリスト
     List _preTokenizedList = [];
     _preTokenizedList.add(this.editedRecipe.name);

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,7 @@ import 'package:recipe/common/convert_error_message.dart';
 import 'package:recipe/common/done_button.dart';
 import 'package:recipe/common/text_dialog.dart';
 import 'package:recipe/domain/recipe.dart';
+import 'package:recipe/presentation/guideline/guideline_page.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
 
@@ -443,19 +445,30 @@ class RecipeEditPage extends StatelessWidget {
                                                 fontWeight: FontWeight.bold,
                                               ),
                                               children: [
-                                                TextSpan(
-                                                  text: '公開するレシピの',
-                                                ),
+                                                TextSpan(text: '公開するレシピの '),
                                                 TextSpan(
                                                   text: 'ガイドライン',
                                                   style: TextStyle(
+                                                    color: Color(0xFFF39800),
                                                     decoration: TextDecoration
                                                         .underline,
+                                                    decorationThickness: 2.00,
                                                   ),
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  GuidelinePage(),
+                                                              fullscreenDialog:
+                                                                  true,
+                                                            ),
+                                                          );
+                                                        },
                                                 ),
-                                                TextSpan(
-                                                  text: 'を読んで同意しました。',
-                                                ),
+                                                TextSpan(text: ' を読んで同意しました。'),
                                               ],
                                             ),
                                           ),
@@ -498,19 +511,30 @@ class RecipeEditPage extends StatelessWidget {
                                                 fontWeight: FontWeight.bold,
                                               ),
                                               children: [
-                                                TextSpan(
-                                                  text: '公開するレシピの',
-                                                ),
+                                                TextSpan(text: '公開するレシピの '),
                                                 TextSpan(
                                                   text: 'ガイドライン',
                                                   style: TextStyle(
+                                                    color: Color(0xFFF39800),
                                                     decoration: TextDecoration
                                                         .underline,
+                                                    decorationThickness: 2.00,
                                                   ),
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  GuidelinePage(),
+                                                              fullscreenDialog:
+                                                                  true,
+                                                            ),
+                                                          );
+                                                        },
                                                 ),
-                                                TextSpan(
-                                                  text: 'を読んで同意しました。',
-                                                ),
+                                                TextSpan(text: ' を読んで同意しました。'),
                                               ],
                                             ),
                                           ),

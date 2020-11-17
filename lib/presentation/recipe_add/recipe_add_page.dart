@@ -1,10 +1,13 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/common/done_button.dart';
+import 'package:recipe/presentation/guideline/guideline_page.dart';
 import 'package:recipe/presentation/recipe_add/recipe_add_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
+import 'package:vibrate/vibrate.dart';
 
 class RecipeAddPage extends StatelessWidget {
   final FocusNode _focusNodeContent = FocusNode();
@@ -110,7 +113,11 @@ class RecipeAddPage extends StatelessWidget {
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.only(
-                          top: 16.0, right: 16.0, bottom: 48.0, left: 16.0),
+                        top: 16.0,
+                        right: 16.0,
+                        bottom: 48.0,
+                        left: 16.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -347,15 +354,28 @@ class RecipeAddPage extends StatelessWidget {
                                             fontWeight: FontWeight.bold,
                                           ),
                                           children: [
-                                            TextSpan(text: '公開するレシピの'),
+                                            TextSpan(text: '公開するレシピの '),
                                             TextSpan(
                                               text: 'ガイドライン',
                                               style: TextStyle(
+                                                color: Color(0xFFF39800),
                                                 decoration:
                                                     TextDecoration.underline,
+                                                decorationThickness: 2.00,
                                               ),
+                                              recognizer: TapGestureRecognizer()
+                                                ..onTap = () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          GuidelinePage(),
+                                                      fullscreenDialog: true,
+                                                    ),
+                                                  );
+                                                },
                                             ),
-                                            TextSpan(text: 'を読んで同意しました。'),
+                                            TextSpan(text: ' を読んで同意しました。'),
                                           ],
                                         ),
                                       ),
@@ -448,6 +468,7 @@ Future addRecipe(RecipeAddModel model, BuildContext context) async {
   try {
     await model.addRecipeToFirebase();
     model.endLoading();
+    Vibrate.feedback(FeedbackType.medium);
     await showDialog(
       context: context,
       barrierDismissible: false,
