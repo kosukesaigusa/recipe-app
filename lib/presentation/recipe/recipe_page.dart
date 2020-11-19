@@ -222,7 +222,7 @@ class RecipePage extends StatelessWidget {
                               ),
                               textAlign: TextAlign.left,
                             ),
-                            Text('${model.recipe.name}'),
+                            SelectableText('${model.recipe.name}'),
                           ],
                         ),
                         SizedBox(
@@ -309,7 +309,7 @@ class RecipePage extends StatelessWidget {
                               ),
                               textAlign: TextAlign.left,
                             ),
-                            Text('${model.recipe.content}'),
+                            SelectableText('${model.recipe.content}'),
                           ],
                         ),
                         SizedBox(
@@ -328,7 +328,7 @@ class RecipePage extends StatelessWidget {
                                     ),
                                     textAlign: TextAlign.left,
                                   ),
-                                  Text('${model.recipe.reference}'),
+                                  SelectableText('${model.recipe.reference}'),
                                 ],
                               ),
                       ],
