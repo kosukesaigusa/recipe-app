@@ -1,21 +1,38 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info/package_info.dart';
 import 'package:recipe/common/convert_error_message.dart';
 
 class MyAccountModel extends ChangeNotifier {
-  bool isLoading = false;
+  bool isLoading;
   String mail;
-  User user;
+  PackageInfo packageInfo;
+  String version;
 
-  Future fetchMyAccount() async {
-    this.isLoading = true;
+  MyAccountModel() {
     final firebaseUser = FirebaseAuth.instance.currentUser;
     this.mail = firebaseUser.email;
-    this.isLoading = false;
+    this.isLoading = true;
+    this.version = '';
+    init();
     notifyListeners();
   }
 
-  Future signOut() async {
+  Future init() async {
+    startLoading();
+    this.packageInfo = await PackageInfo.fromPlatform();
+    this.version = packageInfo.version;
+    notifyListeners();
+    endLoading();
+  }
+
+  Future fetchMyAccount() async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    this.mail = firebaseUser.email;
+    notifyListeners();
+  }
+
+  Future<void> signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
     } catch (e) {

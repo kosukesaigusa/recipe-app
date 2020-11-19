@@ -12,7 +12,7 @@ class MyAccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<MyAccountModel>(
-      create: (_) => MyAccountModel()..fetchMyAccount(),
+      create: (_) => MyAccountModel(),
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(36.0),
@@ -39,7 +39,7 @@ class MyAccountPage extends StatelessWidget {
         body: Consumer<MyAccountModel>(
           builder: (context, model, child) {
             return Stack(
-              children: <Widget>[
+              children: [
                 GestureDetector(
                   onHorizontalDragUpdate: (details) {
                     // 右スワイプ
@@ -52,88 +52,101 @@ class MyAccountPage extends StatelessWidget {
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          model.mail == null
-                              ? Text('ゲスト')
-                              : Text('${model.mail}'),
-                          model.mail == null
-                              ? FlatButton(
-                                  textColor: Color(0xFFF39800),
-                                  onPressed: () async {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            LinkAnonymousUserPage(),
-                                      ),
-                                    );
-                                    await model.fetchMyAccount();
-                                  },
-                                  child: Text('登録して利用する'),
-                                )
-                              : SizedBox(),
-                          model.mail != null
-                              ? FlatButton(
-                                  textColor: Color(0xFFF39800),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EmailUpdatePage(),
-                                        fullscreenDialog: true,
-                                      ),
-                                    );
-                                  },
-                                  child: Text('メールアドレスの変更'),
-                                )
-                              : SizedBox(),
-                          model.mail != null
-                              ? FlatButton(
-                                  textColor: Color(0xFFF39800),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            PasswordUpdatePage(),
-                                        fullscreenDialog: true,
-                                      ),
-                                    );
-                                  },
-                                  child: Text('パスワードの変更'),
-                                )
-                              : SizedBox(),
-                          model.mail != null
-                              ? FlatButton(
-                                  textColor: Color(0xFFF39800),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ContactPage(),
-                                        fullscreenDialog: true,
-                                      ),
-                                    );
-                                  },
-                                  child: Text('お問い合わせ'),
-                                )
-                              : SizedBox(),
-                          model.mail != null
-                              ? FlatButton(
-                                  textColor: Colors.grey,
-                                  onPressed: () async {
-                                    await model.signOut();
-                                    await Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => SignInPage(),
-                                      ),
-                                    );
-                                  },
-                                  child: Text('ログアウト'),
-                                )
-                              : SizedBox(),
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                model.mail == null
+                                    ? Text('ゲスト')
+                                    : Text('${model.mail}'),
+                                model.mail == null
+                                    ? FlatButton(
+                                        textColor: Color(0xFFF39800),
+                                        onPressed: () async {
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  LinkAnonymousUserPage(),
+                                            ),
+                                          );
+                                          await model.fetchMyAccount();
+                                        },
+                                        child: Text('登録して利用する'),
+                                      )
+                                    : SizedBox(),
+                                model.mail != null
+                                    ? FlatButton(
+                                        textColor: Color(0xFFF39800),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EmailUpdatePage(),
+                                              fullscreenDialog: true,
+                                            ),
+                                          );
+                                        },
+                                        child: Text('メールアドレスの変更'),
+                                      )
+                                    : SizedBox(),
+                                model.mail != null
+                                    ? FlatButton(
+                                        textColor: Color(0xFFF39800),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PasswordUpdatePage(),
+                                              fullscreenDialog: true,
+                                            ),
+                                          );
+                                        },
+                                        child: Text('パスワードの変更'),
+                                      )
+                                    : SizedBox(),
+                                model.mail != null
+                                    ? FlatButton(
+                                        textColor: Color(0xFFF39800),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ContactPage(),
+                                              fullscreenDialog: true,
+                                            ),
+                                          );
+                                        },
+                                        child: Text('お問い合わせ'),
+                                      )
+                                    : SizedBox(),
+                                model.mail != null
+                                    ? FlatButton(
+                                        textColor: Colors.grey,
+                                        onPressed: () async {
+                                          await model.signOut();
+                                          await Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  SignInPage(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text('ログアウト'),
+                                      )
+                                    : SizedBox(),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text('Version: ${model.version}'),
+                          ),
                         ],
                       ),
                     ),
