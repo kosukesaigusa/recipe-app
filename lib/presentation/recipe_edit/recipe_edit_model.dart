@@ -285,7 +285,7 @@ class RecipeEditModel extends ChangeNotifier {
       this.editedRecipe.errorName = 'レシピ名を入力して下さい。';
     } else if (text.length > 30) {
       this.editedRecipe.isNameValid = false;
-      this.editedRecipe.errorName = '30文字以内で入力して下さい。';
+      this.editedRecipe.errorName = '30文字以内で入力して下さい（現在 ${text.length} 文字）。';
     } else {
       this.editedRecipe.isNameValid = true;
       this.editedRecipe.errorName = '';
@@ -301,7 +301,8 @@ class RecipeEditModel extends ChangeNotifier {
       this.editedRecipe.errorContent = 'レシピの内容を入力して下さい。';
     } else if (text.length > 1000) {
       this.editedRecipe.isContentValid = false;
-      this.editedRecipe.errorContent = '1000文字以内で入力して下さい。';
+      this.editedRecipe.errorContent =
+          '1000文字以内で入力して下さい（現在 ${text.length} 文字）。';
     } else {
       this.editedRecipe.isContentValid = true;
       this.editedRecipe.errorContent = '';
@@ -314,11 +315,27 @@ class RecipeEditModel extends ChangeNotifier {
     this.editedRecipe.reference = text;
     if (text.length > 1000) {
       this.editedRecipe.isReferenceValid = false;
-      this.editedRecipe.errorReference = '1000文字以内で入力して下さい。';
+      this.editedRecipe.errorReference =
+          '1000文字以内で入力して下さい（現在 ${text.length} 文字）。';
     } else {
       this.editedRecipe.isReferenceValid = true;
       this.editedRecipe.errorReference = '';
     }
+    notifyListeners();
+  }
+
+  void focusRecipeName(val) {
+    this.editedRecipe.isNameFocused = val;
+    notifyListeners();
+  }
+
+  void focusRecipeContent(val) {
+    this.editedRecipe.isContentFocused = val;
+    notifyListeners();
+  }
+
+  void focusRecipeReference(val) {
+    this.editedRecipe.isReferenceFocused = val;
     notifyListeners();
   }
 
