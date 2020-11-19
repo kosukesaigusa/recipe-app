@@ -10,6 +10,7 @@ import 'package:recipe/presentation/top/top_page.dart';
 import 'package:vibrate/vibrate.dart';
 
 class RecipeAddPage extends StatelessWidget {
+  final FocusNode _focusNodeName = FocusNode();
   final FocusNode _focusNodeContent = FocusNode();
   final FocusNode _focusNodeReference = FocusNode();
 
@@ -43,6 +44,21 @@ class RecipeAddPage extends StatelessWidget {
       create: (_) => RecipeAddModel(),
       child: Consumer<RecipeAddModel>(
         builder: (context, model, child) {
+          // レシピ名, 作り方・材料, 参考にしたレシピの
+          // 3 つのフィールドのフォーカス状況の管理
+          this._focusNodeName.addListener(() {
+            model.recipeAdd.isNameFocused = this._focusNodeName.hasFocus;
+            model.focusRecipeName(this._focusNodeName.hasFocus);
+          });
+          this._focusNodeContent.addListener(() {
+            model.recipeAdd.isContentFocused = this._focusNodeContent.hasFocus;
+            model.focusRecipeContent(this._focusNodeContent.hasFocus);
+          });
+          this._focusNodeReference.addListener(() {
+            model.recipeAdd.isReferenceFocused =
+                this._focusNodeReference.hasFocus;
+            model.focusRecipeReference(this._focusNodeReference.hasFocus);
+          });
           return Scaffold(
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(32.0),
@@ -80,7 +96,7 @@ class RecipeAddPage extends StatelessWidget {
                             actions: <Widget>[
                               FlatButton(
                                 child: Text('キャンセル'),
-                                onPressed: () async {
+                                onPressed: () {
                                   Navigator.of(context).pop();
                                 },
                               ),
@@ -146,6 +162,7 @@ class RecipeAddPage extends StatelessWidget {
                             height: 8,
                           ),
                           TextFormField(
+                            focusNode: this._focusNodeName,
                             initialValue: model.recipeAdd.name,
                             textInputAction: TextInputAction.done,
                             onChanged: (text) {
@@ -164,6 +181,23 @@ class RecipeAddPage extends StatelessWidget {
                               height: 1.0,
                             ),
                           ),
+                          model.recipeAdd.isNameFocused &&
+                                  model.recipeAdd.name.length >= 20 &&
+                                  model.recipeAdd.name.length <= 30
+                              ? Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 8.0,
+                                    left: 12.0,
+                                  ),
+                                  child: Text(
+                                    '残り ${30 - model.recipeAdd.name.length} 文字です。',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFF39800),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(),
                           SizedBox(
                             height: 16,
                           ),
@@ -268,6 +302,23 @@ class RecipeAddPage extends StatelessWidget {
                               height: 1.4,
                             ),
                           ),
+                          model.recipeAdd.isContentFocused &&
+                                  model.recipeAdd.content.length >= 900 &&
+                                  model.recipeAdd.content.length <= 1000
+                              ? Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 8.0,
+                                    left: 12.0,
+                                  ),
+                                  child: Text(
+                                    '残り ${1000 - model.recipeAdd.content.length} 文字です。',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFF39800),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(),
                           SizedBox(
                             height: 16,
                           ),
@@ -294,6 +345,9 @@ class RecipeAddPage extends StatelessWidget {
                               labelText: '参考にしたレシピのURLや書籍名を記入',
                               alignLabelWithHint: true,
                               border: OutlineInputBorder(),
+                              errorText: model.recipeAdd.errorReference == ''
+                                  ? null
+                                  : model.recipeAdd.errorReference,
                             ),
                             style: TextStyle(
                               fontSize: 14.0,

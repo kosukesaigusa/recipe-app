@@ -30,6 +30,7 @@ dependencies:
   flutter_native_image: ^0.0.5+3
   cached_network_image: ^2.3.3
   vibrate: ^0.0.4
+  package_info: ^0.4.3+2
 
 dev_dependencies:
   flutter_test:

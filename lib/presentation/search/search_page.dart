@@ -10,6 +10,9 @@ import 'package:recipe/presentation/search/search_model.dart';
 import 'package:vibrate/vibrate.dart';
 
 class SearchPage extends StatelessWidget {
+  final FocusNode _focusNodeMySearch = FocusNode();
+  final FocusNode _focusNodePublicSearch = FocusNode();
+
   @override
   Widget build(BuildContext context) {
     // デバイスの画面サイズを取得
@@ -93,6 +96,7 @@ class SearchPage extends StatelessWidget {
                                   child: TextFormField(
                                     controller:
                                         model.myRecipeTab.textController,
+                                    focusNode: this._focusNodeMySearch,
                                     textInputAction: TextInputAction.done,
                                     onChanged: (text) async {
                                       model.changeMySearchWords(text);
@@ -125,6 +129,7 @@ class SearchPage extends StatelessWidget {
                                                 size: 18,
                                               ),
                                               onPressed: () {
+                                                _focusNodeMySearch.unfocus();
                                                 model.myRecipeTab.textController
                                                     .clear();
                                                 model.myRecipeTab
@@ -296,6 +301,7 @@ class SearchPage extends StatelessWidget {
                                   child: TextFormField(
                                     controller:
                                         model.publicRecipeTab.textController,
+                                    focusNode: this._focusNodePublicSearch,
                                     textInputAction: TextInputAction.done,
                                     onChanged: (text) async {
                                       model.changePublicSearchWords(text);
@@ -328,6 +334,8 @@ class SearchPage extends StatelessWidget {
                                                 size: 18,
                                               ),
                                               onPressed: () {
+                                                _focusNodePublicSearch
+                                                    .unfocus();
                                                 model.publicRecipeTab
                                                     .textController
                                                     .clear();
