@@ -107,96 +107,102 @@ class RecipePage extends StatelessWidget {
                       children: [
                         model.isLoading
                             ? SizedBox()
-                            : model.recipe.isMyRecipe
-                                ? model.recipe.isPublic
-                                    ? Container(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.all(4.0),
-                                              color: Color(0xFFF39800),
-                                              child: Text(
-                                                'わたしのレシピ',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
+                            : Row(
+                                children: [
+                                  model.recipe.isMyRecipe
+                                      ? Container(
+                                          padding: const EdgeInsets.all(4.0),
+                                          color: Color(0xFFF39800),
+                                          child: Text(
+                                            'わたしのレシピ',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
                                             ),
-                                            SizedBox(
-                                              width: 8,
+                                          ),
+                                        )
+                                      : Container(
+                                          padding: const EdgeInsets.all(4.0),
+                                          color: Colors.grey,
+                                          child: Text(
+                                            'みんなのレシピ',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
                                             ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.all(4.0),
-                                              color: Color(0xFFF39800),
-                                              child: Text(
-                                                '公開中',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
-                                      )
-                                    : Container(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.all(4.0),
-                                              color: Color(0xFFF39800),
-                                              child: Text(
-                                                'わたしのレシピ',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
+                                  SizedBox(
+                                    width: 8.0,
+                                  ),
+                                  model.recipe.isPublic
+                                      ? Container(
+                                          padding: const EdgeInsets.all(4.0),
+                                          color: Color(0xFFF39800),
+                                          child: Text(
+                                            '公開中',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
                                             ),
-                                            SizedBox(
-                                              width: 8,
+                                          ),
+                                        )
+                                      : Container(
+                                          padding: const EdgeInsets.all(4.0),
+                                          color: Colors.grey,
+                                          child: Text(
+                                            '非公開',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
                                             ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.all(4.0),
-                                              color: Colors.grey,
-                                              child: Text(
-                                                '非公開',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                          ),
                                         ),
-                                      )
-                                : Container(
-                                    alignment: Alignment.topLeft,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4.0),
-                                      color: Colors.grey,
-                                      child: Text(
-                                        'みんなのレシピ',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
+                                ],
+                              ),
+                        SizedBox(
+                          height: 8,
+                        ),
+                        model.isLoading
+                            ? SizedBox()
+                            : Container(
+                                height: 30,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 30,
+                                      height: 30,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(15),
+                                        child: CachedNetworkImage(
+                                          imageUrl: '${model.authorIconURL}',
+                                          placeholder: (context, url) =>
+                                              Container(
+                                            child: Icon(
+                                              Icons.person,
+                                            ),
+                                          ),
+                                          errorWidget: (context, url, error) =>
+                                              Icon(
+                                            Icons.person,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
+                                    SizedBox(
+                                      width: 8.0,
+                                    ),
+                                    Text(
+                                      '${model.authorDisplayName}',
+                                      style: TextStyle(
+                                        fontSize: 12.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                         SizedBox(
                           height: 8,
                         ),
@@ -207,6 +213,9 @@ class RecipePage extends StatelessWidget {
                                 '${'${model.recipe.updatedAt.toDate()}'.substring(0, 10)} '
                                 '${convertWeekdayName(model.recipe.updatedAt.toDate().weekday)}'
                                 ' ${'${model.recipe.updatedAt.toDate()}'.substring(11, 16)} ',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                ),
                               ),
                         SizedBox(
                           height: 8,

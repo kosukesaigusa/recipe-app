@@ -48,6 +48,9 @@ class SignUpModel extends ChangeNotifier {
           'email': this.mail,
           'userId': this.userCredential.user.uid,
           'createdAt': FieldValue.serverTimestamp(),
+          'displayName': 'シンプルなレシピユーザー',
+          'imageName': null,
+          'imageURL': null,
         },
       );
     } catch (e) {
@@ -66,6 +69,9 @@ class SignUpModel extends ChangeNotifier {
           'email': null,
           'userId': result.user.uid,
           'createdAt': FieldValue.serverTimestamp(),
+          'displayName': 'ゲスト',
+          'imageName': null,
+          'imageURL': null,
         },
       );
     } catch (e) {

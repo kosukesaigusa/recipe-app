@@ -233,23 +233,24 @@ class RecipeEditModel extends ChangeNotifier {
   Future<void> _deleteImage() async {
     String _image = this.currentRecipe.imageName;
     FirebaseStorage _storage = FirebaseStorage.instance;
-    StorageReference _desertRef = _storage.ref().child('images/$_image');
-    _desertRef.delete();
+    StorageReference _imageRef = _storage.ref().child('images/$_image');
+    await _imageRef.delete();
   }
 
   // Firebase Storage からサムネイル画像を削除する
   Future<void> _deleteThumbnail() async {
     String _thumbnail = this.currentRecipe.thumbnailName;
     FirebaseStorage _storage = FirebaseStorage.instance;
-    StorageReference _desertRef =
+    StorageReference _thumbnailRef =
         _storage.ref().child('thumbnails/$_thumbnail');
-    _desertRef.delete();
+    await _thumbnailRef.delete();
   }
 
   Future<void> deleteRecipe() async {
     /// 画像の削除
     await _deleteImage();
     await _deleteThumbnail();
+
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
     WriteBatch _batch = _firestore.batch();
 
@@ -267,7 +268,7 @@ class RecipeEditModel extends ChangeNotifier {
     /// public_recipes のレシピを削除
     _batch.delete(_publicRecipeCollection);
 
-    _batch.commit();
+    await _batch.commit();
 
     endLoading();
     notifyListeners();

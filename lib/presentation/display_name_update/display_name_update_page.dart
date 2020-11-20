@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/common/text_dialog.dart';
-import 'package:recipe/presentation/email_update/email_update_model.dart';
+import 'package:recipe/presentation/display_name_update/display_name_update_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
 
-class EmailUpdatePage extends StatelessWidget {
-  final mailController = TextEditingController();
-  final confirmMailController = TextEditingController();
-  final passwordController = TextEditingController();
+class DisplayNameUpdatePage extends StatelessWidget {
+  final FocusNode _focusNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<EmailUpdateModel>(
-      create: (_) => EmailUpdateModel(),
+    return ChangeNotifierProvider<DisplayNameUpdateModel>(
+      create: (_) => DisplayNameUpdateModel(),
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(36.0),
@@ -21,7 +20,7 @@ class EmailUpdatePage extends StatelessWidget {
             ),
             centerTitle: true,
             title: Text(
-              'メールアドレスの変更',
+              '表示名の変更',
               style: TextStyle(
                 fontSize: 16.0,
                 color: Colors.white,
@@ -38,8 +37,12 @@ class EmailUpdatePage extends StatelessWidget {
             ),
           ),
         ),
-        body: Consumer<EmailUpdateModel>(
+        body: Consumer<DisplayNameUpdateModel>(
           builder: (context, model, child) {
+            this._focusNode.addListener(() {
+              model.isFocused = this._focusNode.hasFocus;
+              model.changeFocus(this._focusNode.hasFocus);
+            });
             return Stack(
               children: <Widget>[
                 Padding(
@@ -48,50 +51,37 @@ class EmailUpdatePage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       TextFormField(
-                        controller: mailController,
+                        focusNode: this._focusNode,
+                        autofocus: true,
                         onChanged: (text) {
-                          model.changeMail(text);
+                          model.changeDisplayName(text);
                         },
                         maxLines: 1,
                         decoration: InputDecoration(
-                          errorText:
-                              model.errorMail == '' ? null : model.errorMail,
-                          labelText: '新しいメールアドレス',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      TextFormField(
-                        controller: confirmMailController,
-                        onChanged: (text) {
-                          model.changeConfirmMail(text);
-                        },
-                        maxLines: 1,
-                        decoration: InputDecoration(
-                          labelText: '新しいメールアドレス（確認用）',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      TextFormField(
-                        controller: passwordController,
-                        onChanged: (text) {
-                          model.changePassword(text);
-                        },
-                        obscureText: true,
-                        maxLines: 1,
-                        decoration: InputDecoration(
-                          errorText: model.errorPassword == ''
+                          errorText: model.errorDisplayName == ''
                               ? null
-                              : model.errorPassword,
-                          labelText: 'パスワード',
+                              : model.errorDisplayName,
+                          labelText: '新しい表示名',
                           border: OutlineInputBorder(),
                         ),
                       ),
+                      model.isFocused &&
+                              model.newDisplayName.length >= 10 &&
+                              model.newDisplayName.length <= 20
+                          ? Padding(
+                              padding: const EdgeInsets.only(
+                                top: 8.0,
+                                left: 12.0,
+                              ),
+                              child: Text(
+                                '残り ${20 - model.newDisplayName.length} 文字です。',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFFF39800),
+                                ),
+                              ),
+                            )
+                          : SizedBox(),
                       SizedBox(
                         height: 16,
                       ),
@@ -99,18 +89,15 @@ class EmailUpdatePage extends StatelessWidget {
                         width: double.infinity,
                         height: 50,
                         child: RaisedButton(
-                          child: Text('メールアドレスを変更'),
+                          child: Text('表示名を変更'),
                           color: Color(0xFFF39800),
                           textColor: Colors.white,
-                          onPressed: model.isMailValid &&
-                                  model.isConfirmMailValid &&
-                                  model.isPasswordValid
+                          onPressed: model.isDisplayNameValid
                               ? () async {
                                   model.startLoading();
                                   try {
-                                    await model.updateMail(context);
-                                    await showTextDialog(
-                                        context, 'メールアドレスを変更しました');
+                                    await model.updateDisplayName(context);
+                                    await showTextDialog(context, '表示名を変更しました');
                                     await Navigator.push(
                                       context,
                                       MaterialPageRoute(
