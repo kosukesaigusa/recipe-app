@@ -135,7 +135,7 @@ class RecipeEditPage extends StatelessWidget {
                                   content: Text('レシピを削除しますか？'),
                                   actions: <Widget>[
                                     FlatButton(
-                                      child: Text('OK'),
+                                      child: Text('削除する'),
                                       onPressed: () async {
                                         await model.deleteRecipe();
                                         await Navigator.pushAndRemoveUntil(
@@ -144,6 +144,12 @@ class RecipeEditPage extends StatelessWidget {
                                               builder: (context) => TopPage(),
                                             ),
                                             (_) => false);
+                                      },
+                                    ),
+                                    FlatButton(
+                                      child: Text('キャンセル'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
                                       },
                                     ),
                                   ],
