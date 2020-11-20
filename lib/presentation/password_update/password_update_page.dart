@@ -120,11 +120,12 @@ class PasswordUpdatePage extends StatelessWidget {
                                     model.endLoading();
                                     await showTextDialog(context,
                                         'パスワードを変更しました。新しいパスワードで再度ログインして下さい。');
-                                    await Navigator.pushReplacement(
+                                    await Navigator.pushAndRemoveUntil(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => SignInPage(),
                                       ),
+                                      (_) => false,
                                     );
                                   } catch (e) {
                                     showTextDialog(context, e);

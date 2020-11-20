@@ -46,7 +46,6 @@ class SignInPage extends StatelessWidget {
                             ),
                             TextFormField(
                               controller: mailController,
-                              autofillHints: [AutofillHints.email],
                               onChanged: (text) {
                                 model.changeMail(text);
                               },
@@ -64,7 +63,6 @@ class SignInPage extends StatelessWidget {
                             ),
                             TextFormField(
                               controller: passwordController,
-                              autofillHints: [AutofillHints.password],
                               onChanged: (text) {
                                 model.changePassword(text);
                               },

@@ -27,46 +27,42 @@ class RecipeAddModel extends ChangeNotifier {
 
   Future<void> showImagePicker() async {
     ImagePicker _picker = ImagePicker();
-    PickedFile _pickedFile =
-        await _picker.getImage(source: ImageSource.gallery);
 
-    // 画像ファイルを端末から選択しなかった場合は処理を終了
-    if (_pickedFile == null) {
+    try {
+      PickedFile _pickedFile =
+          await _picker.getImage(source: ImageSource.gallery);
+
+      // 選択した画像ファイルのパスを保存
+      File _pickedImage = File(_pickedFile.path);
+
+      // 画像をアスペクト比 4:3 で 切り抜く
+      File _croppedImageFile = await ImageCropper.cropImage(
+        sourcePath: _pickedImage.path,
+        maxHeight: 150,
+        aspectRatio: CropAspectRatio(ratioX: 4, ratioY: 3),
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 10,
+        iosUiSettings: IOSUiSettings(
+          title: '編集',
+        ),
+      );
+
+      // レシピ画像（W: 400, H:300 @2x）をインスタンス変数に保存
+      this.imageFile = await FlutterNativeImage.compressImage(
+        _croppedImageFile.path,
+        targetWidth: 400,
+        targetHeight: 300,
+      );
+
+      // サムネイル用画像（W: 200, H: 30 @2x）を
+      this.thumbnailImageFile = await FlutterNativeImage.compressImage(
+        _croppedImageFile.path,
+        targetWidth: 200,
+        targetHeight: 150,
+      );
+    } catch (e) {
       return;
     }
-
-    // 選択した画像ファイルのパスを保存
-    File _pickedImage = File(_pickedFile.path);
-
-    if (_pickedImage == null) {
-      return;
-    }
-
-    // 画像をアスペクト比 4:3 で 切り抜く
-    File _croppedImageFile = await ImageCropper.cropImage(
-      sourcePath: _pickedImage.path,
-      maxHeight: 150,
-      aspectRatio: CropAspectRatio(ratioX: 4, ratioY: 3),
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 10,
-      iosUiSettings: IOSUiSettings(
-        title: '編集',
-      ),
-    );
-
-    // レシピ画像（W: 400, H:300 @2x）をインスタンス変数に保存
-    this.imageFile = await FlutterNativeImage.compressImage(
-      _croppedImageFile.path,
-      targetWidth: 400,
-      targetHeight: 300,
-    );
-
-    // サムネイル用画像（W: 200, H: 30 @2x）を
-    this.thumbnailImageFile = await FlutterNativeImage.compressImage(
-      _croppedImageFile.path,
-      targetWidth: 200,
-      targetHeight: 150,
-    );
 
     notifyListeners();
   }

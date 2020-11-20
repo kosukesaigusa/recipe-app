@@ -54,7 +54,6 @@ class EmailUpdateModel extends ChangeNotifier {
           FirebaseFirestore.instance.collection('users').doc(user.uid);
       await targetDoc.update({
         'email': this.mail,
-        'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       print('エラーコード：${e.code}\nエラー：$e');

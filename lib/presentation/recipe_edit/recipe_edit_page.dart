@@ -136,15 +136,21 @@ class RecipeEditPage extends StatelessWidget {
                                   content: Text('レシピを削除しますか？'),
                                   actions: <Widget>[
                                     FlatButton(
-                                      child: Text('OK'),
+                                      child: Text('削除する'),
                                       onPressed: () async {
                                         await model.deleteRecipe();
-                                        await Navigator.pushAndRemoveUntil(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => TopPage(),
-                                            ),
-                                            (_) => false);
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => TopPage(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    FlatButton(
+                                      child: Text('キャンセル'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
                                       },
                                     ),
                                   ],
@@ -831,12 +837,12 @@ Future updateRecipe(RecipeEditModel model, BuildContext context) async {
             FlatButton(
               child: Text('OK'),
               onPressed: () async {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TopPage(),
-                    ),
-                    (_) => false);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TopPage(),
+                  ),
+                );
               },
             ),
           ],
