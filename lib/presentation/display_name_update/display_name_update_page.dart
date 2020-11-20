@@ -49,6 +49,7 @@ class DisplayNameUpdatePage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       TextFormField(
                         focusNode: this._focusNode,
