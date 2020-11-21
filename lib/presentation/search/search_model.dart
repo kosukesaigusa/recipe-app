@@ -10,6 +10,7 @@ class SearchModel extends ChangeNotifier {
   FirebaseAuth _auth;
   MyRecipeTab myRecipeTab;
   PublicRecipeTab publicRecipeTab;
+  FavoriteRecipeTab favoriteRecipeTab;
   String userId;
   int loadLimit;
   bool canReload;
@@ -17,6 +18,7 @@ class SearchModel extends ChangeNotifier {
   SearchModel() {
     this.myRecipeTab = MyRecipeTab();
     this.publicRecipeTab = PublicRecipeTab();
+    this.favoriteRecipeTab = FavoriteRecipeTab();
     this._auth = FirebaseAuth.instance;
     this.userId = '';
     this.loadLimit = 10;
@@ -26,6 +28,7 @@ class SearchModel extends ChangeNotifier {
   Future<void> fetchRecipes(context) async {
     startMyTabLoading();
     startPublicTabLoading();
+    startFavoriteTabLoading();
     if (_auth.currentUser == null) {
       await Navigator.pushReplacement(
         context,
@@ -38,6 +41,7 @@ class SearchModel extends ChangeNotifier {
     }
     await loadMyRecipes();
     await loadPublicRecipes();
+    await loadFavoriteRecipes();
     notifyListeners();
   }
 
@@ -119,6 +123,66 @@ class SearchModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> loadFavoriteRecipes() async {
+    startFavoriteTabLoading();
+
+    /// テスト
+    QuerySnapshot _favoriteList = await FirebaseFirestore.instance
+        .collection('users/${this.userId}/favorite_recipes')
+        .limit(this.loadLimit)
+        .get();
+
+    List<DocumentSnapshot> _favoriteSnap = [];
+
+    for (final doc in _favoriteList.docs) {
+      // publicが含まれているかを判定し
+      // pathを分岐させる
+      if (doc.id.contains('public')) {
+        _favoriteSnap.add(
+          await FirebaseFirestore.instance
+              .collection('public_recipes')
+              .doc(doc.id)
+              .get(),
+        );
+      } else {
+        _favoriteSnap.add(
+          await FirebaseFirestore.instance
+              .collection('users/${this.userId}/recipes')
+              .doc(doc.id)
+              .get(),
+        );
+      }
+    }
+
+    /// 取得するレシピが1件以上あるか確認
+    if (_favoriteSnap.length == 0) {
+      /// 1件も存在しない場合
+      this.favoriteRecipeTab.existsRecipe = false;
+      this.favoriteRecipeTab.canLoadMore = false;
+      this.favoriteRecipeTab.recipes = [];
+    } else if (_favoriteSnap.length < this.loadLimit) {
+      /// 1件以上10件未満存在する場合
+      this.favoriteRecipeTab.existsRecipe = true;
+      this.favoriteRecipeTab.canLoadMore = false;
+      this.favoriteRecipeTab.lastVisible =
+          _favoriteList.docs[_favoriteList.docs.length - 1];
+      final _myRecipes = _favoriteSnap.map((doc) => Recipe(doc)).toList();
+      this.favoriteRecipeTab.recipes = _myRecipes;
+    } else {
+      /// 10件以上存在する場合
+      this.favoriteRecipeTab.existsRecipe = true;
+      this.favoriteRecipeTab.canLoadMore = true;
+      this.favoriteRecipeTab.lastVisible =
+          _favoriteList.docs[_favoriteList.docs.length - 1];
+      final _myRecipes = _favoriteSnap.map((doc) => Recipe(doc)).toList();
+      this.favoriteRecipeTab.recipes = _myRecipes;
+    }
+
+    endFavoriteTabLoading();
+    hideFavoriteLoadingWidget();
+    notifyListeners();
+  }
+
   /// わたしのレシピをさらに10件取得
   Future<void> loadMoreMyRecipes() async {
     startLoadingMoreMyRecipe();
@@ -177,6 +241,57 @@ class SearchModel extends ChangeNotifier {
     }
 
     endLoadingMorePublicRecipe();
+    notifyListeners();
+  }
+
+  /// お気に入りのレシピをさらに10件取得
+  Future<void> loadMoreFavoriteRecipes() async {
+    startLoadingMoreFavoriteRecipe();
+
+    QuerySnapshot _snap = await FirebaseFirestore.instance
+        .collection('users/${this.userId}/favorite_recipes')
+        .startAfterDocument(this.favoriteRecipeTab.lastVisible)
+        .limit(this.loadLimit)
+        .get();
+
+    List<DocumentSnapshot> _favoriteSnap = [];
+
+    for (final doc in _snap.docs) {
+      // publicが含まれているかを判定し
+      // pathを分岐させる
+      if (doc.id.contains('public')) {
+        _favoriteSnap.add(
+          await FirebaseFirestore.instance
+              .collection('public_recipes')
+              .doc(doc.id)
+              .get(),
+        );
+      } else {
+        _favoriteSnap.add(
+          await FirebaseFirestore.instance
+              .collection('users/${this.userId}/recipes')
+              .doc(doc.id)
+              .get(),
+        );
+      }
+    }
+
+    /// 新たに取得するレシピが残っているか確認
+    if (_snap.docs.length == 0) {
+      this.favoriteRecipeTab.canLoadMore = false;
+    } else if (_snap.docs.length < this.loadLimit) {
+      this.favoriteRecipeTab.canLoadMore = false;
+      this.favoriteRecipeTab.lastVisible = _snap.docs[_snap.docs.length - 1];
+      final _moreRecipes = _favoriteSnap.map((doc) => Recipe(doc)).toList();
+      this.favoriteRecipeTab.recipes.addAll(_moreRecipes);
+    } else {
+      this.favoriteRecipeTab.canLoadMore = true;
+      this.favoriteRecipeTab.lastVisible = _snap.docs[_snap.docs.length - 1];
+      final _moreRecipes = _favoriteSnap.map((doc) => Recipe(doc)).toList();
+      this.favoriteRecipeTab.recipes.addAll(_moreRecipes);
+    }
+
+    endLoadingMoreFavoriteRecipe();
     notifyListeners();
   }
 
@@ -351,6 +466,7 @@ class SearchModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  ///
   void startMyTabLoading() {
     this.myRecipeTab.isLoading = true;
     notifyListeners();
@@ -371,11 +487,17 @@ class SearchModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void startMyRecipeFiltering() {
-    this.myRecipeTab.isFiltering = true;
+  void startFavoriteTabLoading() {
+    this.favoriteRecipeTab.isLoading = true;
     notifyListeners();
   }
 
+  void endFavoriteTabLoading() {
+    this.favoriteRecipeTab.isLoading = false;
+    notifyListeners();
+  }
+
+  ///
   void startLoadingMoreMyRecipe() {
     this.myRecipeTab.isLoadingMore = true;
     notifyListeners();
@@ -396,6 +518,22 @@ class SearchModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void startLoadingMoreFavoriteRecipe() {
+    this.favoriteRecipeTab.isLoadingMore = true;
+    notifyListeners();
+  }
+
+  void endLoadingMoreFavoriteRecipe() {
+    this.favoriteRecipeTab.isLoadingMore = false;
+    notifyListeners();
+  }
+
+  ///
+  void startMyRecipeFiltering() {
+    this.myRecipeTab.isFiltering = true;
+    notifyListeners();
+  }
+
   void endMyRecipeFiltering() {
     this.myRecipeTab.isFiltering = false;
     notifyListeners();
@@ -411,6 +549,7 @@ class SearchModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  ///
   void hideMyLoadingWidget() {
     this.myRecipeTab.showReloadWidget = false;
     notifyListeners();
@@ -418,6 +557,11 @@ class SearchModel extends ChangeNotifier {
 
   void hidePublicLoadingWidget() {
     this.publicRecipeTab.showReloadWidget = false;
+    notifyListeners();
+  }
+
+  void hideFavoriteLoadingWidget() {
+    this.favoriteRecipeTab.showReloadWidget = false;
     notifyListeners();
   }
 

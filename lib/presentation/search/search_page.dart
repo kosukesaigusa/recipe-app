@@ -23,7 +23,7 @@ class SearchPage extends StatelessWidget {
             child: Stack(
               children: [
                 DefaultTabController(
-                  length: 2,
+                  length: 3,
                   child: Scaffold(
                     appBar: PreferredSize(
                       preferredSize: Size.fromHeight(48.0),
@@ -52,6 +52,14 @@ class SearchPage extends StatelessWidget {
                             TabBar(
                               isScrollable: true,
                               tabs: [
+                                // お気に入りタブ
+                                Tab(
+                                  child: Icon(
+                                    Icons.favorite,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
                                 Tab(
                                   child: Text(
                                     'わたしのレシピ',
@@ -78,6 +86,99 @@ class SearchPage extends StatelessWidget {
                     ),
                     body: TabBarView(
                       children: [
+                        /// 「お気に入り」タブ
+                        Stack(
+                          children: [
+                            Column(
+                              children: [
+                                Expanded(
+                                  child:
+                                      NotificationListener<ScrollNotification>(
+                                    onNotification:
+                                        (ScrollNotification _notification) {
+                                      /// Load more:
+                                      if (_notification.metrics.pixels ==
+                                          _notification
+                                              .metrics.maxScrollExtent) {
+                                        if (model
+                                            .favoriteRecipeTab.isLoadingMore) {
+                                          // 前のクエリを取得中の場合は待つ
+                                        } else {
+                                          model.loadMoreFavoriteRecipes();
+                                        }
+                                      }
+
+                                      /// Reload:
+                                      if (_notification.metrics.pixels == 0) {
+                                        model.canReload = true;
+                                      }
+                                      if (_notification.metrics.pixels < -100) {
+                                        if (model.canReload &&
+                                            !model
+                                                .favoriteRecipeTab.isLoading) {
+                                          model.canReload = false;
+                                          model.favoriteRecipeTab
+                                              .showReloadWidget = true;
+                                          Vibrate.feedback(FeedbackType.medium);
+                                          model.loadFavoriteRecipes();
+                                        }
+                                      }
+                                      return false;
+                                    },
+                                    child: ListView(
+                                      key: PageStorageKey(0), // スクロール位置の保存に必要
+                                      children: [
+                                        /// お気に入りのレシピをFirestoreから取得
+                                        Column(
+                                          children: [
+                                            model.favoriteRecipeTab
+                                                    .showReloadWidget
+                                                ? Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                      4.0,
+                                                    ),
+                                                    width: 30,
+                                                    height: 30,
+                                                    child:
+                                                        CircularProgressIndicator(),
+                                                  )
+                                                : SizedBox(),
+                                            model.favoriteRecipeTab
+                                                    .showFilteredRecipe
+                                                ? _recipeCards(
+                                                    model.favoriteRecipeTab
+                                                        .filteredRecipes,
+                                                    _size,
+                                                    model.userId,
+                                                    'my_tab',
+                                                    context)
+                                                : _recipeCards(
+                                                    model.favoriteRecipeTab
+                                                        .recipes,
+                                                    _size,
+                                                    model.userId,
+                                                    'my_tab',
+                                                    context),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            model.favoriteRecipeTab.isLoading &&
+                                    !model.favoriteRecipeTab.showReloadWidget
+                                ? Container(
+                                    child: Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : SizedBox(),
+                          ],
+                        ),
+
                         /// 「わたしのレシピ」タブ
                         Stack(
                           children: [
@@ -188,7 +289,7 @@ class SearchPage extends StatelessWidget {
                                       return false;
                                     },
                                     child: ListView(
-                                      key: PageStorageKey(0), // スクロール位置の保存に必要
+                                      key: PageStorageKey(1), // スクロール位置の保存に必要
                                       children: [
                                         /// わたしのレシピをFirestoreから取得
                                         Column(
@@ -396,7 +497,7 @@ class SearchPage extends StatelessWidget {
                                       return false;
                                     },
                                     child: ListView(
-                                      key: PageStorageKey(1), // スクロール位置の保存に必要
+                                      key: PageStorageKey(2), // スクロール位置の保存に必要
                                       children: [
                                         Column(
                                           children: [
