@@ -288,14 +288,6 @@ class MyAccountPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                model.isLoading
-                    ? Container(
-                        color: Colors.black.withOpacity(0.3),
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    : SizedBox(),
                 model.isSubmitting
                     ? Container(
                         height: double.infinity,
