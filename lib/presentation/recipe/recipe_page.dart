@@ -194,12 +194,14 @@ class RecipePage extends StatelessWidget {
                                     SizedBox(
                                       width: 8.0,
                                     ),
-                                    Text(
-                                      '${model.authorDisplayName}',
-                                      style: TextStyle(
-                                        fontSize: 12.0,
-                                      ),
-                                    ),
+                                    model.authorDisplayName == null
+                                        ? SizedBox()
+                                        : Text(
+                                            '${model.authorDisplayName}',
+                                            style: TextStyle(
+                                              fontSize: 12.0,
+                                            ),
+                                          ),
                                   ],
                                 ),
                               ),
