@@ -496,7 +496,7 @@ class RecipeEditPage extends StatelessWidget {
                             ),
                             style: TextStyle(
                               fontSize: 14.0,
-                              height: 1.0,
+                              height: 1.4,
                             ),
                           ),
                           SizedBox(
