@@ -14,6 +14,9 @@ class RecipeModel extends ChangeNotifier {
   Recipe recipe;
   String userId;
   bool isLoading;
+  bool isFavorite = false;
+
+  final currentUserId = FirebaseAuth.instance.currentUser.uid;
 
   Future<void> fetchRecipe() async {
     startLoading();
@@ -50,5 +53,30 @@ class RecipeModel extends ChangeNotifier {
   void endLoading() {
     this.isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> pressedFavoriteButton() async {
+    if (isFavorite) {
+      isFavorite = false;
+      notifyListeners();
+      // お気に入りから削除する
+      await FirebaseFirestore.instance
+          .collection('users/$currentUserId/favorite_recipes')
+          .doc(recipe.documentId)
+          .delete();
+    } else {
+      isFavorite = true;
+      notifyListeners();
+      // お気に入りに追加する
+      // ひとまずdocumentIDを追加していく形で実装します
+      await FirebaseFirestore.instance
+          .collection('users/$currentUserId/favorite_recipes')
+          .doc(recipe.documentId)
+          .set(
+        {
+          'createdAt': FieldValue.serverTimestamp(),
+        },
+      );
+    }
   }
 }

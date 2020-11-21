@@ -143,6 +143,38 @@ class RecipePage extends StatelessWidget {
                                                 ),
                                               ),
                                             ),
+                                            Expanded(child: Container()),
+                                            model.isFavorite
+                                                ? SizedBox(
+                                                    height: 20,
+                                                    child: IconButton(
+                                                      icon: Icon(
+                                                        Icons.favorite,
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.all(0.0),
+                                                      color: Color(0xFFF39800),
+                                                      onPressed: () {
+                                                        model
+                                                            .pressedFavoriteButton();
+                                                      },
+                                                    ),
+                                                  )
+                                                : SizedBox(
+                                                    height: 20,
+                                                    child: IconButton(
+                                                      icon: Icon(
+                                                        Icons.favorite_border,
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.all(0.0),
+                                                      color: Color(0xFFF39800),
+                                                      onPressed: () {
+                                                        model
+                                                            .pressedFavoriteButton();
+                                                      },
+                                                    ),
+                                                  ),
                                           ],
                                         ),
                                       )
@@ -180,21 +212,87 @@ class RecipePage extends StatelessWidget {
                                                 ),
                                               ),
                                             ),
+                                            Expanded(child: Container()),
+                                            model.isFavorite
+                                                ? SizedBox(
+                                                    height: 20,
+                                                    child: IconButton(
+                                                      icon: Icon(
+                                                        Icons.favorite,
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.all(0.0),
+                                                      color: Color(0xFFF39800),
+                                                      onPressed: () {
+                                                        model
+                                                            .pressedFavoriteButton();
+                                                      },
+                                                    ),
+                                                  )
+                                                : SizedBox(
+                                                    height: 20,
+                                                    child: IconButton(
+                                                      icon: Icon(
+                                                        Icons.favorite_border,
+                                                      ),
+                                                      padding:
+                                                          EdgeInsets.all(0.0),
+                                                      color: Color(0xFFF39800),
+                                                      onPressed: () {
+                                                        model
+                                                            .pressedFavoriteButton();
+                                                      },
+                                                    ),
+                                                  ),
                                           ],
                                         ),
                                       )
                                 : Container(
                                     alignment: Alignment.topLeft,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4.0),
-                                      color: Colors.grey,
-                                      child: Text(
-                                        'みんなのレシピ',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(4.0),
+                                          color: Colors.grey,
+                                          child: Text(
+                                            'みんなのレシピ',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        Expanded(child: Container()),
+                                        model.isFavorite
+                                            ? SizedBox(
+                                                height: 20,
+                                                child: IconButton(
+                                                  icon: Icon(
+                                                    Icons.favorite,
+                                                  ),
+                                                  padding: EdgeInsets.all(0.0),
+                                                  color: Color(0xFFF39800),
+                                                  onPressed: () {
+                                                    model
+                                                        .pressedFavoriteButton();
+                                                  },
+                                                ),
+                                              )
+                                            : SizedBox(
+                                                height: 20,
+                                                child: IconButton(
+                                                  icon: Icon(
+                                                    Icons.favorite_border,
+                                                  ),
+                                                  padding: EdgeInsets.all(0.0),
+                                                  color: Color(0xFFF39800),
+                                                  onPressed: () {
+                                                    model
+                                                        .pressedFavoriteButton();
+                                                  },
+                                                ),
+                                              ),
+                                      ],
                                     ),
                                   ),
                         SizedBox(
