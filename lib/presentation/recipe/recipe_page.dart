@@ -144,7 +144,7 @@ class RecipePage extends StatelessWidget {
                                               ),
                                             ),
                                             Expanded(child: Container()),
-                                            model.isFavorite
+                                            model.recipe.isFavorite
                                                 ? SizedBox(
                                                     height: 20,
                                                     child: IconButton(
@@ -213,7 +213,7 @@ class RecipePage extends StatelessWidget {
                                               ),
                                             ),
                                             Expanded(child: Container()),
-                                            model.isFavorite
+                                            model.recipe.isFavorite
                                                 ? SizedBox(
                                                     height: 20,
                                                     child: IconButton(
@@ -263,7 +263,7 @@ class RecipePage extends StatelessWidget {
                                           ),
                                         ),
                                         Expanded(child: Container()),
-                                        model.isFavorite
+                                        model.recipe.isFavorite
                                             ? SizedBox(
                                                 height: 20,
                                                 child: IconButton(

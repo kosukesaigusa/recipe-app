@@ -679,11 +679,17 @@ class SearchPage extends StatelessWidget {
                                   ),
                                 ),
                                 // ToDo: recipes[i].isFavorite がtrueなら塗りつぶす
-                                Icon(
-                                  Icons.favorite_border,
-                                  size: 16.0,
-                                  color: Color(0xFFF39800),
-                                )
+                                recipes[i].isFavorite
+                                    ? Icon(
+                                        Icons.favorite,
+                                        size: 16.0,
+                                        color: Color(0xFFF39800),
+                                      )
+                                    : Icon(
+                                        Icons.favorite_border,
+                                        size: 16.0,
+                                        color: Color(0xFFF39800),
+                                      )
                               ],
                             ),
                           ),

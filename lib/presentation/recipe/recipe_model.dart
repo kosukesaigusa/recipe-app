@@ -14,7 +14,6 @@ class RecipeModel extends ChangeNotifier {
   Recipe recipe;
   String userId;
   bool isLoading;
-  bool isFavorite = false;
 
   final currentUserId = FirebaseAuth.instance.currentUser.uid;
 
@@ -56,8 +55,8 @@ class RecipeModel extends ChangeNotifier {
   }
 
   Future<void> pressedFavoriteButton() async {
-    if (isFavorite) {
-      isFavorite = false;
+    if (recipe.isFavorite) {
+      recipe.isFavorite = false;
       notifyListeners();
       // お気に入りから削除する
       await FirebaseFirestore.instance
@@ -65,7 +64,7 @@ class RecipeModel extends ChangeNotifier {
           .doc(recipe.documentId)
           .delete();
     } else {
-      isFavorite = true;
+      recipe.isFavorite = true;
       notifyListeners();
       // お気に入りに追加する
       // ひとまずdocumentIDを追加していく形で実装します

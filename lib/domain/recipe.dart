@@ -17,6 +17,7 @@ class Recipe {
     tokenMap = doc.data()['tokenMap'];
     isPublic = doc.data()['isPublic'];
     isMyRecipe = false;
+    isFavorite = false;
   }
 
   String documentId;
@@ -34,4 +35,10 @@ class Recipe {
   Map tokenMap;
   bool isPublic;
   bool isMyRecipe;
+  bool isFavorite;
+
+  // ducumentIdリストを渡して自分のIdと合致しているか調べる
+  existFavorite(List<String> favoriteDocIdList) async {
+    isFavorite = favoriteDocIdList.contains(documentId);
+  }
 }
