@@ -680,6 +680,7 @@ class SearchModel extends ChangeNotifier {
         .collection('users/${this.userId}/favorite_recipes')
         .limit(this.loadLimit)
         .get();
-    _favoriteDocIdList = _favoriteList.docs.map((e) => e.id).toList();
+    _favoriteDocIdList =
+        _favoriteList.docs.map((e) => e.id.replaceAll('public_', '')).toList();
   }
 }

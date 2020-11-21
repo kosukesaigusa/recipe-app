@@ -38,7 +38,8 @@ class Recipe {
   bool isFavorite;
 
   // ducumentIdリストを渡して自分のIdと合致しているか調べる
-  existFavorite(List<String> favoriteDocIdList) async {
-    isFavorite = favoriteDocIdList.contains(documentId);
+  existFavorite(List<String> favoriteDocIdList) {
+    isFavorite =
+        favoriteDocIdList.contains(documentId.replaceAll('public_', ''));
   }
 }
