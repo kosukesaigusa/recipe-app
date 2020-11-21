@@ -4,17 +4,44 @@ import 'package:flutter/material.dart';
 import 'package:recipe/common/convert_error_message.dart';
 
 class SignUpModel extends ChangeNotifier {
-  String mail = '';
-  String password = '';
-  String confirm = '';
-  String errorMail = '';
-  String errorPassword = '';
-  String errorConfirm = '';
-  bool isLoading = false;
-  bool isMailValid = false;
-  bool isPasswordValid = false;
-  bool isConfirmValid = false;
+  SignUpModel() {
+    this.mail = '';
+    this.password = '';
+    this.confirm = '';
+    this.errorMail = '';
+    this.errorPassword = '';
+    this.errorConfirm = '';
+    this.isLoading = false;
+    this.isMailValid = false;
+    this.isPasswordValid = false;
+    this.isConfirmValid = false;
+    this.userCredential = null;
+    this.isGuestAllowed = false;
+  }
+
+  String mail;
+  String password;
+  String confirm;
+  String errorMail;
+  String errorPassword;
+  String errorConfirm;
+  bool isLoading;
+  bool isMailValid;
+  bool isPasswordValid;
+  bool isConfirmValid;
   UserCredential userCredential;
+  bool isGuestAllowed;
+
+  Future<void> init() async {
+    DocumentSnapshot _doc = await FirebaseFirestore.instance
+        .collection('settings')
+        .doc('guest_mode')
+        .get();
+    print('あああああああああ');
+    this.isGuestAllowed = _doc.data()['guest_allowed'];
+    print('ゲストモードあるよ');
+    notifyListeners();
+  }
 
   Future signUp() async {
     if (this.password != this.confirm) {
