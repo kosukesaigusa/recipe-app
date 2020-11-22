@@ -179,6 +179,65 @@ class MyAccountPage extends StatelessWidget {
                                 SizedBox(
                                   height: 16.0,
                                 ),
+                                Column(
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                        ),
+                                        children: [
+                                          WidgetSpan(
+                                            child: Icon(
+                                              Icons.turned_in,
+                                              size: 16.0,
+                                              color: Color(0xFFF39800),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: ' 投稿したレシピ数：',
+                                          ),
+                                          model.recipeCount == null
+                                              ? TextSpan()
+                                              : TextSpan(
+                                                  text: '${model.recipeCount}',
+                                                ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 8.0,
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                        ),
+                                        children: [
+                                          WidgetSpan(
+                                            child: Icon(
+                                              Icons.star,
+                                              size: 18.0,
+                                              color: Color(0xFFF39800),
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: ' 公開したレシピ数：',
+                                          ),
+                                          model.publicRecipeCount == null
+                                              ? TextSpan()
+                                              : TextSpan(
+                                                  text:
+                                                      '${model.publicRecipeCount}',
+                                                ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 16.0,
+                                ),
                                 model.mail == null
                                     ? FlatButton(
                                         textColor: Color(0xFFF39800),
@@ -288,14 +347,6 @@ class MyAccountPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                model.isLoading
-                    ? Container(
-                        color: Colors.black.withOpacity(0.3),
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    : SizedBox(),
                 model.isSubmitting
                     ? Container(
                         height: double.infinity,

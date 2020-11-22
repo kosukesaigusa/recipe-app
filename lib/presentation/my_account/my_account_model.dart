@@ -21,6 +21,8 @@ class MyAccountModel extends ChangeNotifier {
   File imageFile;
   String iconURL;
   String iconName;
+  int recipeCount;
+  int publicRecipeCount;
 
   MyAccountModel() {
     this.auth = FirebaseAuth.instance;
@@ -44,6 +46,8 @@ class MyAccountModel extends ChangeNotifier {
     this.displayName = _userDoc.data()['displayName'];
     this.iconURL = _userDoc.data()['iconURL'];
     this.iconName = _userDoc.data()['iconName'];
+    this.recipeCount = _userDoc.data()['recipeCount'];
+    this.publicRecipeCount = _userDoc.data()['publicRecipeCount'];
 
     notifyListeners();
     endLoading();

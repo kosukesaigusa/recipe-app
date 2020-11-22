@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:recipe/common/done_button.dart';
 import 'package:recipe/presentation/guideline/guideline_page.dart';
 import 'package:recipe/presentation/recipe_add/recipe_add_model.dart';
+import 'package:recipe/presentation/recipe_writing_hint/recipe_writing_hint.dart';
 import 'package:recipe/presentation/top/top_page.dart';
 import 'package:vibrate/vibrate.dart';
 
@@ -274,6 +275,25 @@ class RecipeAddPage extends StatelessWidget {
                                     fontWeight: FontWeight.normal,
                                   ),
                                 ),
+                                TextSpan(
+                                  text: '書き方のヒント',
+                                  style: TextStyle(
+                                    color: Color(0xFFF39800),
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              RecipeWritingHintPage(),
+                                          fullscreenDialog: true,
+                                        ),
+                                      );
+                                    },
+                                ),
                               ],
                             ),
                           ),
@@ -351,7 +371,7 @@ class RecipeAddPage extends StatelessWidget {
                             ),
                             style: TextStyle(
                               fontSize: 14.0,
-                              height: 1.0,
+                              height: 1.4,
                             ),
                           ),
                           SizedBox(

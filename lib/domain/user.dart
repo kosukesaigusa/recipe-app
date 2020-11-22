@@ -8,6 +8,8 @@ class User {
     this.userId = '';
     this.iconName = '';
     this.iconURL = '';
+    this.recipeCount = 0;
+    this.publicRecipeCount = 0;
   }
 
   Timestamp createdAt;
@@ -16,4 +18,6 @@ class User {
   String userId;
   String iconName;
   String iconURL;
+  int recipeCount;
+  int publicRecipeCount;
 }

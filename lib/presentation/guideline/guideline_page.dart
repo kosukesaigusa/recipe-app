@@ -7,6 +7,9 @@ class GuidelinePage extends StatelessWidget {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(36.0),
         child: AppBar(
+          iconTheme: IconThemeData(
+            color: Colors.white,
+          ),
           leading: IconButton(
             icon: Icon(
               Icons.close,
