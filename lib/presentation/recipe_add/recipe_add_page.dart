@@ -1,13 +1,17 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/common/done_button.dart';
+import 'package:recipe/presentation/guideline/guideline_page.dart';
 import 'package:recipe/presentation/recipe_add/recipe_add_model.dart';
+import 'package:recipe/presentation/recipe_writing_hint/recipe_writing_hint.dart';
 import 'package:recipe/presentation/top/top_page.dart';
 import 'package:vibrate/vibrate.dart';
 
 class RecipeAddPage extends StatelessWidget {
+  final FocusNode _focusNodeName = FocusNode();
   final FocusNode _focusNodeContent = FocusNode();
   final FocusNode _focusNodeReference = FocusNode();
 
@@ -41,6 +45,21 @@ class RecipeAddPage extends StatelessWidget {
       create: (_) => RecipeAddModel(),
       child: Consumer<RecipeAddModel>(
         builder: (context, model, child) {
+          // レシピ名, 作り方・材料, 参考にしたレシピの
+          // 3 つのフィールドのフォーカス状況の管理
+          this._focusNodeName.addListener(() {
+            model.recipeAdd.isNameFocused = this._focusNodeName.hasFocus;
+            model.focusRecipeName(this._focusNodeName.hasFocus);
+          });
+          this._focusNodeContent.addListener(() {
+            model.recipeAdd.isContentFocused = this._focusNodeContent.hasFocus;
+            model.focusRecipeContent(this._focusNodeContent.hasFocus);
+          });
+          this._focusNodeReference.addListener(() {
+            model.recipeAdd.isReferenceFocused =
+                this._focusNodeReference.hasFocus;
+            model.focusRecipeReference(this._focusNodeReference.hasFocus);
+          });
           return Scaffold(
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(32.0),
@@ -78,7 +97,7 @@ class RecipeAddPage extends StatelessWidget {
                             actions: <Widget>[
                               FlatButton(
                                 child: Text('キャンセル'),
-                                onPressed: () async {
+                                onPressed: () {
                                   Navigator.of(context).pop();
                                 },
                               ),
@@ -111,7 +130,11 @@ class RecipeAddPage extends StatelessWidget {
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.only(
-                          top: 16.0, right: 16.0, bottom: 48.0, left: 16.0),
+                        top: 16.0,
+                        right: 16.0,
+                        bottom: 48.0,
+                        left: 16.0,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -140,6 +163,7 @@ class RecipeAddPage extends StatelessWidget {
                             height: 8,
                           ),
                           TextFormField(
+                            focusNode: this._focusNodeName,
                             initialValue: model.recipeAdd.name,
                             textInputAction: TextInputAction.done,
                             onChanged: (text) {
@@ -158,6 +182,23 @@ class RecipeAddPage extends StatelessWidget {
                               height: 1.0,
                             ),
                           ),
+                          model.recipeAdd.isNameFocused &&
+                                  model.recipeAdd.name.length >= 20 &&
+                                  model.recipeAdd.name.length <= 30
+                              ? Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 8.0,
+                                    left: 12.0,
+                                  ),
+                                  child: Text(
+                                    '残り ${30 - model.recipeAdd.name.length} 文字です。',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFF39800),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(),
                           SizedBox(
                             height: 16,
                           ),
@@ -234,6 +275,25 @@ class RecipeAddPage extends StatelessWidget {
                                     fontWeight: FontWeight.normal,
                                   ),
                                 ),
+                                TextSpan(
+                                  text: '書き方のヒント',
+                                  style: TextStyle(
+                                    color: Color(0xFFF39800),
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              RecipeWritingHintPage(),
+                                          fullscreenDialog: true,
+                                        ),
+                                      );
+                                    },
+                                ),
                               ],
                             ),
                           ),
@@ -262,6 +322,23 @@ class RecipeAddPage extends StatelessWidget {
                               height: 1.4,
                             ),
                           ),
+                          model.recipeAdd.isContentFocused &&
+                                  model.recipeAdd.content.length >= 900 &&
+                                  model.recipeAdd.content.length <= 1000
+                              ? Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 8.0,
+                                    left: 12.0,
+                                  ),
+                                  child: Text(
+                                    '残り ${1000 - model.recipeAdd.content.length} 文字です。',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFF39800),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(),
                           SizedBox(
                             height: 16,
                           ),
@@ -288,10 +365,13 @@ class RecipeAddPage extends StatelessWidget {
                               labelText: '参考にしたレシピのURLや書籍名を記入',
                               alignLabelWithHint: true,
                               border: OutlineInputBorder(),
+                              errorText: model.recipeAdd.errorReference == ''
+                                  ? null
+                                  : model.recipeAdd.errorReference,
                             ),
                             style: TextStyle(
                               fontSize: 14.0,
-                              height: 1.0,
+                              height: 1.4,
                             ),
                           ),
                           SizedBox(
@@ -348,15 +428,28 @@ class RecipeAddPage extends StatelessWidget {
                                             fontWeight: FontWeight.bold,
                                           ),
                                           children: [
-                                            TextSpan(text: '公開するレシピの'),
+                                            TextSpan(text: '公開するレシピの '),
                                             TextSpan(
                                               text: 'ガイドライン',
                                               style: TextStyle(
+                                                color: Color(0xFFF39800),
                                                 decoration:
                                                     TextDecoration.underline,
+                                                decorationThickness: 2.00,
                                               ),
+                                              recognizer: TapGestureRecognizer()
+                                                ..onTap = () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          GuidelinePage(),
+                                                      fullscreenDialog: true,
+                                                    ),
+                                                  );
+                                                },
                                             ),
-                                            TextSpan(text: 'を読んで同意しました。'),
+                                            TextSpan(text: ' を読んで同意しました。'),
                                           ],
                                         ),
                                       ),

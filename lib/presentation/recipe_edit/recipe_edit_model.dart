@@ -57,46 +57,42 @@ class RecipeEditModel extends ChangeNotifier {
 
   Future<void> showImagePicker() async {
     ImagePicker _picker = ImagePicker();
-    PickedFile _pickedFile =
-        await _picker.getImage(source: ImageSource.gallery);
 
-    // 画像ファイルを端末から選択しなかった場合は処理を終了
-    if (_pickedFile == null) {
+    try {
+      PickedFile _pickedFile =
+          await _picker.getImage(source: ImageSource.gallery);
+
+      // 選択した画像ファイルのパスを保存
+      File _pickedImage = File(_pickedFile.path);
+
+      // 画像をアスペクト比 4:3 で 切り抜く
+      File _croppedImageFile = await ImageCropper.cropImage(
+        sourcePath: _pickedImage.path,
+        maxHeight: 150,
+        aspectRatio: CropAspectRatio(ratioX: 4, ratioY: 3),
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 10,
+        iosUiSettings: IOSUiSettings(
+          title: '編集',
+        ),
+      );
+
+      // レシピ画像（W: 400, H:300 @2x）をインスタンス変数に保存
+      this.imageFile = await FlutterNativeImage.compressImage(
+        _croppedImageFile.path,
+        targetWidth: 400,
+        targetHeight: 300,
+      );
+
+      // サムネイル用画像（W: 200, H: 30 @2x）をインスタンス変数に保存
+      this.thumbnailImageFile = await FlutterNativeImage.compressImage(
+        _croppedImageFile.path,
+        targetWidth: 200,
+        targetHeight: 150,
+      );
+    } catch (e) {
       return;
     }
-
-    // 選択した画像ファイルのパスを保存
-    File _pickedImage = File(_pickedFile.path);
-
-    if (_pickedImage == null) {
-      return;
-    }
-
-    // 画像をアスペクト比 4:3 で 切り抜く
-    File _croppedImageFile = await ImageCropper.cropImage(
-      sourcePath: _pickedImage.path,
-      maxHeight: 150,
-      aspectRatio: CropAspectRatio(ratioX: 4, ratioY: 3),
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 10,
-      iosUiSettings: IOSUiSettings(
-        title: '編集',
-      ),
-    );
-
-    // レシピ画像（W: 400, H:300 @2x）をインスタンス変数に保存
-    this.imageFile = await FlutterNativeImage.compressImage(
-      _croppedImageFile.path,
-      targetWidth: 400,
-      targetHeight: 300,
-    );
-
-    // サムネイル用画像（W: 200, H: 30 @2x）をインスタンス変数に保存
-    this.thumbnailImageFile = await FlutterNativeImage.compressImage(
-      _croppedImageFile.path,
-      targetWidth: 200,
-      targetHeight: 150,
-    );
 
     this.editedRecipe.isEdited = true;
     notifyListeners();
@@ -111,6 +107,12 @@ class RecipeEditModel extends ChangeNotifier {
     if (editedRecipe.content.isEmpty) {
       throw ('作り方・材料を入力してください。');
     }
+
+    /// content, reference から不要な空行を取り除く
+    this.editedRecipe.content =
+        removeUnnecessaryBlankLines(this.editedRecipe.content);
+    this.editedRecipe.reference =
+        removeUnnecessaryBlankLines(this.editedRecipe.reference);
 
     /// tokenMap を作成するための入力となる文字列のリスト
     List _preTokenizedList = [];
@@ -167,24 +169,49 @@ class RecipeEditModel extends ChangeNotifier {
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
     WriteBatch _batch = _firestore.batch();
 
-    DocumentReference _usersRecipeCollection = _firestore
+    // 現在の投稿したレシピ数, 公開したレシピ数
+    DocumentReference _myUserDoc =
+        _firestore.collection('users').doc(this._auth.currentUser.uid);
+    DocumentSnapshot _snap = await _myUserDoc.get();
+    int _publicRecipeCount = _snap.data()['publicRecipeCount'];
+
+    DocumentReference _usersRecipeDoc = _firestore
         .collection('users/${this._auth.currentUser.uid}/recipes')
         .doc('${this.currentRecipe.documentId}');
 
-    DocumentReference _publicRecipeCollection = _firestore
+    DocumentReference _publicRecipeDoc = _firestore
         .collection('public_recipes')
         .doc('public_${this.currentRecipe.documentId}');
 
-    /// users/{userId}/recipes コレクションを update or set
-    _batch.update(_usersRecipeCollection, _updateRecipeFields);
+    // users/{userId}/recipes コレクションを update
+    _batch.update(_usersRecipeDoc, _updateRecipeFields);
 
-    /// public_recipes コレクションを update or set
+    // public_recipes コレクションを update or set
     if (this.existsPublishedDocument) {
       // update: 当該レシピが一度は公開されたことがある場合
-      _batch.update(_publicRecipeCollection, _updateRecipeFields);
+      _batch.update(_publicRecipeDoc, _updateRecipeFields);
     } else if (!this.existsPublishedDocument && this.editedRecipe.willPublish) {
       // set: まだ当該レシピが、今回はじめて公開される場合
-      _batch.set(_publicRecipeCollection, _setRecipeFields);
+      _batch.set(_publicRecipeDoc, _setRecipeFields);
+    }
+
+    // 公開したレシピ数の更新
+    if (this.currentRecipe.isPublic) {
+      if (this.editedRecipe.willPublish) {
+        // 公開 --> 公開：更新しない
+      } else {
+        // 公開 --> 非公開：公開したレシピ数を 1 減らす
+        _batch
+            .update(_myUserDoc, {'publicRecipeCount': _publicRecipeCount - 1});
+      }
+    } else {
+      if (this.editedRecipe.willPublish) {
+        // 非公開 --> 公開：公開したレシピ数を 1 増やす
+        _batch
+            .update(_myUserDoc, {'publicRecipeCount': _publicRecipeCount + 1});
+      } else {
+        // 非公開 --> 非公開：更新しない
+      }
     }
 
     await _batch.commit();
@@ -231,25 +258,41 @@ class RecipeEditModel extends ChangeNotifier {
   Future<void> _deleteImage() async {
     String _image = this.currentRecipe.imageName;
     FirebaseStorage _storage = FirebaseStorage.instance;
-    StorageReference _desertRef = _storage.ref().child('images/$_image');
-    _desertRef.delete();
+    StorageReference _imageRef = _storage.ref().child('images/$_image');
+    await _imageRef.delete();
   }
 
   // Firebase Storage からサムネイル画像を削除する
   Future<void> _deleteThumbnail() async {
     String _thumbnail = this.currentRecipe.thumbnailName;
     FirebaseStorage _storage = FirebaseStorage.instance;
-    StorageReference _desertRef =
+    StorageReference _thumbnailRef =
         _storage.ref().child('thumbnails/$_thumbnail');
-    _desertRef.delete();
+    await _thumbnailRef.delete();
   }
 
   Future<void> deleteRecipe() async {
-    /// 画像の削除
-    await _deleteImage();
-    await _deleteThumbnail();
+    startLoading();
+
+    // 既存の画像の削除
+    if (this.currentRecipe.imageURL.isNotEmpty) {
+      print('通常画像を削除');
+      await _deleteImage();
+    }
+    if (this.currentRecipe.thumbnailURL.isNotEmpty) {
+      print('サムネイル画像を削除');
+      await _deleteThumbnail();
+    }
+
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
     WriteBatch _batch = _firestore.batch();
+
+    // 現在の投稿したレシピ数, 公開したレシピ数
+    DocumentReference _myUserDoc =
+        _firestore.collection('users').doc(this._auth.currentUser.uid);
+    DocumentSnapshot _snap = await _myUserDoc.get();
+    int _recipeCount = _snap.data()['recipeCount'];
+    int _publicRecipeCount = _snap.data()['publicRecipeCount'];
 
     DocumentReference _usersRecipeCollection = _firestore
         .collection('users/${this._auth.currentUser.uid}/recipes')
@@ -259,13 +302,20 @@ class RecipeEditModel extends ChangeNotifier {
         .collection('public_recipes')
         .doc('public_${this.currentRecipe.documentId}');
 
-    /// users/{userId}/recipes のレシピを削除
+    // users/{userId}/recipes のレシピを削除
     _batch.delete(_usersRecipeCollection);
 
-    /// public_recipes のレシピを削除
+    // public_recipes のレシピを削除
     _batch.delete(_publicRecipeCollection);
 
-    _batch.commit();
+    // 投稿したレシピ数を 1 減らす
+    _batch.update(_myUserDoc, {'recipeCount': _recipeCount - 1});
+    // 公開したレシピ数を 1 減らす
+    if (this.currentRecipe.isPublic) {
+      _batch.update(_myUserDoc, {'publicRecipeCount': _publicRecipeCount - 1});
+    }
+
+    await _batch.commit();
 
     endLoading();
     notifyListeners();
@@ -279,7 +329,7 @@ class RecipeEditModel extends ChangeNotifier {
       this.editedRecipe.errorName = 'レシピ名を入力して下さい。';
     } else if (text.length > 30) {
       this.editedRecipe.isNameValid = false;
-      this.editedRecipe.errorName = '30文字以内で入力して下さい。';
+      this.editedRecipe.errorName = '30文字以内で入力して下さい（現在 ${text.length} 文字）。';
     } else {
       this.editedRecipe.isNameValid = true;
       this.editedRecipe.errorName = '';
@@ -295,7 +345,8 @@ class RecipeEditModel extends ChangeNotifier {
       this.editedRecipe.errorContent = 'レシピの内容を入力して下さい。';
     } else if (text.length > 1000) {
       this.editedRecipe.isContentValid = false;
-      this.editedRecipe.errorContent = '1000文字以内で入力して下さい。';
+      this.editedRecipe.errorContent =
+          '1000文字以内で入力して下さい（現在 ${text.length} 文字）。';
     } else {
       this.editedRecipe.isContentValid = true;
       this.editedRecipe.errorContent = '';
@@ -308,11 +359,27 @@ class RecipeEditModel extends ChangeNotifier {
     this.editedRecipe.reference = text;
     if (text.length > 1000) {
       this.editedRecipe.isReferenceValid = false;
-      this.editedRecipe.errorReference = '1000文字以内で入力して下さい。';
+      this.editedRecipe.errorReference =
+          '1000文字以内で入力して下さい（現在 ${text.length} 文字）。';
     } else {
       this.editedRecipe.isReferenceValid = true;
       this.editedRecipe.errorReference = '';
     }
+    notifyListeners();
+  }
+
+  void focusRecipeName(val) {
+    this.editedRecipe.isNameFocused = val;
+    notifyListeners();
+  }
+
+  void focusRecipeContent(val) {
+    this.editedRecipe.isContentFocused = val;
+    notifyListeners();
+  }
+
+  void focusRecipeReference(val) {
+    this.editedRecipe.isReferenceFocused = val;
     notifyListeners();
   }
 

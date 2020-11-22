@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,7 @@ import 'package:recipe/common/convert_error_message.dart';
 import 'package:recipe/common/done_button.dart';
 import 'package:recipe/common/text_dialog.dart';
 import 'package:recipe/domain/recipe.dart';
+import 'package:recipe/presentation/guideline/guideline_page.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_model.dart';
 import 'package:recipe/presentation/top/top_page.dart';
 import 'package:vibrate/vibrate.dart';
@@ -14,6 +16,7 @@ class RecipeEditPage extends StatelessWidget {
   RecipeEditPage(this.recipe);
   final Recipe recipe;
 
+  final FocusNode _focusNodeName = FocusNode();
   final FocusNode _focusNodeContent = FocusNode();
   final FocusNode _focusNodeReference = FocusNode();
 
@@ -43,10 +46,28 @@ class RecipeEditPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // デバイスの画面サイズを取得
+    final Size _size = MediaQuery.of(context).size;
     return ChangeNotifierProvider<RecipeEditModel>(
       create: (_) => RecipeEditModel(this.recipe),
       child: Consumer<RecipeEditModel>(
         builder: (context, model, child) {
+          // レシピ名, 作り方・材料, 参考にしたレシピの
+          // 3 つのフィールドのフォーカス状況の管理
+          this._focusNodeName.addListener(() {
+            model.editedRecipe.isNameFocused = this._focusNodeName.hasFocus;
+            model.focusRecipeName(this._focusNodeName.hasFocus);
+          });
+          this._focusNodeContent.addListener(() {
+            model.editedRecipe.isContentFocused =
+                this._focusNodeContent.hasFocus;
+            model.focusRecipeContent(this._focusNodeContent.hasFocus);
+          });
+          this._focusNodeReference.addListener(() {
+            model.editedRecipe.isReferenceFocused =
+                this._focusNodeReference.hasFocus;
+            model.focusRecipeReference(this._focusNodeReference.hasFocus);
+          });
           return Scaffold(
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(36.0),
@@ -68,7 +89,37 @@ class RecipeEditPage extends StatelessWidget {
                     size: 20.0,
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    if (model.editedRecipe.isEdited) {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            content: Text(
+                              '編集中の内容は失われますが、'
+                              '作業を中止して前の画面に戻りますか？',
+                            ),
+                            actions: <Widget>[
+                              FlatButton(
+                                child: Text('キャンセル'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              FlatButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      Navigator.of(context).pop();
+                    }
                   },
                 ),
                 actions: <Widget>[
@@ -81,22 +132,39 @@ class RecipeEditPage extends StatelessWidget {
                           ),
                           onPressed: () async {
                             await showDialog(
+                              // barrierDismissible: false,
                               context: context,
                               builder: (BuildContext context) {
-                                return AlertDialog(
-                                  content: Text('レシピを削除しますか？'),
-                                  actions: <Widget>[
-                                    FlatButton(
-                                      child: Text('OK'),
-                                      onPressed: () async {
-                                        await model.deleteRecipe();
-                                        await Navigator.pushAndRemoveUntil(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => TopPage(),
-                                            ),
-                                            (_) => false);
-                                      },
+                                return Stack(
+                                  children: [
+                                    AlertDialog(
+                                      content: Text('レシピを削除しますか？'),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: Text('削除する'),
+                                          onPressed: () async {
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return _showDeletingDialog();
+                                              },
+                                            );
+                                            await model.deleteRecipe();
+                                            await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => TopPage(),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        FlatButton(
+                                          child: Text('キャンセル'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 );
@@ -176,6 +244,7 @@ class RecipeEditPage extends StatelessWidget {
                             height: 8,
                           ),
                           TextFormField(
+                            focusNode: this._focusNodeName,
                             initialValue: model.editedRecipe.name,
                             textInputAction: TextInputAction.done,
                             onChanged: (text) {
@@ -194,6 +263,23 @@ class RecipeEditPage extends StatelessWidget {
                               height: 1.0,
                             ),
                           ),
+                          model.editedRecipe.isNameFocused &&
+                                  model.editedRecipe.name.length >= 20 &&
+                                  model.editedRecipe.name.length <= 30
+                              ? Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 8.0,
+                                    left: 12.0,
+                                  ),
+                                  child: Text(
+                                    '残り ${30 - model.editedRecipe.name.length} 文字です。',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFF39800),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(),
                           SizedBox(
                             height: 16,
                           ),
@@ -374,6 +460,23 @@ class RecipeEditPage extends StatelessWidget {
                               height: 1.4,
                             ),
                           ),
+                          model.editedRecipe.isContentFocused &&
+                                  model.editedRecipe.content.length >= 900 &&
+                                  model.editedRecipe.content.length <= 1000
+                              ? Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 8.0,
+                                    left: 12.0,
+                                  ),
+                                  child: Text(
+                                    '残り ${1000 - model.editedRecipe.content.length} 文字です。',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFF39800),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox(),
                           SizedBox(
                             height: 16,
                           ),
@@ -400,10 +503,13 @@ class RecipeEditPage extends StatelessWidget {
                               labelText: '参考にしたレシピのURLや書籍名を記入',
                               alignLabelWithHint: true,
                               border: OutlineInputBorder(),
+                              errorText: model.editedRecipe.errorReference == ''
+                                  ? null
+                                  : model.editedRecipe.errorReference,
                             ),
                             style: TextStyle(
                               fontSize: 14.0,
-                              height: 1.0,
+                              height: 1.4,
                             ),
                           ),
                           SizedBox(
@@ -444,19 +550,30 @@ class RecipeEditPage extends StatelessWidget {
                                                 fontWeight: FontWeight.bold,
                                               ),
                                               children: [
-                                                TextSpan(
-                                                  text: '公開するレシピの',
-                                                ),
+                                                TextSpan(text: '公開するレシピの '),
                                                 TextSpan(
                                                   text: 'ガイドライン',
                                                   style: TextStyle(
+                                                    color: Color(0xFFF39800),
                                                     decoration: TextDecoration
                                                         .underline,
+                                                    decorationThickness: 2.00,
                                                   ),
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  GuidelinePage(),
+                                                              fullscreenDialog:
+                                                                  true,
+                                                            ),
+                                                          );
+                                                        },
                                                 ),
-                                                TextSpan(
-                                                  text: 'を読んで同意しました。',
-                                                ),
+                                                TextSpan(text: ' を読んで同意しました。'),
                                               ],
                                             ),
                                           ),
@@ -499,19 +616,30 @@ class RecipeEditPage extends StatelessWidget {
                                                 fontWeight: FontWeight.bold,
                                               ),
                                               children: [
-                                                TextSpan(
-                                                  text: '公開するレシピの',
-                                                ),
+                                                TextSpan(text: '公開するレシピの '),
                                                 TextSpan(
                                                   text: 'ガイドライン',
                                                   style: TextStyle(
+                                                    color: Color(0xFFF39800),
                                                     decoration: TextDecoration
                                                         .underline,
+                                                    decorationThickness: 2.00,
                                                   ),
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  GuidelinePage(),
+                                                              fullscreenDialog:
+                                                                  true,
+                                                            ),
+                                                          );
+                                                        },
                                                 ),
-                                                TextSpan(
-                                                  text: 'を読んで同意しました。',
-                                                ),
+                                                TextSpan(text: ' を読んで同意しました。'),
                                               ],
                                             ),
                                           ),
@@ -705,6 +833,45 @@ class RecipeEditPage extends StatelessWidget {
       ),
     );
   }
+
+  Widget _showDeletingDialog() {
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.transparent,
+      child: Center(
+        child: Stack(
+          children: [
+            Center(
+              child: Container(
+                width: 200,
+                height: 150,
+                color: Colors.white,
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  Container(
+                    child: Material(
+                      child: Text(
+                        'レシピを削除しています...',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 Future updateRecipe(RecipeEditModel model, BuildContext context) async {
@@ -722,12 +889,12 @@ Future updateRecipe(RecipeEditModel model, BuildContext context) async {
             FlatButton(
               child: Text('OK'),
               onPressed: () async {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TopPage(),
-                    ),
-                    (_) => false);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TopPage(),
+                  ),
+                );
               },
             ),
           ],

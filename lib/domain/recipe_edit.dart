@@ -17,6 +17,9 @@ class RecipeEdit {
     this.errorName = '';
     this.errorContent = '';
     this.errorReference = '';
+    this.isNameFocused = false;
+    this.isContentFocused = false;
+    this.isReferenceFocused = false;
     this.isNameValid = true;
     this.isContentValid = true;
     this.isReferenceValid = true;
@@ -37,6 +40,9 @@ class RecipeEdit {
   String errorName;
   String errorContent;
   String errorReference;
+  bool isNameFocused;
+  bool isContentFocused;
+  bool isReferenceFocused;
   bool isNameValid;
   bool isContentValid;
   bool isReferenceValid;

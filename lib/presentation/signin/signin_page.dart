@@ -39,7 +39,6 @@ class SignInPage extends StatelessWidget {
                                   child:
                                       Image.asset('lib/assets/icon_1024.png'),
                                 ),
-                                // Text('シンプルなレシピ'),
                               ],
                             ),
                             SizedBox(

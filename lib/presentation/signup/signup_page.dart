@@ -16,7 +16,7 @@ class SignUpPage extends StatelessWidget {
     return WillPopScope(
       onWillPop: willPopCallback,
       child: ChangeNotifierProvider<SignUpModel>(
-          create: (_) => SignUpModel(),
+          create: (_) => SignUpModel()..init(),
           child: Scaffold(
             appBar: PreferredSize(
               preferredSize: Size.fromHeight(1.0),
@@ -41,7 +41,6 @@ class SignUpPage extends StatelessWidget {
                                     child:
                                         Image.asset('lib/assets/icon_1024.png'),
                                   ),
-                                  // Text('シンプルなレシピ'),
                                 ],
                               ),
                               SizedBox(
@@ -146,28 +145,30 @@ class SignUpPage extends StatelessWidget {
                                   );
                                 },
                               ),
-                              FlatButton(
-                                child: Text(
-                                  'ゲストとして利用',
-                                ),
-                                textColor: Colors.grey,
-                                onPressed: () async {
-                                  model.startLoading();
-                                  try {
-                                    await model.signInAnonymously();
-                                    model.endLoading();
-                                    await Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => TopPage(),
+                              model.isGuestAllowed
+                                  ? FlatButton(
+                                      child: Text(
+                                        'ゲストとして利用',
                                       ),
-                                    );
-                                  } catch (e) {
-                                    showTextDialog(context, e.toString());
-                                    model.endLoading();
-                                  }
-                                },
-                              ),
+                                      textColor: Colors.grey,
+                                      onPressed: () async {
+                                        model.startLoading();
+                                        try {
+                                          await model.signInAnonymously();
+                                          model.endLoading();
+                                          await Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => TopPage(),
+                                            ),
+                                          );
+                                        } catch (e) {
+                                          showTextDialog(context, e.toString());
+                                          model.endLoading();
+                                        }
+                                      },
+                                    )
+                                  : SizedBox(),
                             ],
                           ),
                         ),
