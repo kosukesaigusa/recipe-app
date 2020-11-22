@@ -66,9 +66,6 @@ class RecipeWritingHintPage extends StatelessWidget {
                       ),
                     ),
                     TextSpan(
-                      text: '',
-                    ),
-                    TextSpan(
                       text: '：良い例（豚キムチの作り方）',
                     ),
                   ],
@@ -106,9 +103,6 @@ class RecipeWritingHintPage extends StatelessWidget {
                         size: 16.0,
                         color: Colors.red,
                       ),
-                    ),
-                    TextSpan(
-                      text: '',
                     ),
                     TextSpan(
                       text: '：そうでない例（豚キムチの作り方）',

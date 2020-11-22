@@ -46,6 +46,8 @@ class RecipeEditPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // デバイスの画面サイズを取得
+    final Size _size = MediaQuery.of(context).size;
     return ChangeNotifierProvider<RecipeEditModel>(
       create: (_) => RecipeEditModel(this.recipe),
       child: Consumer<RecipeEditModel>(
@@ -130,28 +132,39 @@ class RecipeEditPage extends StatelessWidget {
                           ),
                           onPressed: () async {
                             await showDialog(
+                              // barrierDismissible: false,
                               context: context,
                               builder: (BuildContext context) {
-                                return AlertDialog(
-                                  content: Text('レシピを削除しますか？'),
-                                  actions: <Widget>[
-                                    FlatButton(
-                                      child: Text('削除する'),
-                                      onPressed: () async {
-                                        await model.deleteRecipe();
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => TopPage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    FlatButton(
-                                      child: Text('キャンセル'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
+                                return Stack(
+                                  children: [
+                                    AlertDialog(
+                                      content: Text('レシピを削除しますか？'),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                          child: Text('削除する'),
+                                          onPressed: () async {
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return _showDeletingDialog();
+                                              },
+                                            );
+                                            await model.deleteRecipe();
+                                            await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => TopPage(),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        FlatButton(
+                                          child: Text('キャンセル'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 );
@@ -817,6 +830,45 @@ class RecipeEditPage extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _showDeletingDialog() {
+    return Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.transparent,
+      child: Center(
+        child: Stack(
+          children: [
+            Center(
+              child: Container(
+                width: 200,
+                height: 150,
+                color: Colors.white,
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  Container(
+                    child: Material(
+                      child: Text(
+                        'レシピを削除しています...',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

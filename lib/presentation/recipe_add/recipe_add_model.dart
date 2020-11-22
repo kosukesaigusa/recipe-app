@@ -93,61 +93,76 @@ class RecipeAddModel extends ChangeNotifier {
         Map.fromIterable(_tokenizedList, key: (e) => e, value: (_) => true);
     print(this.recipeAdd.tokenMap);
 
-    String _generatedId;
+    /// わたしのレシピ, みんなのレシピ, 投稿したレシピ数, 公開したレシピ数
+    /// の追加・更新をバッチで処理
+    FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    WriteBatch _batch = _firestore.batch();
 
-    await FirebaseFirestore.instance
+    // レシピのドキュメント ID を空のドキュメントを指定して生成する
+    String _generatedId = _firestore
         .collection('users/${this._auth.currentUser.uid}/recipes')
-        .add(
-          {
-            'userId': this._auth.currentUser.uid,
-            'name': this.recipeAdd.name,
-            'createdAt': FieldValue.serverTimestamp(),
-            'updatedAt': FieldValue.serverTimestamp(),
-            'thumbnailURL': this.recipeAdd.thumbnailURL,
-            'thumbnailName': this.recipeAdd.thumbnailName,
-            'imageURL': this.recipeAdd.imageURL,
-            'imageName': this.recipeAdd.imageName,
-            'content': this.recipeAdd.content,
-            'reference': this.recipeAdd.reference,
-            'tokenMap': this.recipeAdd.tokenMap,
-            'isPublic': this.recipeAdd.willPublish,
-          },
-        )
-        .then((docRef) async => {_generatedId = docRef.id})
-        .then((_) async => {
-              await FirebaseFirestore.instance
-                  .collection('users/${_auth.currentUser.uid}/recipes')
-                  .doc(_generatedId)
-                  .update(
-                {
-                  'documentId': _generatedId,
-                },
-              )
-            });
+        .doc()
+        .id;
 
+    // 現在の投稿したレシピ数, 公開したレシピ数
+    DocumentReference _myUserDoc =
+        _firestore.collection('users').doc(this._auth.currentUser.uid);
+    DocumentSnapshot _snap = await _myUserDoc.get();
+    int _recipeCount = _snap.data()['recipeCount'];
+    int _publicRecipeCount = _snap.data()['publicRecipeCount'];
+
+    // 追加するわたしのレシピのドキュメントレファレンス
+    DocumentReference _myRecipeDoc = _firestore
+        .collection('users/${this._auth.currentUser.uid}/recipes')
+        .doc(_generatedId);
+
+    // users/{userId}/recipes コレクションにレシピデータを set
+    _batch.set(_myRecipeDoc, {
+      'documentId': _generatedId,
+      'userId': this._auth.currentUser.uid,
+      'name': this.recipeAdd.name,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'thumbnailURL': this.recipeAdd.thumbnailURL,
+      'thumbnailName': this.recipeAdd.thumbnailName,
+      'imageURL': this.recipeAdd.imageURL,
+      'imageName': this.recipeAdd.imageName,
+      'content': this.recipeAdd.content,
+      'reference': this.recipeAdd.reference,
+      'tokenMap': this.recipeAdd.tokenMap,
+      'isPublic': this.recipeAdd.willPublish,
+    });
+
+    // 投稿したレシピ数を 1 増やす
+    _batch.update(_myUserDoc, {'recipeCount': _recipeCount + 1});
+
+    // 公開する場合は public_recipes コレクションにレシピデータを set
     if (this.recipeAdd.willPublish) {
-      /// みんなのレシピの ID は、public_{わたしのレシピのID} の形にする
-      await FirebaseFirestore.instance
-          .collection('public_recipes')
-          .doc('public_$_generatedId')
-          .set(
-        {
-          'documentId': 'public_$_generatedId',
-          'userId': this._auth.currentUser.uid,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-          'name': this.recipeAdd.name,
-          'thumbnailURL': this.recipeAdd.thumbnailURL,
-          'thumbnailName': this.recipeAdd.thumbnailName,
-          'imageURL': this.recipeAdd.imageURL,
-          'imageName': this.recipeAdd.imageName,
-          'content': this.recipeAdd.content,
-          'reference': this.recipeAdd.reference,
-          'tokenMap': this.recipeAdd.tokenMap,
-          'isPublic': this.recipeAdd.willPublish,
-        },
-      );
+      // みんなのレシピの ID は、public_{わたしのレシピのID} の形にする
+      DocumentReference _publicRecipeDoc =
+          _firestore.collection('public_recipes').doc('public_$_generatedId');
+
+      _batch.set(_publicRecipeDoc, {
+        'documentId': 'public_$_generatedId',
+        'userId': this._auth.currentUser.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'name': this.recipeAdd.name,
+        'thumbnailURL': this.recipeAdd.thumbnailURL,
+        'thumbnailName': this.recipeAdd.thumbnailName,
+        'imageURL': this.recipeAdd.imageURL,
+        'imageName': this.recipeAdd.imageName,
+        'content': this.recipeAdd.content,
+        'reference': this.recipeAdd.reference,
+        'tokenMap': this.recipeAdd.tokenMap,
+        'isPublic': this.recipeAdd.willPublish,
+      });
+
+      // 公開したレシピ数を 1 増やす
+      _batch.update(_myUserDoc, {'publicRecipeCount': _publicRecipeCount + 1});
     }
+
+    await _batch.commit();
 
     notifyListeners();
   }

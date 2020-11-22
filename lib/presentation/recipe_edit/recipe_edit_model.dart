@@ -169,24 +169,49 @@ class RecipeEditModel extends ChangeNotifier {
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
     WriteBatch _batch = _firestore.batch();
 
-    DocumentReference _usersRecipeCollection = _firestore
+    // 現在の投稿したレシピ数, 公開したレシピ数
+    DocumentReference _myUserDoc =
+        _firestore.collection('users').doc(this._auth.currentUser.uid);
+    DocumentSnapshot _snap = await _myUserDoc.get();
+    int _publicRecipeCount = _snap.data()['publicRecipeCount'];
+
+    DocumentReference _usersRecipeDoc = _firestore
         .collection('users/${this._auth.currentUser.uid}/recipes')
         .doc('${this.currentRecipe.documentId}');
 
-    DocumentReference _publicRecipeCollection = _firestore
+    DocumentReference _publicRecipeDoc = _firestore
         .collection('public_recipes')
         .doc('public_${this.currentRecipe.documentId}');
 
-    /// users/{userId}/recipes コレクションを update or set
-    _batch.update(_usersRecipeCollection, _updateRecipeFields);
+    // users/{userId}/recipes コレクションを update
+    _batch.update(_usersRecipeDoc, _updateRecipeFields);
 
-    /// public_recipes コレクションを update or set
+    // public_recipes コレクションを update or set
     if (this.existsPublishedDocument) {
       // update: 当該レシピが一度は公開されたことがある場合
-      _batch.update(_publicRecipeCollection, _updateRecipeFields);
+      _batch.update(_publicRecipeDoc, _updateRecipeFields);
     } else if (!this.existsPublishedDocument && this.editedRecipe.willPublish) {
       // set: まだ当該レシピが、今回はじめて公開される場合
-      _batch.set(_publicRecipeCollection, _setRecipeFields);
+      _batch.set(_publicRecipeDoc, _setRecipeFields);
+    }
+
+    // 公開したレシピ数の更新
+    if (this.currentRecipe.isPublic) {
+      if (this.editedRecipe.willPublish) {
+        // 公開 --> 公開：更新しない
+      } else {
+        // 公開 --> 非公開：公開したレシピ数を 1 減らす
+        _batch
+            .update(_myUserDoc, {'publicRecipeCount': _publicRecipeCount - 1});
+      }
+    } else {
+      if (this.editedRecipe.willPublish) {
+        // 非公開 --> 公開：公開したレシピ数を 1 増やす
+        _batch
+            .update(_myUserDoc, {'publicRecipeCount': _publicRecipeCount + 1});
+      } else {
+        // 非公開 --> 非公開：更新しない
+      }
     }
 
     await _batch.commit();
@@ -247,12 +272,27 @@ class RecipeEditModel extends ChangeNotifier {
   }
 
   Future<void> deleteRecipe() async {
-    /// 画像の削除
-    await _deleteImage();
-    await _deleteThumbnail();
+    startLoading();
+
+    // 既存の画像の削除
+    if (this.currentRecipe.imageURL.isNotEmpty) {
+      print('通常画像を削除');
+      await _deleteImage();
+    }
+    if (this.currentRecipe.thumbnailURL.isNotEmpty) {
+      print('サムネイル画像を削除');
+      await _deleteThumbnail();
+    }
 
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
     WriteBatch _batch = _firestore.batch();
+
+    // 現在の投稿したレシピ数, 公開したレシピ数
+    DocumentReference _myUserDoc =
+        _firestore.collection('users').doc(this._auth.currentUser.uid);
+    DocumentSnapshot _snap = await _myUserDoc.get();
+    int _recipeCount = _snap.data()['recipeCount'];
+    int _publicRecipeCount = _snap.data()['publicRecipeCount'];
 
     DocumentReference _usersRecipeCollection = _firestore
         .collection('users/${this._auth.currentUser.uid}/recipes')
@@ -262,11 +302,18 @@ class RecipeEditModel extends ChangeNotifier {
         .collection('public_recipes')
         .doc('public_${this.currentRecipe.documentId}');
 
-    /// users/{userId}/recipes のレシピを削除
+    // users/{userId}/recipes のレシピを削除
     _batch.delete(_usersRecipeCollection);
 
-    /// public_recipes のレシピを削除
+    // public_recipes のレシピを削除
     _batch.delete(_publicRecipeCollection);
+
+    // 投稿したレシピ数を 1 減らす
+    _batch.update(_myUserDoc, {'recipeCount': _recipeCount - 1});
+    // 公開したレシピ数を 1 減らす
+    if (this.currentRecipe.isPublic) {
+      _batch.update(_myUserDoc, {'publicRecipeCount': _publicRecipeCount - 1});
+    }
 
     await _batch.commit();
 

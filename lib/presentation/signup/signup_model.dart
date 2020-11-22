@@ -37,9 +37,7 @@ class SignUpModel extends ChangeNotifier {
         .collection('settings')
         .doc('guest_mode')
         .get();
-    print('あああああああああ');
     this.isGuestAllowed = _doc.data()['guest_allowed'];
-    print('ゲストモードあるよ');
     notifyListeners();
   }
 
@@ -70,16 +68,16 @@ class SignUpModel extends ChangeNotifier {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(this.userCredential.user.uid)
-          .set(
-        {
-          'email': this.mail,
-          'userId': this.userCredential.user.uid,
-          'createdAt': FieldValue.serverTimestamp(),
-          'displayName': 'シンプルなレシピユーザー',
-          'imageName': null,
-          'imageURL': null,
-        },
-      );
+          .set({
+        'email': this.mail,
+        'userId': this.userCredential.user.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'displayName': 'シンプルなレシピユーザー',
+        'imageName': null,
+        'imageURL': null,
+        'recipeCount': 0,
+        'publicRecipeCount': 0,
+      });
     } catch (e) {
       throw ('エラーが発生しました。');
     }
@@ -99,6 +97,8 @@ class SignUpModel extends ChangeNotifier {
           'displayName': 'ゲスト',
           'imageName': null,
           'imageURL': null,
+          'recipeCount': 0,
+          'publicRecipeCount': 0,
         },
       );
     } catch (e) {
