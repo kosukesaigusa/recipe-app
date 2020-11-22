@@ -158,6 +158,36 @@ class RecipePage extends StatelessWidget {
                                             ),
                                           ),
                                         ),
+                                  Expanded(
+                                    child: Container(),
+                                  ),
+                                  model.recipe.isFavorite
+                                      ? SizedBox(
+                                          height: 20,
+                                          child: IconButton(
+                                            icon: Icon(
+                                              Icons.favorite,
+                                            ),
+                                            padding: EdgeInsets.all(0.0),
+                                            color: Color(0xFFF39800),
+                                            onPressed: () {
+                                              model.pressedFavoriteButton();
+                                            },
+                                          ),
+                                        )
+                                      : SizedBox(
+                                          height: 20,
+                                          child: IconButton(
+                                            icon: Icon(
+                                              Icons.favorite_border,
+                                            ),
+                                            padding: EdgeInsets.all(0.0),
+                                            color: Color(0xFFF39800),
+                                            onPressed: () {
+                                              model.pressedFavoriteButton();
+                                            },
+                                          ),
+                                        ),
                                 ],
                               ),
                         SizedBox(
