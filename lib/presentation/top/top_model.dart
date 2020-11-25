@@ -19,6 +19,8 @@ class TopModel extends ChangeNotifier {
         .collection('settings')
         .doc('version')
         .snapshots();
+
+    /// settings/version ドキュメントの変更を監視して実行
     _documentSnapshot.listen((snapshot) async {
       // 現在のバージョン
       this.packageInfo = await PackageInfo.fromPlatform();

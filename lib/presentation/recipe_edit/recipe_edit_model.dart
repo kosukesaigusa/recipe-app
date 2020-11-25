@@ -169,19 +169,30 @@ class RecipeEditModel extends ChangeNotifier {
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
     WriteBatch _batch = _firestore.batch();
 
-    // 現在の投稿したレシピ数, 公開したレシピ数
+    // 投稿したレシピ数, 公開したレシピ数のカウント
     DocumentReference _myUserDoc =
         _firestore.collection('users').doc(this._auth.currentUser.uid);
     DocumentSnapshot _snap = await _myUserDoc.get();
     int _publicRecipeCount = _snap.data()['publicRecipeCount'];
 
+    // users/{userId}/recipes コレクション内の対象ドキュメント
     DocumentReference _usersRecipeDoc = _firestore
         .collection('users/${this._auth.currentUser.uid}/recipes')
         .doc('${this.currentRecipe.documentId}');
 
+    // public_recipes コレクション内の対象ドキュメント
     DocumentReference _publicRecipeDoc = _firestore
         .collection('public_recipes')
         .doc('public_${this.currentRecipe.documentId}');
+
+    // users/{userId}/favorite_recipes コレクション内の対象ドキュメント
+    DocumentReference _favoriteRecipeDoc = _firestore
+        .collection('users/${this._auth.currentUser.uid}/favorite_recipes')
+        .doc('${this.currentRecipe.documentId}');
+
+    // お気に入りのレシピに対応するものが存在するかどうか
+    DocumentSnapshot _favoriteDocSnap = await _favoriteRecipeDoc.get();
+    bool _existsFavoriteRecipe = _favoriteDocSnap.exists;
 
     // users/{userId}/recipes コレクションを update
     _batch.update(_usersRecipeDoc, _updateRecipeFields);
@@ -193,6 +204,11 @@ class RecipeEditModel extends ChangeNotifier {
     } else if (!this.existsPublishedDocument && this.editedRecipe.willPublish) {
       // set: まだ当該レシピが、今回はじめて公開される場合
       _batch.set(_publicRecipeDoc, _setRecipeFields);
+    }
+
+    // users/{userId}/favorite_recipes コレクションを update
+    if (_existsFavoriteRecipe) {
+      _batch.update(_favoriteRecipeDoc, _updateRecipeFields);
     }
 
     // 公開したレシピ数の更新
@@ -276,11 +292,9 @@ class RecipeEditModel extends ChangeNotifier {
 
     // 既存の画像の削除
     if (this.currentRecipe.imageURL.isNotEmpty) {
-      print('通常画像を削除');
       await _deleteImage();
     }
     if (this.currentRecipe.thumbnailURL.isNotEmpty) {
-      print('サムネイル画像を削除');
       await _deleteThumbnail();
     }
 
@@ -294,19 +308,35 @@ class RecipeEditModel extends ChangeNotifier {
     int _recipeCount = _snap.data()['recipeCount'];
     int _publicRecipeCount = _snap.data()['publicRecipeCount'];
 
-    DocumentReference _usersRecipeCollection = _firestore
+    // users/{userId}/recipes コレクション内の対象ドキュメント
+    DocumentReference _usersRecipeDoc = _firestore
         .collection('users/${this._auth.currentUser.uid}/recipes')
         .doc('${this.currentRecipe.documentId}');
 
-    DocumentReference _publicRecipeCollection = _firestore
+    // public_recipes コレクション内の対象ドキュメント
+    DocumentReference _publicRecipeDoc = _firestore
         .collection('public_recipes')
         .doc('public_${this.currentRecipe.documentId}');
 
+    // users/{userId}/favorite_recipes コレクション内の対象ドキュメント
+    DocumentReference _favoriteRecipeDoc = _firestore
+        .collection('users/${this._auth.currentUser.uid}/favorite_recipes')
+        .doc('${this.currentRecipe.documentId}');
+
+    // お気に入りのレシピに対応するものが存在するかどうか
+    DocumentSnapshot _favoriteDocSnap = await _favoriteRecipeDoc.get();
+    bool _existsFavoriteRecipe = _favoriteDocSnap.exists;
+
     // users/{userId}/recipes のレシピを削除
-    _batch.delete(_usersRecipeCollection);
+    _batch.delete(_usersRecipeDoc);
 
     // public_recipes のレシピを削除
-    _batch.delete(_publicRecipeCollection);
+    _batch.delete(_publicRecipeDoc);
+
+    // users/{userId}/public_recipes のレシピを削除
+    if (_existsFavoriteRecipe) {
+      _batch.delete(_favoriteRecipeDoc);
+    }
 
     // 投稿したレシピ数を 1 減らす
     _batch.update(_myUserDoc, {'recipeCount': _recipeCount - 1});

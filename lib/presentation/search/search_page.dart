@@ -10,15 +10,14 @@ import 'package:recipe/presentation/search/search_model.dart';
 import 'package:vibrate/vibrate.dart';
 
 class SearchPage extends StatelessWidget {
-  final FocusNode _focusNodeMySearch = FocusNode();
-  final FocusNode _focusNodePublicSearch = FocusNode();
-
   @override
   Widget build(BuildContext context) {
     // デバイスの画面サイズを取得
     final Size _size = MediaQuery.of(context).size;
     return ChangeNotifierProvider<SearchModel>(
-      create: (_) => SearchModel()..fetchRecipes(context),
+      create: (_) => SearchModel()
+        ..fetchRecipes(context)
+        ..listenFavoriteRecipes(),
       child: Consumer<SearchModel>(
         builder: (context, model, child) {
           return WillPopScope(
@@ -94,6 +93,67 @@ class SearchPage extends StatelessWidget {
                           children: [
                             Column(
                               children: [
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                    top: 16.0,
+                                    left: 8.0,
+                                    right: 8.0,
+                                    bottom: 16.0,
+                                  ),
+                                  child: TextFormField(
+                                    controller:
+                                        model.favoriteRecipeTab.textController,
+                                    textInputAction: TextInputAction.done,
+                                    onChanged: (text) async {
+                                      model.changeFavoriteSearchWords(text);
+                                      if (text.isNotEmpty) {
+                                        model.favoriteRecipeTab
+                                            .showFilteredRecipe = true;
+                                        model.startFavoriteRecipeFiltering();
+                                        await model.filterFavoriteRecipe(text);
+                                      } else {
+                                        model.favoriteRecipeTab
+                                            .showFilteredRecipe = false;
+                                        model.endFavoriteRecipeFiltering();
+                                      }
+                                    },
+                                    maxLines: 1,
+                                    decoration: InputDecoration(
+                                      prefixIcon: Icon(Icons.search),
+                                      errorText: model.favoriteRecipeTab
+                                                  .errorText ==
+                                              ''
+                                          ? null
+                                          : model.favoriteRecipeTab.errorText,
+                                      labelText: 'レシピ名・材料名（スペース区切りの複数単語可）',
+                                      border: OutlineInputBorder(),
+                                      suffixIcon: model.favoriteRecipeTab
+                                              .textController.text.isEmpty
+                                          ? SizedBox()
+                                          : IconButton(
+                                              icon: Icon(
+                                                Icons.clear,
+                                                size: 18,
+                                              ),
+                                              onPressed: () {
+                                                model.favoriteRecipeTab
+                                                    .textController
+                                                    .clear();
+                                                model.favoriteRecipeTab
+                                                    .showFilteredRecipe = false;
+                                                model.favoriteRecipeTab
+                                                    .errorText = '';
+                                                model
+                                                    .endFavoriteRecipeFiltering();
+                                              },
+                                            ),
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                ),
                                 Expanded(
                                   child:
                                       NotificationListener<ScrollNotification>(
@@ -103,11 +163,31 @@ class SearchPage extends StatelessWidget {
                                       if (_notification.metrics.pixels ==
                                           _notification
                                               .metrics.maxScrollExtent) {
+                                        // 前のクエリを取得中の場合は待つ
                                         if (model
                                             .favoriteRecipeTab.isLoadingMore) {
-                                          // 前のクエリを取得中の場合は待つ
-                                        } else {
-                                          model.loadMoreFavoriteRecipes();
+                                          return false;
+                                        }
+                                        // 前のクエリの取得が済んでいる場合はロードする
+                                        else {
+                                          // さらに読み込める状態の場合
+                                          if (model
+                                              .favoriteRecipeTab.canLoadMore) {
+                                            // 絞り込み中の場合
+                                            if (model.favoriteRecipeTab
+                                                .showFilteredRecipe) {
+                                              model
+                                                  .loadMoreFilteredFavoriteRecipes();
+                                            }
+                                            // 絞り込み中ではない場合
+                                            else {
+                                              model.loadMoreFavoriteRecipes();
+                                            }
+                                          }
+                                          // もう読み込めない状態の場合
+                                          else {
+                                            return false;
+                                          }
                                         }
                                       }
 
@@ -116,7 +196,9 @@ class SearchPage extends StatelessWidget {
                                         model.canReload = true;
                                       }
                                       if (_notification.metrics.pixels < -100) {
-                                        if (model.canReload &&
+                                        if (!model.favoriteRecipeTab
+                                                .showFilteredRecipe &&
+                                            model.canReload &&
                                             !model
                                                 .favoriteRecipeTab.isLoading) {
                                           model.canReload = false;
@@ -154,15 +236,59 @@ class SearchPage extends StatelessWidget {
                                                         .filteredRecipes,
                                                     _size,
                                                     model.userId,
-                                                    'my_tab',
+                                                    'favorite_tab',
                                                     context)
                                                 : _recipeCards(
                                                     model.favoriteRecipeTab
                                                         .recipes,
                                                     _size,
                                                     model.userId,
-                                                    'my_tab',
+                                                    'favorite_tab',
                                                     context),
+                                            FlatButton(
+                                              onPressed: model.favoriteRecipeTab
+                                                      .showFilteredRecipe
+                                                  ? model.favoriteRecipeTab
+                                                          .canLoadMoreFiltered
+                                                      ? () async {
+                                                          await model
+                                                              .loadMoreFilteredFavoriteRecipes();
+                                                        }
+                                                      : null
+                                                  : model.favoriteRecipeTab
+                                                          .canLoadMore
+                                                      ? () async {
+                                                          await model
+                                                              .loadMoreFavoriteRecipes();
+                                                        }
+                                                      : null,
+                                              child: model.favoriteRecipeTab
+                                                      .isFiltering
+                                                  ? Text('検索中...')
+                                                  : model.favoriteRecipeTab
+                                                          .isLoading
+                                                      ? SizedBox()
+                                                      : model.favoriteRecipeTab
+                                                              .showFilteredRecipe
+                                                          ? model.favoriteRecipeTab
+                                                                  .canLoadMoreFiltered
+                                                              ? Text(
+                                                                  '検索結果をさらに読み込む')
+                                                              : model.favoriteRecipeTab
+                                                                      .existsFilteredRecipe
+                                                                  ? Text(
+                                                                      '検索結果は以上です')
+                                                                  : Text(
+                                                                      '検索結果が見つかりません')
+                                                          : model.favoriteRecipeTab
+                                                                  .canLoadMore
+                                                              ? Text('さらに読み込む')
+                                                              : model.favoriteRecipeTab
+                                                                      .existsRecipe
+                                                                  ? Text('以上です')
+                                                                  : Text(
+                                                                      'まだお気に入りのレシピはありません'),
+                                            ),
                                           ],
                                         ),
                                       ],
@@ -187,7 +313,7 @@ class SearchPage extends StatelessWidget {
                           children: [
                             Column(
                               children: [
-                                Padding(
+                                Container(
                                   padding: const EdgeInsets.only(
                                     top: 16.0,
                                     left: 8.0,
@@ -197,7 +323,6 @@ class SearchPage extends StatelessWidget {
                                   child: TextFormField(
                                     controller:
                                         model.myRecipeTab.textController,
-                                    focusNode: this._focusNodeMySearch,
                                     textInputAction: TextInputAction.done,
                                     onChanged: (text) async {
                                       model.changeMySearchWords(text);
@@ -230,7 +355,6 @@ class SearchPage extends StatelessWidget {
                                                 size: 18,
                                               ),
                                               onPressed: () {
-                                                _focusNodeMySearch.unfocus();
                                                 model.myRecipeTab.textController
                                                     .clear();
                                                 model.myRecipeTab
@@ -256,21 +380,27 @@ class SearchPage extends StatelessWidget {
                                       if (_notification.metrics.pixels ==
                                           _notification
                                               .metrics.maxScrollExtent) {
+                                        // 前のクエリを取得中の場合は待つ
                                         if (model.myRecipeTab.isLoadingMore) {
-                                          // 前のクエリを取得中の場合は待つ
-                                        } else {
-                                          if (model
-                                              .myRecipeTab.showFilteredRecipe) {
+                                          return false;
+                                        }
+                                        // 前のクエリの取得が済んでいる場合はロードする
+                                        else {
+                                          // さらに読み込める状態の場合
+                                          if (model.myRecipeTab.canLoadMore) {
                                             // 絞り込み中の場合
                                             if (model.myRecipeTab
-                                                .canLoadMoreFiltered) {
+                                                .showFilteredRecipe) {
                                               model.loadMoreFilteredMyRecipes();
                                             }
-                                          } else {
-                                            // 絞り込み中でない場合
-                                            if (model.myRecipeTab.canLoadMore) {
+                                            // 絞り込み中ではない場合
+                                            else {
                                               model.loadMoreMyRecipes();
                                             }
+                                          }
+                                          // もう読み込めない状態の場合
+                                          else {
+                                            return false;
                                           }
                                         }
                                       }
@@ -402,7 +532,6 @@ class SearchPage extends StatelessWidget {
                                   child: TextFormField(
                                     controller:
                                         model.publicRecipeTab.textController,
-                                    focusNode: this._focusNodePublicSearch,
                                     textInputAction: TextInputAction.done,
                                     onChanged: (text) async {
                                       model.changePublicSearchWords(text);
@@ -435,8 +564,6 @@ class SearchPage extends StatelessWidget {
                                                 size: 18,
                                               ),
                                               onPressed: () {
-                                                _focusNodePublicSearch
-                                                    .unfocus();
                                                 model.publicRecipeTab
                                                     .textController
                                                     .clear();
@@ -464,24 +591,30 @@ class SearchPage extends StatelessWidget {
                                       if (_notification.metrics.pixels ==
                                           _notification
                                               .metrics.maxScrollExtent) {
+                                        // 前のクエリを取得中の場合は待つ
                                         if (model
                                             .publicRecipeTab.isLoadingMore) {
-                                          // 前のクエリを取得中の場合は待つ
-                                        } else {
+                                          return false;
+                                        }
+                                        // 前のクエリの取得が済んでいる場合はロードする
+                                        else {
+                                          // さらに読み込める状態の場合
                                           if (model.publicRecipeTab
-                                              .showFilteredRecipe) {
+                                              .canLoadMoreFiltered) {
                                             // 絞り込み中の場合
                                             if (model.publicRecipeTab
                                                 .canLoadMoreFiltered) {
                                               model
                                                   .loadMoreFilteredPublicRecipes();
                                             }
-                                          } else {
                                             // 絞り込み中でない場合
-                                            if (model
-                                                .publicRecipeTab.canLoadMore) {
+                                            else {
                                               model.loadMorePublicRecipes();
                                             }
+                                          }
+                                          // もう読み込めない状態の場合
+                                          else {
+                                            return false;
                                           }
                                         }
                                       }
@@ -653,7 +786,6 @@ class SearchPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) {
-                    // return RecipePage(recipes[i].documentId, recipes[i].userId);
                     return RecipePage(recipes[i]);
                   },
                 ),
@@ -667,7 +799,7 @@ class SearchPage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: SizedBox(
-                      width: size.width - 156,
+                      width: size.width - 148,
                       height: 100,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -678,30 +810,42 @@ class SearchPage extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  '${recipes[i].name}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 16,
+                                Container(
+                                  width: size.width - 184,
+                                  child: Text(
+                                    '${recipes[i].name}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ),
-                                // ToDo: recipes[i].isFavorite がtrueなら塗りつぶす
-                                recipes[i].isFavorite
-                                    ? Icon(
-                                        Icons.favorite,
-                                        size: 16.0,
-                                        color: Color(0xFFF39800),
-                                      )
-                                    : Icon(
-                                        Icons.favorite_border,
-                                        size: 16.0,
-                                        color: Color(0xFFF39800),
-                                      )
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                    top: 4.0,
+                                    left: 8.0,
+                                    right: 8.0,
+                                    bottom: 4.0,
+                                  ),
+                                  child: recipes[i].isFavorite
+                                      ? Icon(
+                                          Icons.favorite,
+                                          size: 18.0,
+                                          color: Color(0xFFF39800),
+                                        )
+                                      : Icon(
+                                          Icons.favorite_border,
+                                          size: 18.0,
+                                          color: Colors.grey,
+                                        ),
+                                ),
                               ],
                             ),
                           ),
-                          SizedBox(height: 4.0),
+                          SizedBox(
+                            height: 4.0,
+                          ),
                           Container(
                             height: 50,
                             child: Text(
@@ -713,26 +857,43 @@ class SearchPage extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 4.0),
+                          SizedBox(
+                            height: 4.0,
+                          ),
                           Container(
                             height: 16,
-                            child: Text(
-                              '${'${recipes[i].updatedAt.toDate()}'.substring(0, 10)} '
-                              '${convertWeekdayName(recipes[i].updatedAt.toDate().weekday)}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF777777),
-                              ),
-                            ),
-                          ),
+                            child: tab == 'my_tab' || tab == 'public_tab'
+                                ? recipes[i].updatedAt == null
+                                    ? SizedBox()
+                                    : Text(
+                                        '更新：${'${recipes[i].updatedAt.toDate()}'.substring(0, 10)} '
+                                        '${convertWeekdayName(recipes[i].updatedAt.toDate().weekday)}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF777777),
+                                        ),
+                                      )
+                                : recipes[i].likedAt == null
+                                    ? SizedBox()
+                                    : Text(
+                                        'お気に入り：${'${recipes[i].likedAt.toDate()}'.substring(0, 10)} '
+                                        '${convertWeekdayName(recipes[i].likedAt.toDate().weekday)}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF777777),
+                                        ),
+                                      ),
+                          )
                         ],
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
+                  Container(
+                    color: Colors.grey,
                     child: Stack(
                       children: [
                         SizedBox(
