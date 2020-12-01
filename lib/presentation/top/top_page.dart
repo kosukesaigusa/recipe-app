@@ -43,9 +43,15 @@ class TopPage extends StatelessWidget {
                                 SizedBox(
                                   height: 16.0,
                                 ),
-                                Text(
-                                    '「シンプルなレシピ」の最新版 (ver. ${model.newestVersion}) がリリースされました！'
-                                    '下記のリンクより最新版をインストールしてご利用下さい。'),
+                                model.isIOS
+                                    ? Text(
+                                        '「シンプルなレシピ」の最新版 (ver. ${model.iosNewestVersion}) がリリースされました！'
+                                        '下記のリンクより最新版をインストールしてご利用下さい。')
+                                    : model.isAndroid
+                                        ? Text(
+                                            '「シンプルなレシピ」の最新版 (ver. ${model.androidNewestVersion}) がリリースされました！'
+                                            '下記のリンクより最新版をインストールしてご利用下さい。')
+                                        : SizedBox(),
                                 SizedBox(
                                   height: 16.0,
                                 ),
@@ -53,12 +59,21 @@ class TopPage extends StatelessWidget {
                                   child: RaisedButton(
                                     color: Color(0xFFF39800),
                                     textColor: Colors.white,
-                                    child: Text('App Store で確認する'),
+                                    child: model.isIOS
+                                        ? Text('App Store で確認する')
+                                        : model.isAndroid
+                                            ? Text('Google Play Store で確認する')
+                                            : SizedBox(),
                                     onPressed: () async {
-                                      if (await canLaunch(
-                                          'https://apps.apple.com/jp/app/kboy%E3%81%AEflutter%E5%A4%A7%E5%AD%A6/id1532391360?l=en')) {
-                                        await launch(
-                                            'https://apps.apple.com/jp/app/kboy%E3%81%AEflutter%E5%A4%A7%E5%AD%A6/id1532391360?l=en');
+                                      if (model.isIOS) {
+                                        if (await canLaunch(model.iosAppUrl)) {
+                                          await launch(model.iosAppUrl);
+                                        }
+                                      } else if (model.isAndroid) {
+                                        if (await canLaunch(
+                                            model.androidAppUrl)) {
+                                          await launch(model.androidAppUrl);
+                                        }
                                       }
                                     },
                                   ),

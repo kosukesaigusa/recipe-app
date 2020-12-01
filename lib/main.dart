@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,8 @@ void main() async {
     print('---');
     logger.info('FLAVOR: $flavor');
     print("FLAVOR: ${const String.fromEnvironment('FLAVOR')}");
+    print('iOS: ${Platform.isIOS}');
+    print('Android: ${Platform.isAndroid}');
     print('---');
     runApp(new App());
   });

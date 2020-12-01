@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "442594648503",
+    "firebase_url": "https://dev-recipe-app.firebaseio.com",
+    "project_id": "dev-recipe-app",
+    "storage_bucket": "dev-recipe-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:442594648503:android:85d0879e7aea9881760832",
+        "android_client_info": {
+          "package_name": "com.kosukesaigusa.recipe"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "442594648503-1o9db90tvgrnfooq5fj6646hlunv46lk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaC_wi-8Z1Mquoo0V6ETEFsgJOLZQXB3Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "442594648503-1o9db90tvgrnfooq5fj6646hlunv46lk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "442594648503-bu9v0upvslic2bmtthotsc72kml981h8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.kosukesaigusa.recipe.development"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
