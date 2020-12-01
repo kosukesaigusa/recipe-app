@@ -38,20 +38,22 @@ Flutter の新規プロジェクトを作成したら、
 open ios/Runner.xcworkspace
 ```
 
-で XCode を開きます。
+で Xcode を開きます。
 
-XCode Menu > Product > Scheme > Manage Schemes
+Runner > PROJECT > Runner の iOS Deployment target は、サポートする iOS バージョンを開発するアプリのユーザーのシェアなどを考慮して適切に決めます。
+
+次に、Xcode Menu > Product > Scheme > Manage Schemes
 
 から、左下の「+」ボタンをクリックし、
 
 * Target: Runner
-* Name: Develpment
+* Name: Development
 
 を入力して次へ進みます。同様に、Staging, Production についても Scheme を追加します。これらの Flavor バリエーションは、チームにも共有するので、「Shared」にもチェックをつけておき、下図のようになります。
 
-![shemes](../screenshots/shemes.png "schemes.png")
+![schemes](../screenshots/schemes.png "schemes.png")
 
-次に、Configuration の追加を行います。初期状態では、Runner > Project > Runner をクリックした画面の Configurations に、
+次に、Configuration の追加を行います。初期状態では、Runner > PROJECT > Runner をクリックした画面の Configurations に、
 
 * Debug
 * Release
@@ -65,7 +67,13 @@ XCode Menu > Product > Scheme > Manage Schemes
 
 も追加する必要があります。
 
-Runner > Project > Runner をクリックした画面の Configurations の下部の「+」ボタンを押し、Debug-Development は既存の Debug から、Release-Staging と Release-Production は既存の Release から複製して設定します。
+Runner > PROJECT > Runner をクリックした画面の Configurations の下部の「+」ボタンを押し、Debug-Development は既存の Debug から、Release-Staging と Release-Production は既存の Release から複製して設定します。
+
+上の 3 つの Configurations が作成できたら、次の画像
+
+![configuration-setting](../screenshots/configuration-setting.png "configuration-setting.png")
+
+のように、Runner > PROJECT > Runner > Configurations を設定して下さい。
 
 この段階で、ターミナルで対象アプリの `ios` ディレクトリに移動して、
 
@@ -77,7 +85,7 @@ flutter run --debug --flavor development
 
 しかし、ここまででは、まだ Flavor の違いがアプリケーションの振る舞いの違いに反映されません。そこで、以下のように、Configuration ごとの xcconfig ファイルを設定します。
 
-XCode で、Runner > Flutter 配下の、
+Xcode で、Runner > Flutter 配下の、
 
 * `Debug.xcconfig`
 * `Release.xcconfig`
@@ -110,26 +118,30 @@ XCode で、Runner > Flutter 配下の、
 
 という感じです。
 
-これを反映させるために、XCode で Runner > Project > Runner > Build Settings (All, Combined を選択) > Packaging > Product Bundle Identifier の値を、それぞれ
+これを反映させるために、Xcode で Runner > PROJECT > Runner > Build Settings (All, Combined を選択) > Packaging > Product Bundle Identifier の値を、それぞれ
 
 * Debug: `com.kosukesaigusa.recipe.development`
 * Debug-Development: `com.kosukesaigusa.recipe.development`
-* Rlease: `com.kosukesaigusa.recipe`
-* Rlease-Production: `com.kosukesaigusa.recipe`
-* Rlease-Staging: `com.kosukesaigusa.recipe.staging`
+* Release: `com.kosukesaigusa.recipe`
+* Release-Production: `com.kosukesaigusa.recipe`
+* Release-Staging: `com.kosukesaigusa.recipe.staging`
 
 のように設定します。
 
-![configurations](../screenshots/configurations.png "configurations.png")
+![product-bundle-identifiers](../screenshots/product-bundle-identifiers.png "product-bundle-identifiers.png")
+
+同様の設定が、Runner > TARGETS の方にもあるので確認し、設定しましょう。
 
 Runner > Runner > info.plist には、
 
 ```
 <key>FlutterFlavor</key>
 <string>$(FLUTTER_FLAVOR)</string>
+<key>CFBundleDisplayName</key>
+<string>$(DISPLAY_NAME)</string>
 ```
 
-のペアを追加しておき、Bunlde name はリリース版のアプリ名に相当する「シンプルなレシピ」としておきましょう。
+のペアを追加しておき、Bundle name はリリース版のアプリ名に相当する「シンプルなレシピ」としておきましょう。
 
 ```
 <key>CFBundleName</key>
@@ -164,7 +176,7 @@ Project settings の Default GCP resource location は、東京に相当する `
 
 と名前を変更しておきます。
 
-これらの3つのファイルを、XCode で新たに作成した Runner > Runnter > Firebase ディレクトリにドラッグ & ドロップで追加します（Finder などで追加すると、XCode 側に認識されません）。
+これらの3つのファイルを、Xcode で新たに作成した Runner > Runnter > Firebase ディレクトリにドラッグ & ドロップで追加します（Finder などで追加すると、Xcode 側に認識されません）。
 
 ![firebase](../screenshots/firebase.png "firebase")
 
@@ -198,6 +210,10 @@ elif [[ "${CONFIGURATION}" == "Release-Production" ]]; then
     rm $PRODUCT_NAME/GoogleService-Info.plist
     cp $PRODUCT_NAME/Firebase/GoogleService-Info-Production.plist $PRODUCT_NAME/GoogleService-Info.plist
     echo "GoogleService-Info-Production.plist copied."
+elif [[ "${CONFIGURATION}" == "Release" ]]; then
+    rm $PRODUCT_NAME/GoogleService-Info.plist
+    cp $PRODUCT_NAME/Firebase/GoogleService-Info-Production.plist $PRODUCT_NAME/GoogleService-Info.plist
+    echo "GoogleService-Info-Production.plist copied."
 else
     echo "configuration didn't match to Development, Staging or Production"
     echo $CONFIGURATION
@@ -209,7 +225,7 @@ Output Files には、明示的に、`$SRCROOT/Runner/GoogleService-info.plist` 
 
 こうすることで、ビルドを行う度に、そのビルドモードに対応した `GoogleService-info.plist` が作成（置換）されることになります。
 
-新たに作ったこの Run Script は、元々存在している Run script の下に XCode 上でドラッグ & ドロップをして移動しておきました。
+新たに作ったこの Run Script は、元々存在している Run script の下に Xcode 上でドラッグ & ドロップをして移動しておきました。
 
 Android Studio で開発しながら、それぞれのビルドモードで実行するためには、画面上部、Simulator の選択ボックス右隣の Edit Configurations を追加します。
 
@@ -237,14 +253,14 @@ Build Flavor として、
 
 を記入しておきましょう。
 
-また、XCode側でも同様に、Edit Schemes から、それぞれのビルドモードに合わせた環境変数を設定します。
+また、Xcode側でも同様に、Edit Schemes から、それぞれのビルドモードに合わせた環境変数を設定します。
 
-![XCode-flavor-1](../screenshots/XCode-flavor-1.png "XCode-flavor-1")
+![Xcode-flavor-1](../screenshots/Xcode-flavor-1.png "Xcode-flavor-1")
 
 Development, Staging, Release のそれぞれのビルドモードに対して、Edit Scheme > Run から、
 
-* Info > Build Configuration: `Debug-Devlopment`, `Release-Staging`, `Release-Production` のうちの適切なもの
-* Arguments > Environment Variables: `development`, `staging`, `production` のうちの適切なもの
+* Info > Build Configuration: `Debug-Development`, `Release-Staging`, `Release-Production` のうちの適切なもの
+* Arguments > Environment Variables: `FLAVOR` という環境変数に対して `development`, `staging`, `production` のうちの適切なもの
 
 を設定して下さい。
 
