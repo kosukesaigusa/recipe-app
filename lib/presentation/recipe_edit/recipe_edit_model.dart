@@ -100,7 +100,7 @@ class RecipeEditModel extends ChangeNotifier {
 
   // レシピの更新
   Future<void> updateRecipe() async {
-    startLoading();
+    startSubmitting();
     if (editedRecipe.name.isEmpty) {
       throw ('レシピ名を入力してください。');
     }
@@ -232,7 +232,8 @@ class RecipeEditModel extends ChangeNotifier {
 
     await _batch.commit();
 
-    endLoading();
+    // endLoading();
+    endSubmitting();
     notifyListeners();
   }
 

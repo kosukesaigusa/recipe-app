@@ -875,10 +875,8 @@ class RecipeEditPage extends StatelessWidget {
 }
 
 Future updateRecipe(RecipeEditModel model, BuildContext context) async {
-  model.startSubmitting();
   try {
     await model.updateRecipe();
-    model.endSubmitting();
     Vibrate.feedback(FeedbackType.medium);
     await showDialog(
       context: context,
