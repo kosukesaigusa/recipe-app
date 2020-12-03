@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:614566121434:android:29cdb69876ff613af27ae3",
         "android_client_info": {
-          "package_name": "com.kosukesaigusa.recipe"
+          "package_name": "com.kosukesaigusa.recipe.staging"
         }
       },
       "oauth_client": [
