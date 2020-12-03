@@ -2,96 +2,223 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-// 何らかの方法で認証が済んでいること
-function isAnyAuthentificated() {
-  return request.auth != null;
-}
+    // 何らかの方法で認証が済んでいること
+    function isAnyAuthentificated() {
+      return request.auth != null;
+    }
 
-// 認証が済んでいるのが本人であること
-function isUserAuthentificated(userId) {
-  return isAnyAuthentificated() && userId == request.auth.uid;
-}
+    // 認証が済んでいるのが本人であること
+    function isUserAuthentificated(userId) {
+      return isAnyAuthentificated() && userId == request.auth.uid;
+    }
 
-function isValidUserCreate(user, targetUserId) {
-  return user.size() == 3
-  && 'createdAt' in user && user.createdAt is timestamp
-  && 'email' in user && user.email is string
-  && 'userId' in user && user.userId is string && user.userId == targetUserId;
-        }
+    // ユーザーデータのスキーマ検証
+    function isValidUser(user) {
+      return user.size() == 8
+        && 'createdAt' in user && user.createdAt is timestamp
+        && 'displayName' in user && user.displayName is string
+        && 'email' in user && (user.email is string || user.email == null) // 匿名ユーザーも考慮する
+        && 'iconName' in user && (user.iconName is string || user.iconName == null)
+        && 'iconURL' in user && (user.iconURL is string || user.iconURL == null)
+        && 'publicRecipeCount' in user && user.publicRecipeCount is int
+        && 'recipeCount' in user && user.recipeCount is int
+        && 'userId' in user && user.userId is string;
+    }
 
-// レシピ新規作成のルール
-function isValidRecipeAdd(recipe, targetUserId) {
-  return 
-  recipe.size() == 13
-  && 'content' in recipe && recipe.content is string
-  && 'createdAt' in recipe && recipe.createdAt is timestamp && recipe.createdAt == request.time
-  && 'documentId' in recipe && recipe.documentId is string
-  && 'imageURL' in recipe && recipe.imageURL is string && recipe.imageURL.size() > 0 && recipe.imageURL.size() < 1000
-  && 'imageName' in recipe && recipe.imageName is string 
-  && 'isPublic' in recipe && recipe.isPublic is bool
-  && 'name' in recipe && recipe.name is string
-  && 'reference' in recipe && recipe.reference is string
-  && 'thumbnailURL' in recipe && recipe.thumbnailURL is string
-  && 'thumbnailName' in recipe && recipe.thumbnailName is string
-  && 'tokenMap' in recipe && recipe.tokenMap is map
-  && 'updatedAt' in recipe && recipe.updatedAt is timestamp && recipe.updatedAt == request.time
-  && 'userId' in recipe && recipe.userId is string && request.auth.uid == targetUserId;
-}
-// レシピ更新時のルール
-// function isValidRecipeUpdate(recipe, updateUserId) {
-//   return 
-//   recipe.content is string
-//   // && recipe.createdAt is timestamp
-//   && recipe.documentId is string
-//   && recipe.imageURL is string && recipe.imageURL.size() > 0 && recipe.imageURL.size() < 1000
-//   && recipe.imageName is string 
-//   && recipe.isPublic is bool
-//   && recipe.name is string
-//   && recipe.reference is string
-//   && recipe.thumbnailURL is string && recipe.thumbnailURL.size() > 0 && recipe.thumbnailURL.size() < 1000
-//   && recipe.thumbnailName is string
-//   && recipe.tokenMap is map
-//   && recipe.updatedAt is timestamp && recipe.createdAt == request.time
-//   && recipe.userId is string && request.auth.uid == updateUserId;
-// }
+    // レシピデータのスキーマ検証
+    function isValidRecipe(recipe) {
+      return recipe.size() == 13
+        && 'content' in recipe && recipe.content is string
+        && 'createdAt' in recipe && recipe.createdAt is timestamp
+        && 'documentId' in recipe && recipe.documentId is string
+        && 'imageName' in recipe && (recipe.imageName is string || recipe.imageName == null)
+        && 'imageURL' in recipe && (recipe.imageURL is string || recipe.imageURL == null)
+        && 'isPublic' in recipe && recipe.isPublic is bool
+        && 'name' in recipe && recipe.name is string
+        && 'reference' in recipe && recipe.reference is string
+        && 'thumbnailName' in recipe && (recipe.thumbnailName is string || recipe.thumbnailName == null)
+        && 'thumbnailURL' in recipe && (recipe.thumbnailURL is string || recipe.thumbnailURL == null)
+        && 'tokenMap' in recipe && recipe.tokenMap is map
+        && 'updatedAt' in recipe && recipe.updatedAt is timestamp
+        && 'userId' in recipe && recipe.userId is string
+      ;
+    }
 
-// filenameを更新していないかどうか
-function isNotUpdating(fileName) {
-  return !(request.resource.data[fileName]) 
-  || request.resource.data[fileName] == resource.data[fileName]
-}
+    function isValidFavoriteRecipe(recipe) {
+      return recipe.size() == 14
+        && 'content' in recipe && recipe.content is string
+        && 'createdAt' in recipe && recipe.createdAt is timestamp
+        && 'documentId' in recipe && recipe.documentId is string
+        && 'imageName' in recipe && (recipe.imageName is string || recipe.imageName == null)
+        && 'imageURL' in recipe && (recipe.imageURL is string || recipe.imageURL == null)
+        && 'isPublic' in recipe && recipe.isPublic is bool
+        && 'likedAt' in recipe && recipe.likedAt is timestamp
+        && 'name' in recipe && recipe.name is string
+        && 'reference' in recipe && recipe.reference is string
+        && 'thumbnailName' in recipe && (recipe.thumbnailName is string || recipe.thumbnailName == null)
+        && 'thumbnailURL' in recipe && (recipe.thumbnailURL is string || recipe.thumbnailURL == null)
+        && 'tokenMap' in recipe && recipe.tokenMap is map
+        && 'updatedAt' in recipe && recipe.updatedAt is timestamp
+        && 'userId' in recipe && recipe.userId is string
+      ;
+    }
 
-// root / users(ユーザードキュメント)
-match /users/{userId} {
-  allow get: if isUserAuthentificated(userId);
-  allow create: if isUserAuthentificated(userId) 
-    && isValidUserCreate(request.resource.data, userId);
-  allow update: if isUserAuthentificated(userId)
-    && isValidUserUpdate(request.resource.data, userId)
-    && isNotUpdating(createdAt);
+    // /users
+    match /users/{userId} {
+      allow get: if isUserAuthentificated(userId);
+      allow create: if isUserAuthentificated(userId)
+        // スキーマ検証
+        && isValidUser(request.resource.data)
+        // バリデーション
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.displayName.size() <= 30
+        && request.resource.data.publicRecipeCount >= 0
+        && request.resource.data.publicRecipeCount < 10000
+        && request.resource.data.recipeCount >= 0
+        && request.resource.data.recipeCount < 10000
+        && request.resource.data.userId == userId
+      ;
+      allow update: if isUserAuthentificated(userId) 
+        // スキーマ検証
+        && isValidUser(request.resource.data)
+        // バリデーション
+        && request.resource.data.displayName.size() <= 30
+        && request.resource.data.publicRecipeCount >= 0
+        && request.resource.data.publicRecipeCount < 10000
+        && request.resource.data.recipeCount >= 0
+        && request.resource.data.recipeCount < 10000
+        && (request.resource.data.publicRecipeCount == resource.data.publicRecipeCount
+        ||  request.resource.data.publicRecipeCount == resource.data.publicRecipeCount + 1
+        ||  request.resource.data.publicRecipeCount == resource.data.publicRecipeCount - 1
+        )
+        && (request.resource.data.recipeCount == resource.data.recipeCount
+        ||  request.resource.data.recipeCount == resource.data.recipeCount + 1
+        ||  request.resource.data.recipeCount == resource.data.recipeCount - 1
+        )
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.userId == resource.data.userId
+      ;
 
-  // root / users / {userId} / recipes / {recipeId}(わたしのレシピ)
-  match/recipes/{recipeId} {
-    allow read: if isUserAuthentificated(userId); 
-    allow create: if isUserAuthentificated(userId) 
-      && isValidRecipeAdd(request.resource.data, userId);
-    allow update: if isUserAuthentificated(userId) 
-      // && isValidRecipeUpdate(resource.data, userId)
-      && isNotUpdating(createdAt);
-    allow delete: if isUserAuthentificated(userId);
+      // /users/{userId}/recipes
+      match /recipes/{recipeId} {
+        allow read: if isUserAuthentificated(userId); 
+        allow create: if isUserAuthentificated(userId)
+          // スキーマ検証
+          && isValidRecipe(request.resource.data)
+          // バリデーション
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 1000
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.documentId == recipeId
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 30
+          && request.resource.data.reference.size() >= 0
+          && request.resource.data.reference.size() < 1000
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.userId == userId;
+        allow update: if isUserAuthentificated(userId) 
+          // スキーマ検証
+          && isValidRecipe(request.resource.data)
+          // バリデーション
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 1000
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 30
+          && request.resource.data.reference.size() >= 0
+          && request.resource.data.reference.size() < 1000
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.documentId == resource.data.documentId
+          && request.resource.data.userId == resource.data.userId
+        ;
+        allow delete: if isUserAuthentificated(userId);
+      }
+
+      // /users/{userId}/favorite_recipes
+      match /favorite_recipes/{recipeId} {
+        allow read: if isUserAuthentificated(userId);
+        allow create: if isUserAuthentificated(userId)
+          // スキーマ検証
+          && isValidFavoriteRecipe(request.resource.data)
+          // バリデーション
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 1000
+          && request.resource.data.documentId == recipeId
+          && request.resource.data.likedAt == request.time
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 30
+          && request.resource.data.reference.size() >= 0
+          && request.resource.data.reference.size() < 1000
+          && request.resource.data.userId == userId
+        ;
+        allow update: if isUserAuthentificated(userId)
+          // スキーマ検証
+          && isValidFavoriteRecipe(request.resource.data)
+          // バリデーション
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 1000
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 30
+          && request.resource.data.reference.size() >= 0
+          && request.resource.data.reference.size() < 1000
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.documentId == resource.data.documentId
+          && request.resource.data.likedAt == resource.data.likedAt
+          && request.resource.data.userId == resource.data.userId
+        ;
+        allow delete: if isUserAuthentificated(userId);
+      }
+      
+    }
+
+    // /public_recipes
+    match /public_recipes/{recipeId} {
+      allow read: if isAnyAuthentificated();
+      allow create: if isAnyAuthentificated()
+        // スキーマ検証
+        && isValidRecipe(request.resource.data)
+        // バリデーション
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 1000
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.documentId == recipeId
+        && request.resource.data.isPublic == true  // お気に入りのレシピの作成時は必ず isPublic == true
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 30
+        && request.resource.data.reference.size() >= 0
+        && request.resource.data.reference.size() < 1000
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.userId == request.auth.uid
+      ;
+      allow update: if isAnyAuthentificated()
+        // スキーマ検証
+        && isValidRecipe(request.resource.data)
+        // バリデーション
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 1000
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 30
+        && request.resource.data.reference.size() >= 0
+        && request.resource.data.reference.size() < 1000
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.documentId == resource.data.documentId
+        && request.resource.data.userId == resource.data.userId
+      ; 
+      allow delete: if isAnyAuthentificated()
+        && resource.data.userId == request.auth.uid
+      ;
+    }
+
+    // /contacts
+    match /contacts/{contactId} {
+      allow create: if isAnyAuthentificated();
+    }
+
+    // /settings
+    match /settings/{documentId} {
+      allow read: if true;
+    }
   }
-}
-//root / public_recipes(みんなのレシピ)
-match/public_recipes/{public_recipeId} {
-  allow read: if isAnyAuthentificated();
-  allow create: if isUserAuthentificated(public_recipeId);
-  allow update: if isUserAuthentificated(public_recipeId); 
-  allow delete: if isUserAuthentificated(public_recipeId);
-}
-
-//root/contacts コレクションのドキュメント
-match /contacts/{contactId} {
-  allow create: if isAnyAuthentificated();
-}
-}
 }

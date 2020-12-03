@@ -263,3 +263,11 @@ Docker コンテナを起動した状態で、次のコマンドで Firestore �
 Firestore emulator からは、Security Rule のテストの実行などを、Functions emulator からは、Cloud Functions の実行ログの確認などを行うことができます。
 
 エミュレータは `control C` のキー入力でストップすることができます。
+
+たとえば Functions ではなく、Firestore のエミュレータだけを起動したい場合には、
+
+```
+firebase emulators:start --only firestore
+```
+
+のように `--only` オプションのコマンドを実行すれば OK です。

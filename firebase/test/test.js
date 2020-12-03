@@ -9,40 +9,122 @@ const fs = require('fs');
 const { request } = require('http');
 
 // Security Rules の変更をエミュレータ側で都度検知するための記述
-const MY_PROJECT_ID = "dev-recipe-app";
+const MY_PROJECT_ID = 'dev-recipe-app';
 
 // 対象のルールファイルの明示
 const rules = fs.readFileSync('../firestore.rules', 'utf-8');
 
 // 自分のユーザー ID とメールアドレス（仮）
-const myId = "user_me";
-const myEmail = "my_email@example.com";
+const myUserId = 'my_user_id';
+const myEmail = 'my_email@example.com';
 
 // 他人のユーザー ID とメールアドレス（仮）
-const theirId = "user_them";
-const theirEmail = "their_email@example.com";
+const theirUserId = 'their_user_id';
+const theirEmail = 'their_email@example.com';
 
 // 自分のアカウント認証情報
 const myAuth = {
-    uid: myId, 
+    uid: myUserId, 
     email: myEmail,
 };
 
+const theirAuth = {
+    uid: theirUserId,
+    email: theirEmail,
+}
+
 const serverTimestamp = () => firebase.firestore.FieldValue.serverTimestamp();
 
-// レシピドキュメントデータ
-const recipe_content = "まず豚こま肉を200g程度、塩胡椒と薄力粉でコーティングして下準備する。ニンニクは2片ほどを荒みじん切り、玉ねぎ半分を薄めのスライスにしておく。 温めたフライパンにニンニクを入れて火を通し、柴犬色になったら肉をよく広げながら入れる。全体に火が通ってきたら玉ねぎを入れて、透明になるまで炒める。そこにキムチを投入して、酒大さじ1、醤油小さじ1、砂糖小さじ1、めんつゆ少々を加えて、水分が少し減るくらいまで炒める。 ご飯によく合う味で美味しい！！";
-const recipe_documentId = "DYCp3y7wgFNlQrtEFSl8";
-const recipe_imageURL = "https://img.cpcdn.com/recipes/597693/840x1461s/3961a206a888b9997f627487663ab3a4?u=125911&p=1246605171";
-const recipe_imageName = "image_2020-11-10 22:41:16.072893_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg"
-const recipe_isPublic = true;
-const recipe_name = "【36】 わたしの豚キムチ";
-const recipe_reference = "リュウジのバズレシピ";
-const recipe_thumbnailURL = "https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/thumbnails%2Fthumbnail_2020-11-10%2022:41:18.681737_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=97364ba2-57f9-47c7-94e8-5ae738e288f3";
-const recipe_thumbnailName = "thumbnail_2020-11-10 22:41:18.681737_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg";
-const recipe_tokenMap = {"豚キ": true};
+const myUserFields = {
+    createdAt: serverTimestamp(),
+    displayName: 'kosukesaigusa',
+    email: myAuth.email,
+    iconName: 'icon_2020-11-20 18:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
+    iconURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/icons%2Ficon_2020-11-20%2018:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=d16a4759-f3d9-493a-ae83-7e5044756767',
+    publicRecipeCount: 0,
+    recipeCount: 0,
+    userId: myAuth.uid,
+};
 
+const myUserFieldsWithoutEmail = {
+    createdAt: serverTimestamp(),
+    displayName: 'kosukesaigusa',
+    // email: myAuth.email, // 欠落
+    iconName: 'icon_2020-11-20 18:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
+    iconURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/icons%2Ficon_2020-11-20%2018:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=d16a4759-f3d9-493a-ae83-7e5044756767',
+    publicRecipeCount: 0,
+    recipeCount: 0,
+    userId: myAuth.uid,
+};
 
+const myUserFieldsUserIdUpdated = {
+    userId: theirAuth.uid, // userId を変更
+};
+
+const myAnonymousUserFields = {
+    createdAt: serverTimestamp(),
+    displayName: 'kosukesaigusa',
+    email: null,
+    iconName: 'icon_2020-11-20 18:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
+    iconURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/icons%2Ficon_2020-11-20%2018:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=d16a4759-f3d9-493a-ae83-7e5044756767',
+    publicRecipeCount: 0,
+    recipeCount: 0,
+    userId: myAuth.uid,
+};
+
+// レシピデータのサンプル
+const myRecipeDocId = 'DYCp3y7wgFNlQrtEFSl8';
+const myRecipeFields = {
+    content: '鳥もも肉を1枚買ってきて、必要に応じて皮を取る。全体を均等な一口大の8mmくらいに薄切りして、醤油大さじ3、みりん大さじ1、酒大さじ1、ニンニクチューブ適量の下味に揉み込む。その後10分くらい漬け込んでおく。ボウルから調味液を捨てて、そこに厚くなりすぎない程度の片栗粉を入れる。強めの中火で、両面が良い色になるまで揚げ焼いたら完成。もも肉なのに柔らかく仕上がって美味しい！！',
+    createdAt: serverTimestamp(),
+    documentId: myRecipeDocId,
+    imageName: 'image_2020-11-10 22:41:16.072893_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
+    imageURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/images%2Fimage_2020-11-10%2022:41:16.072893_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=31acfef0-2223-4de1-94d8-85dc3006864d',
+    isPublic: false,
+    name: '薄唐揚げ',
+    reference: 'リュウジのバズレシピ',
+    thumbnailName: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/thumbnails%2Fthumbnail_2020-11-10%2022:41:18.681737_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=97364ba2-57f9-47c7-94e8-5ae738e288f3',
+    thumbnailURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/thumbnails%2Fthumbnail_2020-11-10%2022:41:18.681737_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=97364ba2-57f9-47c7-94e8-5ae738e288f3',
+    tokenMap: {'薄唐': true, '唐揚': true, '揚ゲ': true, '鳥モ': true, 'モモ': true, 'モ肉': true, '肉ヲ': true, 'ヲ1': true, '1枚': true, '枚買': true, '買ッ': true, 'ッテ': true, 'テキ': true, 'キテ': true, '必要': true, '要ニ': true, 'ニ応': true, '応ジ': true, 'ジテ': true, 'テ皮': true, '皮ヲ': true, 'ヲ取': true, '取ル': true, '全体': true, '体ヲ': true, 'ヲ均': true, '均等': true, '等ナ': true, 'ナ一': true, '一口': true, '口大': true, '大ノ': true, 'ノ8': true, '8m': true, 'mm': true, 'mク': true, 'クラ': true, 'ライ': true, 'イニ': true, 'ニ薄': true, '薄切': true, '切リ': true, 'リシ': true, 'シテ': true, '醤油': true, '油大': true, '大サ': true, 'サジ': true, 'ジ3': true, 'ミリ': true, 'リン': true, 'ン大': true, 'ジ1': true, '酒大': true, 'ニン': true, 'ンニ': true, 'ニク': true, 'クチ': true, 'チュ': true, 'ュー': true, 'ーブ': true, 'ブ適': true, '適量': true, '量ノ': true, 'ノ下': true, '下味': true, '味ニ': true, 'ニ揉': true, '揉ミ': true, 'ミ込': true, '込ム': true, 'ソノ': true},
+    updatedAt: serverTimestamp(),
+    userId: myAuth.uid,
+};
+
+// お気に入りのレシピデータのサンプル
+const myFavoriteRecipeDocId = 'DYCp3y7wgFNlQrtEFSl8';
+const myFavoriteRecipeFields = {
+    content: '鳥もも肉を1枚買ってきて、必要に応じて皮を取る。全体を均等な一口大の8mmくらいに薄切りして、醤油大さじ3、みりん大さじ1、酒大さじ1、ニンニクチューブ適量の下味に揉み込む。その後10分くらい漬け込んでおく。ボウルから調味液を捨てて、そこに厚くなりすぎない程度の片栗粉を入れる。強めの中火で、両面が良い色になるまで揚げ焼いたら完成。もも肉なのに柔らかく仕上がって美味しい！！',
+    createdAt: serverTimestamp(),
+    documentId: myFavoriteRecipeDocId,
+    imageName: 'image_2020-11-10 22:41:16.072893_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
+    imageURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/images%2Fimage_2020-11-10%2022:41:16.072893_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=31acfef0-2223-4de1-94d8-85dc3006864d',
+    isPublic: false,
+    likedAt: serverTimestamp(),
+    name: '薄唐揚げ',
+    reference: 'リュウジのバズレシピ',
+    thumbnailName: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/thumbnails%2Fthumbnail_2020-11-10%2022:41:18.681737_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=97364ba2-57f9-47c7-94e8-5ae738e288f3',
+    thumbnailURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/thumbnails%2Fthumbnail_2020-11-10%2022:41:18.681737_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=97364ba2-57f9-47c7-94e8-5ae738e288f3',
+    tokenMap: {'薄唐': true, '唐揚': true, '揚ゲ': true, '鳥モ': true, 'モモ': true, 'モ肉': true, '肉ヲ': true, 'ヲ1': true, '1枚': true, '枚買': true, '買ッ': true, 'ッテ': true, 'テキ': true, 'キテ': true, '必要': true, '要ニ': true, 'ニ応': true, '応ジ': true, 'ジテ': true, 'テ皮': true, '皮ヲ': true, 'ヲ取': true, '取ル': true, '全体': true, '体ヲ': true, 'ヲ均': true, '均等': true, '等ナ': true, 'ナ一': true, '一口': true, '口大': true, '大ノ': true, 'ノ8': true, '8m': true, 'mm': true, 'mク': true, 'クラ': true, 'ライ': true, 'イニ': true, 'ニ薄': true, '薄切': true, '切リ': true, 'リシ': true, 'シテ': true, '醤油': true, '油大': true, '大サ': true, 'サジ': true, 'ジ3': true, 'ミリ': true, 'リン': true, 'ン大': true, 'ジ1': true, '酒大': true, 'ニン': true, 'ンニ': true, 'ニク': true, 'クチ': true, 'チュ': true, 'ュー': true, 'ーブ': true, 'ブ適': true, '適量': true, '量ノ': true, 'ノ下': true, '下味': true, '味ニ': true, 'ニ揉': true, '揉ミ': true, 'ミ込': true, '込ム': true, 'ソノ': true},
+    updatedAt: serverTimestamp(),
+    userId: myAuth.uid,
+};
+
+const myPublicRecipeDocId = 'public_DYCp3y7wgFNlQrtEFSl8';
+const myPublicRecipeFields = {
+    content: '鳥もも肉を1枚買ってきて、必要に応じて皮を取る。全体を均等な一口大の8mmくらいに薄切りして、醤油大さじ3、みりん大さじ1、酒大さじ1、ニンニクチューブ適量の下味に揉み込む。その後10分くらい漬け込んでおく。ボウルから調味液を捨てて、そこに厚くなりすぎない程度の片栗粉を入れる。強めの中火で、両面が良い色になるまで揚げ焼いたら完成。もも肉なのに柔らかく仕上がって美味しい！！',
+    createdAt: serverTimestamp(),
+    documentId: myPublicRecipeDocId,
+    imageName: 'image_2020-11-10 22:41:16.072893_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
+    imageURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/images%2Fimage_2020-11-10%2022:41:16.072893_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=31acfef0-2223-4de1-94d8-85dc3006864d',
+    isPublic: true,
+    name: '薄唐揚げ',
+    reference: 'リュウジのバズレシピ',
+    thumbnailName: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/thumbnails%2Fthumbnail_2020-11-10%2022:41:18.681737_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=97364ba2-57f9-47c7-94e8-5ae738e288f3',
+    thumbnailURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/thumbnails%2Fthumbnail_2020-11-10%2022:41:18.681737_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=97364ba2-57f9-47c7-94e8-5ae738e288f3',
+    tokenMap: {'薄唐': true, '唐揚': true, '揚ゲ': true, '鳥モ': true, 'モモ': true, 'モ肉': true, '肉ヲ': true, 'ヲ1': true, '1枚': true, '枚買': true, '買ッ': true, 'ッテ': true, 'テキ': true, 'キテ': true, '必要': true, '要ニ': true, 'ニ応': true, '応ジ': true, 'ジテ': true, 'テ皮': true, '皮ヲ': true, 'ヲ取': true, '取ル': true, '全体': true, '体ヲ': true, 'ヲ均': true, '均等': true, '等ナ': true, 'ナ一': true, '一口': true, '口大': true, '大ノ': true, 'ノ8': true, '8m': true, 'mm': true, 'mク': true, 'クラ': true, 'ライ': true, 'イニ': true, 'ニ薄': true, '薄切': true, '切リ': true, 'リシ': true, 'シテ': true, '醤油': true, '油大': true, '大サ': true, 'サジ': true, 'ジ3': true, 'ミリ': true, 'リン': true, 'ン大': true, 'ジ1': true, '酒大': true, 'ニン': true, 'ンニ': true, 'ニク': true, 'クチ': true, 'チュ': true, 'ュー': true, 'ーブ': true, 'ブ適': true, '適量': true, '量ノ': true, 'ノ下': true, '下味': true, '味ニ': true, 'ニ揉': true, '揉ミ': true, 'ミ込': true, '込ム': true, 'ソノ': true},
+    updatedAt: serverTimestamp(),
+    userId: myAuth.uid,
+};
 
 // 対象の Firestore DB の定義
 function getFirestore(auth) {
@@ -55,156 +137,230 @@ before(async () => {
     await firebase.loadFirestoreRules({projectId: MY_PROJECT_ID, rules});
 });
 
-// 各テストの実行前
+// ひとつひとつのテストの実行前
 beforeEach(async () => {
     await firebase.clearFirestoreData({projectId: MY_PROJECT_ID});
 });
 
-describe("ユニットテストの実行", () => {
+describe('ユニットテストの実行', () => {
 
-    describe("ユーザーデータの取得", () => {
-        it("[Fail] 他人のユーザーデータは取得できない", async () => {
-            // 対象の Firestore DB の定義
-            const db = getFirestore(myAuth);
-            // テスト対象の Document Reference
-            const testDoc = db.collection("users").doc(theirId);
-            // テストで確認する動作
-            await firebase.assertFails(testDoc.get());
-        });
-
-        it("[Success] 本人のユーザーデータは取得できる", async () => {
-            // 対象の Firestore DB の定義
-            const db = getFirestore(myAuth);
-            // テスト対象の Document Reference
-            const testDoc = db.collection("users").doc(myId);
-            // テストで確認する動作
-            await firebase.assertSucceeds(testDoc.get());
-        });
-    });
-
-    
-    describe("ユーザードキュメントの作成", async () => {
-        it("[Fail] 他人のユーザードキュメントは作成できない", async () => {
-            const db = getFirestore(myAuth);
-            const testDoc = db.collection("users").doc(theirId); // 他人のユーザードキュメント
-            await firebase.assertFails(testDoc.set({
-                createdAt: serverTimestamp(),
-                email: myAuth.email,
-                userId: myAuth.uid
-            }));
-        });
-
-        it("[Fail] リクエストの中に email フィールドが存在しないので、ユーザードキュメントは作成できない", async () => {
-            const db = getFirestore(myAuth);
-            const testDoc = db.collection("users").doc(myId);
-            await firebase.assertFails(testDoc.set({
-                createdAt: serverTimestamp(),
-                userId: myAuth.uid,
-                // email: myAuth.email,
-                // email がフィールドに含まれない
-            }));
-        });
-
-        it("[Success] 本人のユーザードキュメントは作成できる", async () => {
-            const db = getFirestore(myAuth);
-            const testDoc = db.collection("users").doc(myId);
-            await firebase.assertSucceeds(testDoc.set({
-                createdAt: serverTimestamp(),
-                email: myAuth.email,
-                userId: myAuth.uid
-            }));
-        });
-    });
-
-        describe("わたしのレシピ", async () => {
-            it("[Fail] 他人のレシピ_は作成できない", async () => {
-                const db = getFirestore(myAuth);
-                const testDoc = db.collection("users").doc(theirId)
-                                .collection("recipes").doc(recipe_documentId);
-                await firebase.assertFails(testDoc.set({
-                }));
+    describe('/users', () => {
+        describe('get', () => {
+            it('[Fail] 認証が済んでいないのでユーザーデータを取得できない', async () => {
+                const db = getFirestore(null);  // Firestore DB にサインインせずにアクセス
+                const myUserDoc = db.collection('users').doc(myUserId);
+                await firebase.assertFails(myUserDoc.get());
             });
-
-            it("[Success] 本人は、レシピを作成できる", async () => {
+            it('[Fail] 他人のユーザーデータは取得できない', async () => {
+                const db = getFirestore(myAuth);  // Firestore DB に自身でサインイン
+                const theirUserDoc = db.collection('users').doc(theirUserId);  // 他人のユーザードキュメント
+                await firebase.assertFails(theirUserDoc.get());
+            });
+            it('[Success] 本人のユーザーデータは取得できる', async () => {
                 const db = getFirestore(myAuth);
-                const testDoc = db.collection("users").doc(myId)
-                                .collection("recipes").doc(recipe_documentId);
-                await firebase.assertSucceeds(testDoc.set({
-                   content: recipe_content,
-                   createdAt: serverTimestamp(),
-                   documentId: recipe_documentId,
-                   imageURL: recipe_imageURL,
-                   imageName: recipe_imageName,
-                   isPublic: recipe_isPublic,
-                   name: recipe_name,
-                   reference: recipe_reference,
-                   thumbnailURL: recipe_thumbnailURL,
-                   thumbnailName: recipe_thumbnailName,
-                   tokenMap: recipe_tokenMap,
-                   updatedAt: serverTimestamp(),
-                   userId: myAuth.uid,
-                }));
-                await firebase.assertFails(testDoc.set({
-                    content:123,
+                const myUserDoc = db.collection('users').doc(myUserId);  // 自身のユーザードキュメント
+                await firebase.assertSucceeds(myUserDoc.get());
+            });
+        });
+    
+        describe('create', async () => {
+            it('[Fail] 他人のユーザードキュメントは作成できない', async () => {
+                const db = getFirestore(myAuth);
+                const theirUserDoc = db.collection('users').doc(theirUserId); // 他人のユーザードキュメント
+                await firebase.assertFails(theirUserDoc.set(myUserFields));
+            });
+            it('[Fail] email フィールドが欠落しているので、ユーザードキュメントは作成できない', async () => {
+                const db = getFirestore(myAuth);
+                const myUserDoc = db.collection('users').doc(myUserId);
+                await firebase.assertFails(myUserDoc.set(myUserFieldsWithoutEmail));
+            });
+            it('[Success] 本人のユーザードキュメントは作成できる', async () => {
+                const db = getFirestore(myAuth);
+                const myUserDoc = db.collection('users').doc(myUserId);
+                await firebase.assertSucceeds(myUserDoc.set(myUserFields));
+            });
+            it('[Success] 本人のユーザードキュメントは匿名でも作成できる', async () => {
+                const db = getFirestore(myAuth);
+                const myUserDoc = db.collection('users').doc(myUserId);
+                await firebase.assertSucceeds(myUserDoc.set(myAnonymousUserFields));
+            });
+        });
+
+        describe('update', async () => {
+            it('[Fail] createdAt が変更されているので更新を許さない', async () => {
+                const db = getFirestore(myAuth);
+                const myUserDoc = db.collection('users').doc(myUserId);
+                await myUserDoc.set(myUserFields);
+                await firebase.assertFails(myUserDoc.update({createdAt: serverTimestamp()}));
+            });
+            it('[Fail] user ID が変更されているので更新を許さない', async () => {
+                const db = getFirestore(myAuth);
+                const myUserDoc = db.collection('users').doc(myUserId);
+                await myUserDoc.set(myUserFields);
+                await firebase.assertFails(myUserDoc.update({userId: '更新したユーザー ID'}));
+            });
+            it('[Success] ユーザーの displayName を変更する', async () => {
+                const db = getFirestore(myAuth);
+                const myUserDoc = db.collection('users').doc(myUserId);
+                await myUserDoc.set(myUserFields);
+                await firebase.assertSucceeds(myUserDoc.update({displayName: '更新したディスプレイネーム'}));
+            });
+        });
+    });
+
+    describe('/users/{userId}/recipes', () => {
+        describe('read', async () => {
+            it('[Success] 本人のレシピコレクションは取得できる', async () => {
+                const db = getFirestore(myAuth);
+                const myRecipesCollection = db.collection('users')
+                .doc(myUserId)
+                .collection('recipes')
+                await firebase.assertSucceeds(myRecipesCollection.get());
+            });
+        });
+
+        describe('create', async () => {
+            it('[Fail] 他人のレシピは作成できない', async () => {
+                const db = getFirestore(theirAuth);
+                const myRecipeDoc = db.collection('users')
+                .doc(myUserId)
+                .collection('recipes')
+                .doc(myRecipeDocId);
+                await firebase.assertFails(myRecipeDoc.set(myRecipeFields));
+            });
+            it('[Success] 本人はレシピを作成できる', async () => {
+                const db = getFirestore(myAuth);
+                const myRecipeDoc = db.collection('users')
+                .doc(myUserId)
+                .collection('recipes')
+                .doc(myRecipeDocId);
+                await firebase.assertSucceeds(myRecipeDoc.set(myRecipeFields));
+            });
+        });
+
+        describe('update', async () => {
+            it('[Success] 本人はレシピを更新できる', async () => {
+                const db = getFirestore(myAuth);
+                const myRecipeDoc = db.collection('users')
+                .doc(myUserId)
+                .collection('recipes')
+                .doc(myRecipeDocId);
+                await myRecipeDoc.set(myRecipeFields);
+                await firebase.assertSucceeds(myRecipeDoc.update({
+                    name: '更新したレシピ名', 
                     updatedAt: serverTimestamp(),
                 }));
             });
+        });
 
-            it("[Success] 本人は、レシピを更新できる", async () => {
+        describe('delete', async () => {
+            it('[Success] 本人はレシピを削除できる', async () => {
                 const db = getFirestore(myAuth);
-                const testDoc = db.collection("users").doc(myId)
-                                .collection("recipes").doc(recipe_documentId);
-                await firebase.assertFails(testDoc.update({
-                    createdAt: serverTimestamp(),
-                    
+                const myRecipeDoc = db.collection('users')
+                .doc(myUserId)
+                .collection('recipes')
+                .doc(myRecipeDocId);
+                await myRecipeDoc.set(myRecipeFields);
+                await firebase.assertSucceeds(myRecipeDoc.delete());
+            });
+        });
+        
+    });
+
+    describe('/users/{userId}/favorite_recipes', () => {
+        describe('read', async () => {
+        });
+
+        describe('create', async () => {
+            it('[Fail] 他人のお気に入りのレシピは作成できない', async () => {
+                const db = getFirestore(theirAuth);
+                const myFavoriteRecipeDoc = db.collection('users')
+                .doc(myUserId)
+                .collection('favorite_recipes')
+                .doc(myFavoriteRecipeDocId);
+                await firebase.assertFails(myFavoriteRecipeDoc.set(myFavoriteRecipeFields));
+            });
+            it('[Success] 本人はお気に入りのレシピを作成できる', async () => {
+                const db = getFirestore(myAuth);
+                const myFavoriteRecipeDoc = db.collection('users')
+                .doc(myUserId)
+                .collection('favorite_recipes')
+                .doc(myFavoriteRecipeDocId);
+                await firebase.assertSucceeds(myFavoriteRecipeDoc.set(myFavoriteRecipeFields));
+            });
+        });
+
+        describe('update', async () => {
+
+        });
+
+        describe('delete', async () => {
+
+        });
+    });
+
+    describe('/public_recipes', () => {
+        describe('read', async () => {
+
+        });
+
+        describe('create', async () => {
+            it('[Fail] 他人の ID でお気に入りのレシピは作成できない', async () => {
+                const db = getFirestore(theirAuth);
+                const myPublicRecipeDoc = db.collection('public_recipes').doc(myPublicRecipeDocId);
+                await firebase.assertFails(myPublicRecipeDoc.set(myPublicRecipeFields));
+            });
+            it('[Success] 自分の ID でお気に入りのレシピを作成できる', async () => {
+                const db = getFirestore(myAuth);
+                const myPublicRecipeDoc = db.collection('public_recipes').doc(myPublicRecipeDocId);
+                await firebase.assertSucceeds(myPublicRecipeDoc.set(myPublicRecipeFields));
+            });
+        });
+
+        describe('update', async () => {
+            it('[Success] 本人は公開されたレシピを更新できる', async () => {
+                const db = getFirestore(myAuth);
+                const myPublicRecipeDoc = db.collection('public_recipes').doc(myPublicRecipeDocId);
+                await myPublicRecipeDoc.set(myPublicRecipeFields)
+                await firebase.assertSucceeds(myPublicRecipeDoc.update({
+                    name: '更新したレシピ名',
+                    isPublic: false, // 更新状態を引っ込めることもできる
+                    updatedAt: serverTimestamp(),
                 }));
             });
         });
 
-
-
-              
-
-    // describe("みんなのレシピ", async () => {
-
-    //     it("[Success] すべてのレシピが閲覧できる", async () => {
-    //         const db = getFirestore(myAuth);
-    //         const testDoc = db.collection("public_recipes").doc();                
-    //         await firebase.assertSucceeds(testDoc.get({
-    //         }));
-    //     });
-
-    //     it("[Fail] 他人はレシピを作成できない", async () => {
-    //         const db = getFirestore(myAuth);
-    //         const testDoc = db.collection("public_recipes").doc(theirId)
-    //                         .collection("recipes").doc(theirId);
-    //         await firebase.assertFails(testDoc.set({
-    //         }));
-    //     });
-
-        // it("[Success] 本人はレシピを作成できる", async () => {
-        //     const db = getFirestore(myAuth);
-        //     const testDoc = db.collection("public_recipes").doc(myId);                
-        //     await firebase.assertSucceeds(testDoc.set({
-        //     }));
-        // });
-
-        // it("[Fail] 他人はレシピを更新できない", async () => {
-        //     const db = getFirestore(myAuth);
-        //     const testDoc = db.collection("public_recipes").doc(theirId)
-        //                     .collection("recipes").doc(theirId);
-        //     await firebase.assertFails(testDoc.update({
-        //     }));
-        // });
-
-        // });
-
-
-
-
+        describe('delete', async () => {
+            it('[Fail] 他人が公開したレシピは削除できない', async () => {
+                // わたしがレシピを公開
+                const myDB = getFirestore(myAuth);
+                const myPublicRecipeDoc = myDB.collection('public_recipes').doc(myPublicRecipeDocId);
+                await myPublicRecipeDoc.set(myPublicRecipeFields)
+                // 他人がそのレシピを参照
+                const theirDB = getFirestore(theirAuth);
+                const theirPublicRecipeDoc = theirDB.collection('public_recipes').doc(myPublicRecipeDocId);
+                // await firebase.assertSucceeds(theirPublicRecipeDoc.get());
+                // 他人がそのれレシピの削除を試みる
+                await firebase.assertFails(theirPublicRecipeDoc.delete());
+            });
+            it('[Success] 本人が公開したレシピは削除できる', async () => {
+                const db = getFirestore(myAuth);
+                const myPublicRecipeDoc = db.collection('public_recipes').doc(myPublicRecipeDocId);
+                await myPublicRecipeDoc.set(myPublicRecipeFields)
+                await firebase.assertSucceeds(myPublicRecipeDoc.delete());
+            });
+        });
     });
 
-// テスト郡の実行後
-after(async () => {
-    await firebase.clearFirestoreData({projectId: MY_PROJECT_ID});
+    describe('contacts', () => {
+        describe('create', async () => {
+
+        });
+    });
+
 });
+
+// テスト郡の実行後
+// after(async () => {
+//     await firebase.clearFirestoreData({projectId: MY_PROJECT_ID});
+// });
