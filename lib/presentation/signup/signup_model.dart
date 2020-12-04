@@ -5,6 +5,8 @@ import 'package:recipe/common/convert_error_message.dart';
 
 class SignUpModel extends ChangeNotifier {
   SignUpModel() {
+    this.agreeGuideline = false;
+    this.showingDialog = false;
     this.mail = '';
     this.password = '';
     this.confirm = '';
@@ -19,6 +21,8 @@ class SignUpModel extends ChangeNotifier {
     this.isGuestAllowed = false;
   }
 
+  bool agreeGuideline;
+  bool showingDialog;
   String mail;
   String password;
   String confirm;
@@ -60,6 +64,7 @@ class SignUpModel extends ChangeNotifier {
 
     /// UserCredential の null チェック
     if (this.userCredential == null) {
+      print('UserCredential が見つからないエラー');
       throw ('エラーが発生しました。');
     }
 
@@ -73,12 +78,14 @@ class SignUpModel extends ChangeNotifier {
         'userId': this.userCredential.user.uid,
         'createdAt': FieldValue.serverTimestamp(),
         'displayName': 'シンプルなレシピユーザー',
-        'imageName': null,
-        'imageURL': null,
+        'iconName': null,
+        'iconURL': null,
         'recipeCount': 0,
         'publicRecipeCount': 0,
       });
     } catch (e) {
+      print('ユーザードキュメントの作成中にエラー');
+      print(e.toString());
       throw ('エラーが発生しました。');
     }
   }
@@ -95,13 +102,15 @@ class SignUpModel extends ChangeNotifier {
           'userId': result.user.uid,
           'createdAt': FieldValue.serverTimestamp(),
           'displayName': 'ゲスト',
-          'imageName': null,
-          'imageURL': null,
+          'iconName': null,
+          'iconURL': null,
           'recipeCount': 0,
           'publicRecipeCount': 0,
         },
       );
     } catch (e) {
+      print('匿名サインインおよびユーザードキュメントの作成の処理でエラーが発生');
+      print(e.toString());
       throw ('エラーが発生しました。');
     }
   }
@@ -145,6 +154,21 @@ class SignUpModel extends ChangeNotifier {
       isConfirmValid = true;
       this.errorConfirm = '';
     }
+    notifyListeners();
+  }
+
+  void tapAgreeCheckBox(val) {
+    this.agreeGuideline = val;
+    notifyListeners();
+  }
+
+  void showDialog() {
+    this.showingDialog = true;
+    notifyListeners();
+  }
+
+  void hideDialog() {
+    this.showingDialog = false;
     notifyListeners();
   }
 

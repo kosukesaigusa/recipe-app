@@ -6,6 +6,7 @@ import 'package:package_info/package_info.dart';
 
 class TopModel extends ChangeNotifier {
   TopModel() {
+    this.showNewestVersionDialog = false;
     this.isIOS = Platform.isIOS;
     this.isAndroid = Platform.isAndroid;
     this.iosNewestVersion = '';
@@ -17,11 +18,12 @@ class TopModel extends ChangeNotifier {
     init();
   }
 
-  bool isIOS;
-  bool isAndroid;
+  bool showNewestVersionDialog = false;
+  bool isIOS = false;
+  bool isAndroid = false;
   String iosNewestVersion;
   String androidNewestVersion;
-  bool isNewest;
+  bool isNewest = true;
   String iosAppUrl;
   String androidAppUrl;
   PackageInfo packageInfo;
@@ -56,11 +58,15 @@ class TopModel extends ChangeNotifier {
         print('Newest version: ${this.iosNewestVersion}');
         print('---');
         this.isNewest = this.version == this.iosNewestVersion;
+        this.showNewestVersionDialog =
+            snapshot.data()['showNewestVersionDialog'];
       } else if (this.isAndroid) {
         this.androidNewestVersion = snapshot.data()['android_newest_version'];
         print('Newest version: ${this.androidNewestVersion}');
         print('---');
         this.isNewest = this.version == this.androidNewestVersion;
+        this.showNewestVersionDialog =
+            snapshot.data()['showNewestVersionDialog'];
       }
 
       notifyListeners();

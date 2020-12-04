@@ -9,6 +9,7 @@ class RecipeModel extends ChangeNotifier {
     this.userId = FirebaseAuth.instance.currentUser.uid;
     this.authorIconURL = '';
     this.authorDisplayName = '';
+    this.showReportIcon = false;
     this.isLoading = false;
     fetchRecipe();
   }
@@ -17,6 +18,7 @@ class RecipeModel extends ChangeNotifier {
   String userId;
   String authorIconURL;
   String authorDisplayName;
+  bool showReportIcon;
   bool isLoading;
 
   final currentUserId = FirebaseAuth.instance.currentUser.uid;
@@ -49,12 +51,24 @@ class RecipeModel extends ChangeNotifier {
     this.recipe.isMyRecipe = _isMyRecipe;
 
     // レシピ作者のアイコンと表示名を取得
-    DocumentSnapshot _userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(this.recipe.userId)
+    try {
+      DocumentSnapshot _userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(this.recipe.userId)
+          .get();
+      this.authorIconURL = _userDoc.data()['iconURL'];
+      this.authorDisplayName = _userDoc.data()['displayName'];
+    } catch (e) {
+      print('レシピ作者のアイコンと表示名の取得中にエラー発生');
+      print(e.toString());
+    }
+
+    // 不適切な内容や画像を報告するアイコンを見せるかどうか
+    DocumentSnapshot _showReportIconDoc = await FirebaseFirestore.instance
+        .collection('settings')
+        .doc('show_report_icon')
         .get();
-    this.authorIconURL = _userDoc.data()['iconURL'];
-    this.authorDisplayName = _userDoc.data()['displayName'];
+    this.showReportIcon = _showReportIconDoc.data()['show_report_icon'];
 
     endLoading();
     notifyListeners();
@@ -100,10 +114,15 @@ class RecipeModel extends ChangeNotifier {
       Map _fields = _doc.data();
       _fields['likedAt'] = FieldValue.serverTimestamp();
 
-      await FirebaseFirestore.instance
-          .collection('users/${this.currentUserId}/favorite_recipes')
-          .doc(this.recipe.documentId)
-          .set(_fields);
+      try {
+        await FirebaseFirestore.instance
+            .collection('users/${this.currentUserId}/favorite_recipes')
+            .doc(this.recipe.documentId)
+            .set(_fields);
+      } catch (e) {
+        print('お気に入りの追加時にエラーが発生');
+        print(e);
+      }
     }
   }
 

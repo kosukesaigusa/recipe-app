@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/common/convert_weekday_name.dart';
 import 'package:recipe/domain/recipe.dart';
+import 'package:recipe/presentation/contact/contact_page.dart';
 import 'package:recipe/presentation/recipe/recipe_model.dart';
 import 'package:recipe/presentation/recipe_detail/recipe_detail_page.dart';
 import 'package:recipe/presentation/recipe_edit/recipe_edit_page.dart';
@@ -53,11 +54,11 @@ class RecipePage extends StatelessWidget {
                             size: 20.0,
                           ),
                           onPressed: () async {
-                            await Navigator.of(context).push(
+                            await Navigator.push(
+                              context,
                               MaterialPageRoute(
-                                builder: (context) {
-                                  return RecipeDetailPage(model.recipe);
-                                },
+                                builder: (context) =>
+                                    RecipeDetailPage(model.recipe),
                               ),
                             );
                           },
@@ -71,17 +72,54 @@ class RecipePage extends StatelessWidget {
                                 size: 20.0,
                               ),
                               onPressed: () async {
-                                await Navigator.of(context).push(
+                                await Navigator.push(
+                                  context,
                                   MaterialPageRoute(
-                                    builder: (context) {
-                                      return RecipeEditPage(model.recipe);
-                                    },
-                                    fullscreenDialog: true,
+                                    builder: (context) =>
+                                        RecipeEditPage(model.recipe),
                                   ),
                                 );
                               },
                             )
-                          : SizedBox(),
+                          : model.showReportIcon
+                              ? IconButton(
+                                  icon: Icon(
+                                    Icons.report,
+                                    size: 20.0,
+                                  ),
+                                  onPressed: () async {
+                                    await showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          content: Text('不適切な内容や画像として報告しますか？'),
+                                          actions: <Widget>[
+                                            FlatButton(
+                                              child: Text('キャンセル'),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                            FlatButton(
+                                              child: Text('報告する'),
+                                              onPressed: () async {
+                                                await Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ContactPage(),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                )
+                              : SizedBox(),
                 ],
               ),
             ),

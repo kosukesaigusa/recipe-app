@@ -173,7 +173,7 @@ class GuidelinePage extends StatelessWidget {
               Container(
                 width: double.infinity,
                 child: Text(
-                  '2020 年 11 月 16 日 最終改定',
+                  '2020 年 12 月 04 日 最終改定',
                   textAlign: TextAlign.right,
                 ),
               ),

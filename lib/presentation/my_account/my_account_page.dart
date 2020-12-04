@@ -9,6 +9,7 @@ import 'package:recipe/presentation/link_anonymous_user/link_anonymous_user_page
 import 'package:recipe/presentation/my_account/my_account_model.dart';
 import 'package:recipe/presentation/password_update/password_update_page.dart';
 import 'package:recipe/presentation/signin/signin_page.dart';
+import 'package:recipe/presentation/user_policy/user_policy_page.dart';
 
 class MyAccountPage extends StatelessWidget {
   @override
@@ -144,7 +145,7 @@ class MyAccountPage extends StatelessWidget {
                                               ),
                                             ),
                                             model.mail == null
-                                                ? Text('未登録（ゲスト）')
+                                                ? Text('未登録')
                                                 : Text(
                                                     '${model.mail}',
                                                     maxLines: 1,
@@ -161,7 +162,7 @@ class MyAccountPage extends StatelessWidget {
                                               ),
                                             ),
                                             model.mail == null
-                                                ? Text('未登録のユーザー')
+                                                ? Text('ゲスト')
                                                 : model.displayName == null
                                                     ? SizedBox()
                                                     : Text(
@@ -318,6 +319,19 @@ class MyAccountPage extends StatelessWidget {
                                         child: Text('お問い合わせ'),
                                       )
                                     : SizedBox(),
+                                FlatButton(
+                                  textColor: Colors.grey,
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => UserPolicyPage(),
+                                        fullscreenDialog: true,
+                                      ),
+                                    );
+                                  },
+                                  child: Text('利用規約'),
+                                ),
                                 model.mail != null
                                     ? FlatButton(
                                         textColor: Colors.grey,

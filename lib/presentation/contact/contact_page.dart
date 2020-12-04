@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe/common/text_dialog.dart';
 import 'package:recipe/presentation/contact/contact_model.dart';
+import 'package:recipe/presentation/my_account/my_account_page.dart';
 
 class ContactPage extends StatelessWidget {
   @override
@@ -45,10 +46,11 @@ class ContactPage extends StatelessWidget {
                     children: [
                       TextFormField(
                         readOnly: true,
-                        initialValue: '${model.mail}',
+                        initialValue:
+                            model.mail == null ? '未登録のゲスト' : '${model.mail}',
                         maxLines: 1,
                         decoration: InputDecoration(
-                          labelText: 'Eメール（編集不可）',
+                          labelText: 'Eメール',
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -65,7 +67,7 @@ class ContactPage extends StatelessWidget {
                         ),
                         value: model.category,
                         icon: Icon(Icons.arrow_drop_down_outlined),
-                        items: ['', '不具合の報告', '機能追加の要望', 'その他']
+                        items: ['', '不具合の報告', '機能追加の要望', '不適切な内容や画像の報告', 'その他']
                             .map((label) => DropdownMenuItem(
                                   child: Text(label),
                                   value: label,
@@ -104,19 +106,25 @@ class ContactPage extends StatelessWidget {
                           child: Text('お問い合わせを送信'),
                           color: Color(0xFFF39800),
                           textColor: Colors.white,
-                          onPressed:
-                              model.isCategoryValid && model.isContentValid
-                                  ? () async {
-                                      try {
-                                        await model.submitForm();
-                                        await showTextDialog(
-                                            context, 'お問い合わせを送信しました。');
-                                      } catch (e) {
-                                        await showTextDialog(
-                                            context, 'エラーが発生しました。');
-                                      }
-                                    }
-                                  : null,
+                          onPressed: model.isCategoryValid &&
+                                  model.isContentValid
+                              ? () async {
+                                  try {
+                                    await model.submitForm();
+                                    await showTextDialog(
+                                        context, 'お問い合わせを送信しました。');
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MyAccountPage(),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    await showTextDialog(
+                                        context, 'エラーが発生しました。');
+                                  }
+                                }
+                              : null,
                         ),
                       ),
                     ],

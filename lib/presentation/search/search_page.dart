@@ -782,12 +782,11 @@ class SearchPage extends StatelessWidget {
             ),
           ),
           child: InkWell(
-            onTap: () {
-              Navigator.of(context).push(
+            onTap: () async {
+              await Navigator.push(
+                context,
                 MaterialPageRoute(
-                  builder: (context) {
-                    return RecipePage(recipes[i]);
-                  },
+                  builder: (context) => RecipePage(recipes[i]),
                 ),
               );
             },

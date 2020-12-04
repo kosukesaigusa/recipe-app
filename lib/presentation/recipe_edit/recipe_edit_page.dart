@@ -532,14 +532,20 @@ class RecipeEditPage extends StatelessWidget {
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
                                       children: [
-                                        Checkbox(
-                                          activeColor: Color(0xFFF39800),
-                                          checkColor: Colors.white,
-                                          value:
-                                              model.editedRecipe.agreeGuideline,
-                                          onChanged: (val) {
-                                            model.tapAgreeCheckBox(val);
-                                          },
+                                        SizedBox(
+                                          width: 24,
+                                          child: Checkbox(
+                                            activeColor: Color(0xFFF39800),
+                                            checkColor: Colors.white,
+                                            value: model
+                                                .editedRecipe.agreeGuideline,
+                                            onChanged: (val) {
+                                              model.tapAgreeCheckBox(val);
+                                            },
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 8,
                                         ),
                                         Flexible(
                                           child: RichText(

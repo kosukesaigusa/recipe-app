@@ -52,8 +52,8 @@ class DisplayNameUpdatePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       TextFormField(
-                        focusNode: this._focusNode,
-                        autofocus: true,
+                        // focusNode: this._focusNode,
+                        // autofocus: true,
                         onChanged: (text) {
                           model.changeDisplayName(text);
                         },

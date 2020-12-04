@@ -384,16 +384,26 @@ class RecipeAddPage extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          SizedBox(
+                            height: 8,
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Checkbox(
-                                activeColor: Color(0xFFF39800),
-                                checkColor: Colors.white,
-                                onChanged: (val) {
-                                  model.tapPublishCheckbox(val);
-                                },
-                                value: model.recipeAdd.willPublish,
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  activeColor: Color(0xFFF39800),
+                                  checkColor: Colors.white,
+                                  onChanged: (val) {
+                                    model.tapPublishCheckbox(val);
+                                  },
+                                  value: model.recipeAdd.willPublish,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 8,
                               ),
                               Flexible(
                                 child: Text(
@@ -411,13 +421,20 @@ class RecipeAddPage extends StatelessWidget {
                               ? Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    Checkbox(
-                                      activeColor: Color(0xFFF39800),
-                                      checkColor: Colors.white,
-                                      onChanged: (val) {
-                                        model.tapAgreeCheckBox(val);
-                                      },
-                                      value: model.recipeAdd.agreeGuideline,
+                                    SizedBox(
+                                      width: 24,
+                                      // height: 24,
+                                      child: Checkbox(
+                                        activeColor: Color(0xFFF39800),
+                                        checkColor: Colors.white,
+                                        onChanged: (val) {
+                                          model.tapAgreeCheckBox(val);
+                                        },
+                                        value: model.recipeAdd.agreeGuideline,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 8,
                                     ),
                                     Flexible(
                                       child: RichText(
@@ -458,7 +475,7 @@ class RecipeAddPage extends StatelessWidget {
                                 )
                               : SizedBox(),
                           SizedBox(
-                            height: 16,
+                            height: 24,
                           ),
                           Center(
                             child: SizedBox(

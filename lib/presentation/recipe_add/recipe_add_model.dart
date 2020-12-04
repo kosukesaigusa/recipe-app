@@ -60,7 +60,11 @@ class RecipeAddModel extends ChangeNotifier {
         targetWidth: 200,
         targetHeight: 150,
       );
+
+      print('圧縮のあと');
     } catch (e) {
+      print('Image Picker から画像の圧縮の過程でエラーが発生');
+      print(e.toString());
       return;
     }
 

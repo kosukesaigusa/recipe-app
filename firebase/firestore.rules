@@ -65,7 +65,7 @@ service cloud.firestore {
 
     // /users
     match /users/{userId} {
-      allow get: if isUserAuthentificated(userId);
+      allow get: if isAnyAuthentificated();
       allow create: if isUserAuthentificated(userId)
         // スキーマ検証
         && isValidUser(request.resource.data)
@@ -149,7 +149,7 @@ service cloud.firestore {
           && request.resource.data.name.size() <= 30
           && request.resource.data.reference.size() >= 0
           && request.resource.data.reference.size() < 1000
-          && request.resource.data.userId == userId
+          // && request.resource.data.userId == userId
         ;
         allow update: if isUserAuthentificated(userId)
           // スキーマ検証
