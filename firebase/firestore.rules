@@ -63,6 +63,16 @@ service cloud.firestore {
       ;
     }
 
+    function isValidContact(contact) {
+      return contact.size() == 5
+        && 'userId' in contact && contact.userId is string
+        && 'email' in contact && (contact.email is string || contact.email == null)
+        && 'category' in contact && contact.category is string
+        && 'content' in contact && contact.content is string
+        && 'createdAt' in contact && contact.createdAt is timestamp
+      ;
+    }
+
     // /users
     match /users/{userId} {
       allow get: if isAnyAuthentificated();
@@ -149,7 +159,6 @@ service cloud.firestore {
           && request.resource.data.name.size() <= 30
           && request.resource.data.reference.size() >= 0
           && request.resource.data.reference.size() < 1000
-          // && request.resource.data.userId == userId
         ;
         allow update: if isUserAuthentificated(userId)
           // スキーマ検証
@@ -213,7 +222,13 @@ service cloud.firestore {
 
     // /contacts
     match /contacts/{contactId} {
-      allow create: if isAnyAuthentificated();
+      allow create: if isAnyAuthentificated()
+        && isValidContact(request.resource.data)
+        && request.resource.data.category in ['不具合の報告', '機能追加の要望', '不適切な内容や画像の報告', 'その他']
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 10000
+        && request.resource.data.createdAt == request.time
+      ;
     }
 
     // /settings

@@ -21,13 +21,18 @@ class ContactModel extends ChangeNotifier {
   }
 
   Future<void> submitForm() async {
-    // todo: try {} catch (e) {} を書く
-    await FirebaseFirestore.instance.collection('contacts').add({
-      'email': this.mail,
-      'category': this.category,
-      'content': this.content,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+    try {
+      await FirebaseFirestore.instance.collection('contacts').add({
+        'userId': FirebaseAuth.instance.currentUser.uid,
+        'email': this.mail,
+        'category': this.category,
+        'content': this.content,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('お問い合わせの送信時にエラー');
+      throw ('エラーが発生しました');
+    }
   }
 
   void changeCategory(text) {

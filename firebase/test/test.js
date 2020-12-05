@@ -57,10 +57,6 @@ const myUserFieldsWithoutEmail = {
     userId: myAuth.uid,
 };
 
-const myUserFieldsUserIdUpdated = {
-    userId: theirAuth.uid, // userId を変更
-};
-
 const myAnonymousUserFields = {
     createdAt: serverTimestamp(),
     displayName: 'kosukesaigusa',
@@ -124,6 +120,16 @@ const myPublicRecipeFields = {
     tokenMap: {'薄唐': true, '唐揚': true, '揚ゲ': true, '鳥モ': true, 'モモ': true, 'モ肉': true, '肉ヲ': true, 'ヲ1': true, '1枚': true, '枚買': true, '買ッ': true, 'ッテ': true, 'テキ': true, 'キテ': true, '必要': true, '要ニ': true, 'ニ応': true, '応ジ': true, 'ジテ': true, 'テ皮': true, '皮ヲ': true, 'ヲ取': true, '取ル': true, '全体': true, '体ヲ': true, 'ヲ均': true, '均等': true, '等ナ': true, 'ナ一': true, '一口': true, '口大': true, '大ノ': true, 'ノ8': true, '8m': true, 'mm': true, 'mク': true, 'クラ': true, 'ライ': true, 'イニ': true, 'ニ薄': true, '薄切': true, '切リ': true, 'リシ': true, 'シテ': true, '醤油': true, '油大': true, '大サ': true, 'サジ': true, 'ジ3': true, 'ミリ': true, 'リン': true, 'ン大': true, 'ジ1': true, '酒大': true, 'ニン': true, 'ンニ': true, 'ニク': true, 'クチ': true, 'チュ': true, 'ュー': true, 'ーブ': true, 'ブ適': true, '適量': true, '量ノ': true, 'ノ下': true, '下味': true, '味ニ': true, 'ニ揉': true, '揉ミ': true, 'ミ込': true, '込ム': true, 'ソノ': true},
     updatedAt: serverTimestamp(),
     userId: myAuth.uid,
+};
+
+// お問い合わせデータのサンプル
+const contactDocId = 'public_DYCp3y7wgFNlQrtEFSl8';
+const contactFields = {
+    userId: myAuth.uid,
+    email: myAuth.email,
+    category: '不具合の報告',
+    content: 'あんなこんな不具合がありました。',
+    createdAt: serverTimestamp(),
 };
 
 // 対象の Firestore DB の定義
@@ -354,7 +360,11 @@ describe('ユニットテストの実行', () => {
 
     describe('contacts', () => {
         describe('create', async () => {
-
+            it('[Success] お問い合わせを送信できる', async () => {
+                const db = getFirestore(myAuth);
+                const contactDoc = db.collection('contacts').doc(contactDocId);
+                await firebase.assertSucceeds(contactDoc.set(contactFields));
+            });
         });
     });
 
