@@ -271,3 +271,23 @@ firebase emulators:start --only firestore
 ```
 
 のように `--only` オプションのコマンドを実行すれば OK です。
+
+デプロイには `deploy` コマンドを用いて、
+
+```
+firebase deploy --only firestore:rules
+```
+
+```
+firebase deploy --only functions
+```
+
+などとすることができます。
+
+また、開発・検証用の環境に対応する Firebas プロジェクトで正しく動作することを確認できた後、プロダクション版のプロジェクトについても同じ内容をリリースしたい場合には、デプロイコマンドのオプションとして `--project=<デプロイ先のプロジェクト名>`
+
+```
+firebase deploy --only functions --project==<デプロイ先のプロジェクト名>
+```
+
+とすることができます。

@@ -32,7 +32,7 @@ exports.onCreateContact = functions.firestore.document('/contacts/{contactId}')
     .onCreate(async (snapshot, context) => {
         const contact = snapshot.data();
         const contactId = context.params.contactId;
-        functions.logger.log("contact.contactId=%s created a new contact", userId);
+        functions.logger.log("contact.contactId=%s created a new contact", contactId);
         const message = `【通知：お問い合わせ】\n• お問い合わせID：${contactId}\n • ユーザーID：${contact.userId}\n• メールアドレス：${contact.email}\n• カテゴリー：${contact.category}\n• 内容：${contact.content}`;
 
         request.post({
