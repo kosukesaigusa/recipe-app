@@ -599,8 +599,8 @@ class SearchPage extends StatelessWidget {
                                         // 前のクエリの取得が済んでいる場合はロードする
                                         else {
                                           // さらに読み込める状態の場合
-                                          if (model.publicRecipeTab
-                                              .canLoadMoreFiltered) {
+                                          if (model
+                                              .publicRecipeTab.canLoadMore) {
                                             // 絞り込み中の場合
                                             if (model.publicRecipeTab
                                                 .canLoadMoreFiltered) {
