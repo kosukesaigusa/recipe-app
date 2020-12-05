@@ -9,6 +9,7 @@
 * [Medium mono さん：「Flutterで環境ごとにビルド設定を切り替える — iOS編」](https://medium.com/flutter-jp/flavor-b952f2d05b5d)
 * [Github リポジトリ（上記 mono さんの記事に対応）](https://github.com/mono0926/flutter-flavor-example/blob/develop/ios/Runner/Info.plist)
 * [Qiita 「flutterで本番/ステージング/開発を切り替える」](https://qiita.com/ko2ic/items/53f97bb7c28632268b5a)
+* [Qiita 「FlutterでAndroidのリリース用APKをビルドする前の準備いろいろ」](https://qiita.com/kasa_le/items/d23075d817f42e869778)
 
 環境のバリエーションは、開発環境、テスト環境、本番環境をそれぞれ、
 
@@ -267,3 +268,264 @@ Development, Staging, Release のそれぞれのビルドモードに対して�
 また、Release モードのビルド（Release-Staging と Release-Production）は、実機でしか実行できないことにも留意しておきましょう。
 
 以上で、iOS における環境、Flavor の違いによる、別アプリ化、別の Firebase プロジェクトの参照の環境が構築されました。それぞれの環境で実行して、それらが正しく動作していることを確認して下さい。
+
+---
+
+## 環境ごとのビルド設定 (Android)
+
+Android の方でも、同様の方法で Flavor (`development`, `staging`, or `production`) およびビルドモード (`debug` or `release`) とそれらに対応する異なる Firebase プロジェクトの設定ファイルに関する準備を行う必要があります。作業・編集はすべて、アプリケーションルート下の `android` ディレクトリ下で行います。
+
+まず、`development`, `staging`, `production` のそれぞれの Firebase プロジェクトに Android の設定を追加します。Project Settings > Your apps に進んで「Add App」をクリックしましょう。
+
+[add-firebase-to-android](../add-firebase-to-android.png "add-firebase-to-android.png")
+
+Android package name には、`development`, `staging`, `production` について、それぞれ
+
+* com.kosukesaigusa.recipe.development
+* com.kosukesaigusa.recipe.staging
+* com.kosukesaigusa.recipe
+
+のように記入します。
+
+App nick name はユーザーに露出される内容ではありませんが、それぞれの環境だと分かる名前にしておくと良いでしょう。Debug signing certificate SHA-1 については、入力を省略しました。
+
+そこで Register app をクリックすると、`google-services.json` という名前の設定ファイルがダウンロードできるようになります。
+
+また、その後の Add Firebase SDK の指示に従って、プロジェクトレベルの `android/build.gradle` に必要な内容を書き加えます。
+
+```
+buildscript {
+  repositories {
+    // Check that you have the following line (if not, add it):
+    google()  // Google's Maven repository
+  }
+  dependencies {
+    ...
+    // Add this line
+    classpath 'com.google.gms:google-services:4.3.4'
+  }
+}
+
+allprojects {
+  ...
+  repositories {
+    // Check that you have the following line (if not, add it):
+    google()  // Google's Maven repository
+    ...
+  }
+}
+```
+
+さらに、アプリレベルの `android/app/build.gradle` にも必要な内容を書き加えます。
+
+```
+...
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+apply plugin: 'com.google.gms.google-services'
+
+...
+```
+
+`development`, `staging`, `production` のそれぞれの Firebase プロジェクトから得られた `google-service.json` ファイルは、名前の被りから末尾に余計な `(1)` のような名前が加わらないように注意して、それぞれ、
+
+* `android/app/src/development`
+* `android/app/src/staging`
+* `android/app/src/production`
+
+ディレクトリを新たに作成して、それらに格納します。
+
+app レベルの `android/build.gradle` に必要な設定を行う前に、その前にアプリの証明書・署名情報に関連して必要な作業を行います。
+
+コンソールで、デバッグ用、リリース用のそれぞれについて、
+
+* `debug.jks`, `release.jks` のような `jks` ファイルの名前
+* `debug_key`, `release_key` のようなエイリアス名
+
+を必要な箇所で適宜置換して、
+
+```
+keytool -genkey -v -keystore {jks のファイル名} -alias {エイリアス名} -keyalg RSA -keysize 2048 -validity 10000
+```
+
+をターミナルに入力して実行します。
+
+```
+Enter keystore password:
+Re-enter new password:
+What is your first and last name?
+  [Unknown]:  Kosuke Saigusa
+What is the name of your organizational unit?
+  [Unknown]:
+What is the name of your organization?
+  [Unknown]:  
+What is the name of your City or Locality?
+  [Unknown]:  Tokyo
+What is the name of your State or Province?
+  [Unknown]:  Tokyo
+What is the two-letter country code for this unit?
+  [Unknown]:  JP
+Is CN=Aoi Makino, OU=Unknown, O=YouRegatta, L=Tokyo, ST=Tokyo, C=JP correct?
+  [no]:  yes
+
+Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 10,000 days
+	for: CN=Aoi Makino, OU=Unknown, O=YouRegatta, L=Tokyo, ST=Tokyo, C=JP
+```
+
+上のようなやり取りで各種設定を行います。特に、
+
+* キーエイリアスの名前
+* キーストアのパスワード
+* キーエイリアスの鍵パスワード（キーストアのパスワードと同様ならそれ）
+
+については、この後の作業で使うので、その他の情報と共に大切に控えておきましょう。
+
+ここで生成された `debug.jks`, `release.jks` のような 2 つの `jks` ファイルは、`android/app` 下に移動します。また、これらのファイルは秘匿情報に相当するので、パブリックリポジトリを使っているときなどは、Git 管理の対象から忘れずに外しておきましょう。
+
+次に、`android/` 下に、それぞれに debug, release のそれぞれに対応する署名情報ファイルを作成します。それぞれ
+
+* `android/debug_key.properties`
+* `android/release_key.properties`
+
+としておきました。
+
+それぞれの内容は下記の通りです。
+
+```
+storePassword=ストアパスワード
+keyPassword=キーパスワード
+keyAlias=キーエイリアスの名前
+storeFile=./debug.jks または ./release.jks の対応する方
+```
+
+これらもパブリックリポジトリを使っているときなどは、Git 管理の対象から外しておきます。
+
+いよいよ app レベルの `android/build.gradle` に必要な設定を行っていきます。
+
+まず、`android {...}` の前に、上で作成した 2 つの `properties` ファイルを定義しておきます。
+
+```
+...
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+apply plugin: 'com.google.gms.google-services'
+
+// 下記の 2 行を追加
+def debugKeystorePropertiesFile = rootProject.file("debug_key.properties")
+def releaseKeystorePropertiesFile = rootProject.file("release_key.properties")
+
+android {
+    ...
+}
+
+...
+
+```
+
+さらに、[対応する Github リポジトリのファイル](https://github.com/kboyflutteruniv/recipe-app/blob/main/android/app/build.gradle) を参考に、`defaultConfig {...}`, `SigningConfig {...}`, `buildTypes {...}`, `flavorDimension`, `productFlavors {...}` などを `android {...}` の中に加筆・編集していきます。
+
+```
+...
+
+android {
+    ...
+
+    defaultConfig {
+        applicationId "com.kosukesaigusa.recipe" // 元となる package name
+        minSdkVersion 16
+        targetSdkVersion 29
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        multiDexEnabled true
+    }
+
+    signingConfigs {
+        debug {
+            if (debugKeystorePropertiesFile.exists()) {
+                def debugKeystoreProperties = new Properties()
+                debugKeystoreProperties.load(new FileInputStream(debugKeystorePropertiesFile))
+                keyAlias debugKeystoreProperties['keyAlias']
+                keyPassword debugKeystoreProperties['keyPassword']
+                storeFile file(debugKeystoreProperties['storeFile'])
+                storePassword debugKeystoreProperties['storePassword']
+            }
+        }
+        release {
+            if (releaseKeystorePropertiesFile.exists()) {
+                def releaseKeystoreProperties = new Properties()
+                releaseKeystoreProperties.load(new FileInputStream(releaseKeystorePropertiesFile))
+                keyAlias releaseKeystoreProperties['keyAlias']
+                keyPassword releaseKeystoreProperties['keyPassword']
+                storeFile file(releaseKeystoreProperties['storeFile'])
+                storePassword releaseKeystoreProperties['storePassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+
+    productFlavors {
+        development {
+            dimension "app"
+            resValue "string", "app_name", "develop 環境のアプリ名"
+            applicationIdSuffix ".development"
+        }
+        staging {
+            dimension "app"
+            resValue "string", "app_name", "staging 環境のアプリ名"
+            applicationIdSuffix ".staging"
+        }
+        production {
+            dimension "app"
+            resValue "string", "app_name", "production 環境のアプリ名"
+        }
+    }
+
+}
+
+...
+```
+
+最後に、`android/app/src/main/AndroidManifest.xml` ファイルを加筆・修正します。
+
+まず、冒頭の
+
+```
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.kosukesaigusa.recipe">
+```
+
+の部分に、自身のアプリの package name が正しく記載されていることを確認します。
+
+次に
+
+```
+<application
+    android:name="io.flutter.app.FlutterApplication"
+    android:label="@string/app_name"
+    android:icon="@mipmap/ic_launcher">
+```
+
+の `android:label="XXXXX"` の部分を上記のように書き換えます。
+
+その他、たとえば Image Cropper の外部ライブラリを使用している場合には、その指示に従って、`<application></application>` の中に、
+
+```
+<activity
+    android:name="com.yalantis.ucrop.UCropActivity"
+    android:screenOrientation="portrait"
+    android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+```
+
+のような内容を書き加える必要がある場合があります。
