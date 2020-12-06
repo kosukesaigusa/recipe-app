@@ -78,7 +78,7 @@ class SignUpModel extends ChangeNotifier {
           _firestore.collection('users').doc(this.userCredential.user.uid);
 
       // user info ドキュメント
-      DocumentReference _userInfoDoc = _firestore
+      DocumentReference _userEmailDoc = _firestore
           .collection('users')
           .doc(this.userCredential.user.uid)
           .collection('user_info')
@@ -101,7 +101,7 @@ class SignUpModel extends ChangeNotifier {
       };
 
       _batch.set(_userDoc, _userFields);
-      _batch.set(_userInfoDoc, _userInfoFields);
+      _batch.set(_userEmailDoc, _userInfoFields);
       await _batch.commit();
     } catch (e) {
       print('ユーザードキュメントの作成中にエラー');
@@ -122,14 +122,14 @@ class SignUpModel extends ChangeNotifier {
           _firestore.collection('users').doc(result.user.uid);
 
       // user info ドキュメント
-      DocumentReference _userInfoDoc = _firestore
+      DocumentReference _userEmailDoc = _firestore
           .collection('users')
           .doc(result.user.uid)
           .collection('user_info')
           .doc('email');
 
       // user ドキュメントのフィールド
-      Map _userFields = {
+      Map<String, dynamic> _userFields = {
         'userId': result.user.uid,
         'createdAt': FieldValue.serverTimestamp(),
         'displayName': 'ゲスト',
@@ -139,13 +139,8 @@ class SignUpModel extends ChangeNotifier {
         'publicRecipeCount': 0,
       };
 
-      // user info ドキュメントのフィールド
-      Map _userInfoFields = {
-        'email': null,
-      };
-
       _batch.set(_userDoc, _userFields);
-      _batch.set(_userInfoDoc, _userInfoFields);
+      _batch.set(_userEmailDoc, {'email': null});
       await _batch.commit();
     } catch (e) {
       print('匿名サインインおよびユーザードキュメントの作成の処理でエラーが発生');

@@ -4,18 +4,33 @@ import 'package:flutter/material.dart';
 import 'package:recipe/common/convert_error_message.dart';
 
 class LinkAnonymousUserModel extends ChangeNotifier {
-  String mail = '';
-  String password = '';
-  String confirm = '';
-  String errorMail = '';
-  String errorPassword = '';
-  String errorConfirm = '';
-  bool isLoading = false;
-  bool isMailValid = false;
-  bool isPasswordValid = false;
-  bool isConfirmValid = false;
+  LinkAnonymousUserModel() {
+    this.anonymousUser = FirebaseAuth.instance.currentUser;
+    this.mail = '';
+    this.password = '';
+    this.confirm = '';
+    this.errorMail = '';
+    this.errorPassword = '';
+    this.errorConfirm = '';
+    this.isLoading = false;
+    this.isMailValid = false;
+    this.isPasswordValid = false;
+    this.isConfirmValid = false;
+  }
 
-  Future linkAnonymousUser() async {
+  User anonymousUser;
+  String mail;
+  String password;
+  String confirm;
+  String errorMail;
+  String errorPassword;
+  String errorConfirm;
+  bool isLoading;
+  bool isMailValid;
+  bool isPasswordValid;
+  bool isConfirmValid;
+
+  Future<void> linkAnonymousUser() async {
     if (this.password != this.confirm) {
       throw ('パスワードが一致しません。');
     }
@@ -25,29 +40,32 @@ class LinkAnonymousUserModel extends ChangeNotifier {
       password: this.password,
     );
 
-    User anonymousUser = FirebaseAuth.instance.currentUser;
-
     try {
-      await anonymousUser.linkWithCredential(credential);
+      await this.anonymousUser.linkWithCredential(credential);
     } catch (e) {
       print('エラーコード：${e.code}\nエラー：$e');
       throw (convertErrorMessage(e.code));
     }
 
     try {
-      await FirebaseFirestore.instance
+      FirebaseFirestore _firestore = FirebaseFirestore.instance;
+      WriteBatch _batch = _firestore.batch();
+      DocumentReference _userDoc = FirebaseFirestore.instance
           .collection('users')
-          .doc(anonymousUser.uid)
+          .doc(this.anonymousUser.uid);
+
+      DocumentReference _userEmailDoc = FirebaseFirestore.instance
+          .collection('users')
+          .doc(this.anonymousUser.uid)
           .collection('user_info')
-          .doc('email')
-          .update(
-        {
-          'email': this.mail,
-        },
-      );
+          .doc('email');
+
+      _batch.update(_userDoc, {'displayName': 'シンプルなレシピユーザー'});
+      _batch.set(_userEmailDoc, {'email': this.mail});
+      await _batch.commit();
     } catch (e) {
       print('エラーコード：${e.code}\nエラー：$e');
-      throw (convertErrorMessage(e.code));
+      throw ('エラーが発生しました');
     }
   }
 

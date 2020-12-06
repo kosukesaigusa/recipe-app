@@ -112,11 +112,10 @@ service cloud.firestore {
       match /user_info/{userInfoId} {
         allow get: if isUserAuthentificated(userId);
         allow create: if isUserAuthentificated(userId)
-          && 'email' in request.resource.data && request.resource.data.email is string
+          && 'email' in request.resource.data && (request.resource.data.email is string || request.resource.data.email == null)
         ;
         allow update: if isUserAuthentificated(userId)
-          && 'email' in request.resource.data && request.resource.data.email is string
-          && request.resource.data.email != resource.data.email
+          && 'email' in request.resource.data && (request.resource.data.email is string || request.resource.data.email == null)
         ;
       }
 
