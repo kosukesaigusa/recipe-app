@@ -14,10 +14,9 @@ service cloud.firestore {
 
     // ユーザーデータのスキーマ検証
     function isValidUser(user) {
-      return user.size() == 8
+      return user.size() == 7
         && 'createdAt' in user && user.createdAt is timestamp
         && 'displayName' in user && user.displayName is string
-        && 'email' in user && (user.email is string || user.email == null) // 匿名ユーザーも考慮する
         && 'iconName' in user && (user.iconName is string || user.iconName == null)
         && 'iconURL' in user && (user.iconURL is string || user.iconURL == null)
         && 'publicRecipeCount' in user && user.publicRecipeCount is int
@@ -108,6 +107,18 @@ service cloud.firestore {
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.userId == resource.data.userId
       ;
+
+      // /users/{userId}/user_info
+      match /user_info/{userInfoId} {
+        allow get: if isUserAuthentificated(userId);
+        allow create: if isUserAuthentificated(userId)
+          && 'email' in request.resource.data && request.resource.data.email is string
+        ;
+        allow update: if isUserAuthentificated(userId)
+          && 'email' in request.resource.data && request.resource.data.email is string
+          && request.resource.data.email != resource.data.email
+        ;
+      }
 
       // /users/{userId}/recipes
       match /recipes/{recipeId} {

@@ -38,6 +38,8 @@ class LinkAnonymousUserModel extends ChangeNotifier {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(anonymousUser.uid)
+          .collection('user_info')
+          .doc('email')
           .update(
         {
           'email': this.mail,

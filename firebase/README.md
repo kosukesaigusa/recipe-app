@@ -143,7 +143,7 @@ docker exec -it <コンテナ名 or コンテナ ID> bash
 コンテナを起動した状態で `firebase --version` のコマンドをターミナルに入力すると、ローカルマシンからは切り離された環境に、Firebase CLI がインストールされていること、およびそのバージョンを確認することができます。
 
 ```
-# firebaes --version
+# firebase --version
 8.13.1
 ```
 
@@ -284,10 +284,10 @@ firebase deploy --only functions
 
 などとすることができます。
 
-また、開発・検証用の環境に対応する Firebas プロジェクトで正しく動作することを確認できた後、プロダクション版のプロジェクトについても同じ内容をリリースしたい場合には、デプロイコマンドのオプションとして `--project=<デプロイ先のプロジェクト名>`
+また、開発・検証用の環境に対応する Firebase プロジェクトで正しく動作することを確認できた後、プロダクション版のプロジェクトについても同じ内容をリリースしたい場合には、デプロイコマンドのオプションとして `--project=<デプロイ先のプロジェクト名>`
 
 ```
-firebase deploy --only functions --project==<デプロイ先のプロジェクト名>
+firebase deploy --only functions --project=<デプロイ先のプロジェクト名>
 ```
 
 とすることができます。

@@ -80,6 +80,7 @@ class MyAccountModel extends ChangeNotifier {
 
       // 画像をアスペクト比 1:1 で 切り抜く
       File _croppedImageFile = await ImageCropper.cropImage(
+        cropStyle: CropStyle.circle,
         sourcePath: _pickedImage.path,
         maxHeight: 200,
         aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
@@ -123,7 +124,7 @@ class MyAccountModel extends ChangeNotifier {
     FirebaseStorage _storage = FirebaseStorage.instance;
     StorageTaskSnapshot _snapshot = await _storage
         .ref()
-        .child('icons/' + _newIconName)
+        .child('users/${this.auth.currentUser.uid}/icons/' + _newIconName)
         .putFile(this.imageFile)
         .onComplete;
     String _newIconURL = await _snapshot.ref.getDownloadURL();
@@ -142,8 +143,24 @@ class MyAccountModel extends ChangeNotifier {
     // 既存のアイコンを Storage から削除する
     if (this.iconURL != null) {
       String _oldIcon = this.iconName;
-      StorageReference _iconRef = _storage.ref().child('icons/$_oldIcon');
-      await _iconRef.delete();
+      StorageReference _iconRef = _storage
+          .ref()
+          .child('users/${this.auth.currentUser.uid}/icons/$_oldIcon');
+
+      try {
+        await _iconRef.delete();
+        print('アイコン画像を削除した：users/${this.auth.currentUser.uid}/icons/$_oldIcon');
+      } catch (e) {
+        print(
+            'アイコン画像を削除できなかった：users/${this.auth.currentUser.uid}/icons/$_oldIcon');
+        _iconRef = _storage.ref().child('icons/$_oldIcon');
+        try {
+          await _iconRef.delete();
+          print('アイコン画像を削除した：images/$_oldIcon');
+        } catch (e) {
+          print('アイコン画像を削除できなかった：images/$_oldIcon');
+        }
+      }
     }
 
     await init();

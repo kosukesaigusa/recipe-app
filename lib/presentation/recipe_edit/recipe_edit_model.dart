@@ -20,6 +20,7 @@ class RecipeEditModel extends ChangeNotifier {
     this.thumbnailImageFile = null;
     this.isLoading = false;
     this.isSubmitting = false;
+    this.isDeleting = false;
     init();
   }
 
@@ -31,6 +32,7 @@ class RecipeEditModel extends ChangeNotifier {
   File thumbnailImageFile;
   bool isLoading;
   bool isSubmitting;
+  bool isDeleting;
 
   Future init() async {
     startLoading();
@@ -127,9 +129,19 @@ class RecipeEditModel extends ChangeNotifier {
     // 画像が変更されている場合のみ、既存の画像を削除して、新しいものをアップロード
     if (this.imageFile != null) {
       if (this.currentRecipe.imageURL.isNotEmpty) {
-        await _deleteImage();
+        try {
+          await _deleteImage();
+        } catch (e) {
+          print('既存のレシピ画像の削除時にエラー');
+          print(e.toString());
+        }
       } else if (this.currentRecipe.thumbnailURL.isNotEmpty) {
-        await _deleteThumbnail();
+        try {
+          await _deleteThumbnail();
+        } catch (e) {
+          print('既存のサムネイル画像の削除時にエラー');
+          print(e.toString());
+        }
       }
       await _uploadImage();
       await _uploadThumbnail();
@@ -230,7 +242,13 @@ class RecipeEditModel extends ChangeNotifier {
       }
     }
 
-    await _batch.commit();
+    try {
+      await _batch.commit();
+    } catch (e) {
+      print('レシピの更新のバッチ処理時にエラーが発生');
+      print(e.toString());
+      throw ('エラーが発生しました');
+    }
 
     // endLoading();
     endSubmitting();
@@ -247,7 +265,7 @@ class RecipeEditModel extends ChangeNotifier {
     FirebaseStorage _storage = FirebaseStorage.instance;
     StorageTaskSnapshot _snapshot = await _storage
         .ref()
-        .child('images/' + _fileName)
+        .child('users/' + _auth.currentUser.uid + '/images/' + _fileName)
         .putFile(this.imageFile)
         .onComplete;
     this.editedRecipe.imageURL = await _snapshot.ref.getDownloadURL();
@@ -264,7 +282,7 @@ class RecipeEditModel extends ChangeNotifier {
     FirebaseStorage _storage = FirebaseStorage.instance;
     StorageTaskSnapshot _snapshot = await _storage
         .ref()
-        .child('thumbnails/' + _fileName)
+        .child('users/' + _auth.currentUser.uid + '/thumbnails/' + _fileName)
         .putFile(this.thumbnailImageFile)
         .onComplete;
     this.editedRecipe.thumbnailURL = await _snapshot.ref.getDownloadURL();
@@ -275,28 +293,66 @@ class RecipeEditModel extends ChangeNotifier {
   Future<void> _deleteImage() async {
     String _image = this.currentRecipe.imageName;
     FirebaseStorage _storage = FirebaseStorage.instance;
-    StorageReference _imageRef = _storage.ref().child('images/$_image');
-    await _imageRef.delete();
+
+    try {
+      StorageReference _imageRef =
+          _storage.ref().child('users/${_auth.currentUser.uid}/images/$_image');
+      await _imageRef.delete();
+      print('レシピ画像を削除した：users/${_auth.currentUser.uid}/images/$_image');
+    } catch (e) {
+      print('レシピ画像を削除できなかった：users/${_auth.currentUser.uid}/images/$_image');
+      StorageReference _imageRef = _storage.ref().child('images/$_image');
+      try {
+        await _imageRef.delete();
+        print('レシピ画像を削除した：images/$_image');
+      } catch (e) {
+        print('レシピ画像を削除できなかった：images/$_image');
+      }
+    }
   }
 
   // Firebase Storage からサムネイル画像を削除する
   Future<void> _deleteThumbnail() async {
     String _thumbnail = this.currentRecipe.thumbnailName;
     FirebaseStorage _storage = FirebaseStorage.instance;
-    StorageReference _thumbnailRef =
-        _storage.ref().child('thumbnails/$_thumbnail');
-    await _thumbnailRef.delete();
+    try {
+      StorageReference _thumbnailRef = _storage
+          .ref()
+          .child('users/${_auth.currentUser.uid}/thumbnails/$_thumbnail');
+      await _thumbnailRef.delete();
+      print(
+          'サムネイル画像を削除した：users/${_auth.currentUser.uid}/thumbnails/$_thumbnail');
+    } catch (e) {
+      print(
+          'サムネイル画像を削除できなかった：users/${_auth.currentUser.uid}/thumbnails/$_thumbnail');
+      StorageReference _thumbnailRef =
+          _storage.ref().child('thumbnails/$_thumbnail');
+      try {
+        await _thumbnailRef.delete();
+        print('サムネイル画像を削除した：thumbnails/$_thumbnail');
+      } catch (e) {
+        print('サムネイル画像を削除できなかった：thumbnails/$_thumbnail');
+      }
+    }
   }
 
   Future<void> deleteRecipe() async {
-    startLoading();
-
     // 既存の画像の削除
     if (this.currentRecipe.imageURL.isNotEmpty) {
-      await _deleteImage();
+      try {
+        await _deleteImage();
+      } catch (e) {
+        print(e.toString());
+        throw ('エラーが発生しました');
+      }
     }
     if (this.currentRecipe.thumbnailURL.isNotEmpty) {
-      await _deleteThumbnail();
+      try {
+        await _deleteThumbnail();
+      } catch (e) {
+        print(e.toString());
+        throw ('エラーが発生しました');
+      }
     }
 
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -346,9 +402,14 @@ class RecipeEditModel extends ChangeNotifier {
       _batch.update(_myUserDoc, {'publicRecipeCount': _publicRecipeCount - 1});
     }
 
-    await _batch.commit();
+    try {
+      await _batch.commit();
+    } catch (e) {
+      print('レシピの削除のバッチ処理時にエラーが発生');
+      print(e.toString());
+      throw ('エラーが発生しました');
+    }
 
-    endLoading();
     notifyListeners();
   }
 
@@ -436,6 +497,16 @@ class RecipeEditModel extends ChangeNotifier {
 
   void endSubmitting() {
     this.isSubmitting = false;
+    notifyListeners();
+  }
+
+  void startDeleting() {
+    this.isDeleting = true;
+    notifyListeners();
+  }
+
+  void endDeleting() {
+    this.isDeleting = false;
     notifyListeners();
   }
 }

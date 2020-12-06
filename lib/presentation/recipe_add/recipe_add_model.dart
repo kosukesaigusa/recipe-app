@@ -60,8 +60,6 @@ class RecipeAddModel extends ChangeNotifier {
         targetWidth: 200,
         targetHeight: 150,
       );
-
-      print('圧縮のあと');
     } catch (e) {
       print('Image Picker から画像の圧縮の過程でエラーが発生');
       print(e.toString());
@@ -181,7 +179,7 @@ class RecipeAddModel extends ChangeNotifier {
     FirebaseStorage _storage = FirebaseStorage.instance;
     StorageTaskSnapshot _snapshot = await _storage
         .ref()
-        .child('images/' + _fileName)
+        .child('users/' + _auth.currentUser.uid + '/images/' + _fileName)
         .putFile(this.imageFile)
         .onComplete;
     this.recipeAdd.imageURL = await _snapshot.ref.getDownloadURL();
@@ -198,7 +196,7 @@ class RecipeAddModel extends ChangeNotifier {
     FirebaseStorage _storage = FirebaseStorage.instance;
     StorageTaskSnapshot _snapshot = await _storage
         .ref()
-        .child('thumbnails/' + _fileName)
+        .child('users/' + _auth.currentUser.uid + '/thumbnails/' + _fileName)
         .putFile(this.thumbnailImageFile)
         .onComplete;
     this.recipeAdd.thumbnailURL = await _snapshot.ref.getDownloadURL();

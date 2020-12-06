@@ -70,11 +70,22 @@ class SignUpModel extends ChangeNotifier {
 
     /// users コレクションにユーザーデータを保存
     try {
-      await FirebaseFirestore.instance
+      FirebaseFirestore _firestore = FirebaseFirestore.instance;
+      WriteBatch _batch = _firestore.batch();
+
+      // user ドキュメント
+      DocumentReference _userDoc =
+          _firestore.collection('users').doc(this.userCredential.user.uid);
+
+      // user info ドキュメント
+      DocumentReference _userInfoDoc = _firestore
           .collection('users')
           .doc(this.userCredential.user.uid)
-          .set({
-        'email': this.mail,
+          .collection('user_info')
+          .doc('email');
+
+      // user ドキュメントのフィールド
+      Map<String, dynamic> _userFields = {
         'userId': this.userCredential.user.uid,
         'createdAt': FieldValue.serverTimestamp(),
         'displayName': 'シンプルなレシピユーザー',
@@ -82,7 +93,16 @@ class SignUpModel extends ChangeNotifier {
         'iconURL': null,
         'recipeCount': 0,
         'publicRecipeCount': 0,
-      });
+      };
+
+      // user info ドキュメントのフィールド
+      Map<String, dynamic> _userInfoFields = {
+        'email': this.userCredential.user.email,
+      };
+
+      _batch.set(_userDoc, _userFields);
+      _batch.set(_userInfoDoc, _userInfoFields);
+      await _batch.commit();
     } catch (e) {
       print('ユーザードキュメントの作成中にエラー');
       print(e.toString());
@@ -93,21 +113,40 @@ class SignUpModel extends ChangeNotifier {
   Future signInAnonymously() async {
     try {
       UserCredential result = await FirebaseAuth.instance.signInAnonymously();
-      await FirebaseFirestore.instance
+
+      FirebaseFirestore _firestore = FirebaseFirestore.instance;
+      WriteBatch _batch = _firestore.batch();
+
+      // user ドキュメント
+      DocumentReference _userDoc =
+          _firestore.collection('users').doc(result.user.uid);
+
+      // user info ドキュメント
+      DocumentReference _userInfoDoc = _firestore
           .collection('users')
           .doc(result.user.uid)
-          .set(
-        {
-          'email': null,
-          'userId': result.user.uid,
-          'createdAt': FieldValue.serverTimestamp(),
-          'displayName': 'ゲスト',
-          'iconName': null,
-          'iconURL': null,
-          'recipeCount': 0,
-          'publicRecipeCount': 0,
-        },
-      );
+          .collection('user_info')
+          .doc('email');
+
+      // user ドキュメントのフィールド
+      Map _userFields = {
+        'userId': result.user.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'displayName': 'ゲスト',
+        'iconName': null,
+        'iconURL': null,
+        'recipeCount': 0,
+        'publicRecipeCount': 0,
+      };
+
+      // user info ドキュメントのフィールド
+      Map _userInfoFields = {
+        'email': null,
+      };
+
+      _batch.set(_userDoc, _userFields);
+      _batch.set(_userInfoDoc, _userInfoFields);
+      await _batch.commit();
     } catch (e) {
       print('匿名サインインおよびユーザードキュメントの作成の処理でエラーが発生');
       print(e.toString());

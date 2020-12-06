@@ -6,7 +6,8 @@
   "functions": {
     "predeploy": [
       "npm --prefix \"$RESOURCE_DIR\" run lint"
-    ]
+    ],
+    "source": "functions"
   },
   "emulators": {
     "functions": {
@@ -22,5 +23,8 @@
       "host": "0.0.0.0",
       "port": 4000
     }
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

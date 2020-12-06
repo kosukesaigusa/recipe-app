@@ -38,29 +38,26 @@ const serverTimestamp = () => firebase.firestore.FieldValue.serverTimestamp();
 const myUserFields = {
     createdAt: serverTimestamp(),
     displayName: 'kosukesaigusa',
-    email: myAuth.email,
     iconName: 'icon_2020-11-20 18:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
     iconURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/icons%2Ficon_2020-11-20%2018:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=d16a4759-f3d9-493a-ae83-7e5044756767',
     publicRecipeCount: 0,
     recipeCount: 0,
-    userId: myAuth.uid,
+    userId: myAuth.uid
 };
 
-const myUserFieldsWithoutEmail = {
+const myUserFieldsWithoutUserId = {
     createdAt: serverTimestamp(),
     displayName: 'kosukesaigusa',
-    // email: myAuth.email, // 欠落
     iconName: 'icon_2020-11-20 18:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
     iconURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/icons%2Ficon_2020-11-20%2018:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=d16a4759-f3d9-493a-ae83-7e5044756767',
     publicRecipeCount: 0,
     recipeCount: 0,
-    userId: myAuth.uid,
+    // userId: myAuth.uid, 欠落
 };
 
 const myAnonymousUserFields = {
     createdAt: serverTimestamp(),
     displayName: 'kosukesaigusa',
-    email: null,
     iconName: 'icon_2020-11-20 18:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg',
     iconURL: 'https://firebasestorage.googleapis.com/v0/b/dev-recipe-app.appspot.com/o/icons%2Ficon_2020-11-20%2018:18:42.346905_wxPbadcN40SIURVpXaxS9WsEoaK2.jpg?alt=media&token=d16a4759-f3d9-493a-ae83-7e5044756767',
     publicRecipeCount: 0,
@@ -157,12 +154,7 @@ describe('ユニットテストの実行', () => {
                 const myUserDoc = db.collection('users').doc(myUserId);
                 await firebase.assertFails(myUserDoc.get());
             });
-            it('[Fail] 他人のユーザーデータは取得できない', async () => {
-                const db = getFirestore(myAuth);  // Firestore DB に自身でサインイン
-                const theirUserDoc = db.collection('users').doc(theirUserId);  // 他人のユーザードキュメント
-                await firebase.assertFails(theirUserDoc.get());
-            });
-            it('[Success] 本人のユーザーデータは取得できる', async () => {
+            it('[Success] 認証が済んでいるので、誰でもユーザーデータは取得できる（Email は含まない）', async () => {
                 const db = getFirestore(myAuth);
                 const myUserDoc = db.collection('users').doc(myUserId);  // 自身のユーザードキュメント
                 await firebase.assertSucceeds(myUserDoc.get());
@@ -178,7 +170,7 @@ describe('ユニットテストの実行', () => {
             it('[Fail] email フィールドが欠落しているので、ユーザードキュメントは作成できない', async () => {
                 const db = getFirestore(myAuth);
                 const myUserDoc = db.collection('users').doc(myUserId);
-                await firebase.assertFails(myUserDoc.set(myUserFieldsWithoutEmail));
+                await firebase.assertFails(myUserDoc.set(myUserFieldsWithoutUserId));
             });
             it('[Success] 本人のユーザードキュメントは作成できる', async () => {
                 const db = getFirestore(myAuth);
@@ -210,6 +202,29 @@ describe('ユニットテストの実行', () => {
                 const myUserDoc = db.collection('users').doc(myUserId);
                 await myUserDoc.set(myUserFields);
                 await firebase.assertSucceeds(myUserDoc.update({displayName: '更新したディスプレイネーム'}));
+            });
+        });
+    });
+
+    describe('/users/{userId}/user_info', () => {
+        describe('get', () => {
+            it('[Fail]', async () => {
+            });
+            it('[Success]', async () => {
+            });
+        });
+    
+        describe('create', async () => {
+            it('[Fail]', async () => {
+            });
+            it('[Success]', async () => {
+            });
+        });
+
+        describe('update', async () => {
+            it('[Fail]', async () => {
+            });
+            it('[Success]', async () => {
             });
         });
     });

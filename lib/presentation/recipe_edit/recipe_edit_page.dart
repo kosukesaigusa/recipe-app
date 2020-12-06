@@ -46,8 +46,6 @@ class RecipeEditPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // デバイスの画面サイズを取得
-    final Size _size = MediaQuery.of(context).size;
     return ChangeNotifierProvider<RecipeEditModel>(
       create: (_) => RecipeEditModel(this.recipe),
       child: Consumer<RecipeEditModel>(
@@ -143,19 +141,22 @@ class RecipeEditPage extends StatelessWidget {
                                         FlatButton(
                                           child: Text('削除する'),
                                           onPressed: () async {
-                                            showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) {
-                                                return _showDeletingDialog();
-                                              },
-                                            );
-                                            await model.deleteRecipe();
-                                            await Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => TopPage(),
-                                              ),
-                                            );
+                                            model.startDeleting();
+                                            try {
+                                              await model.deleteRecipe();
+                                              model.endDeleting();
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      TopPage(),
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              model.endDeleting();
+                                              showTextDialog(
+                                                  context, 'エラーが発生しました');
+                                            }
                                           },
                                         ),
                                         FlatButton(
@@ -798,6 +799,44 @@ class RecipeEditPage extends StatelessWidget {
                         ),
                       )
                     : SizedBox(),
+                model.isDeleting
+                    ? Container(
+                        height: double.infinity,
+                        width: double.infinity,
+                        color: Colors.grey.withOpacity(0.7),
+                        child: Center(
+                          child: Stack(
+                            children: [
+                              Center(
+                                child: Container(
+                                  width: 200,
+                                  height: 150,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(
+                                      height: 16,
+                                    ),
+                                    Container(
+                                      child: Material(
+                                        child: Text(
+                                          'レシピを削除しています...',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SizedBox(),
                 model.isSubmitting
                     ? Container(
                         height: double.infinity,
@@ -836,45 +875,6 @@ class RecipeEditPage extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _showDeletingDialog() {
-    return Container(
-      height: double.infinity,
-      width: double.infinity,
-      color: Colors.transparent,
-      child: Center(
-        child: Stack(
-          children: [
-            Center(
-              child: Container(
-                width: 200,
-                height: 150,
-                color: Colors.white,
-              ),
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(
-                    height: 16,
-                  ),
-                  Container(
-                    child: Material(
-                      child: Text(
-                        'レシピを削除しています...',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

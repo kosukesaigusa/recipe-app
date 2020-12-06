@@ -50,8 +50,11 @@ class EmailUpdateModel extends ChangeNotifier {
     try {
       await user.updateEmail(this.mail);
       await user.sendEmailVerification();
-      DocumentReference targetDoc =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      DocumentReference targetDoc = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('user_info')
+          .doc('email');
       await targetDoc.update({
         'email': this.mail,
       });
