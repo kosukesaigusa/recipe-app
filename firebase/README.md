@@ -23,7 +23,7 @@ Docker for Desktop がまだローカルマシンにインストールされて�
 
 ## Dockerfile の設定
 
-<u>**\* この設定は、Github レポジトリを pull した時点で不要な手続きです。**</u>
+<u>**\* 共同開発メンバー：この設定は、Github レポジトリを pull した時点で不要な手続きです。**</u>
 
 今回は、上述の通り、Firebase の Firestore Security Rules と Cloud Functions をローカルで編集し、エミュレータも起動できるように、Docker コンテナの構成情報を記述するためのファイルである `Dockerfile` は下記のような内容で記述しました。
 
@@ -184,7 +184,7 @@ firebase projects:list
 
 ## Firebase CLI の初期化
 
-<u>**\* この設定は、Github レポジトリを pull した時点で不要な手続きです。**</u>
+<u>**\* 共同開発メンバー：この設定は、Github レポジトリを pull した時点で不要な手続きです。**</u>
 
 次にローカルで操作する Firebase プロジェクトを初期化します。下記のコマンドを入力し、状況に応じて使用するツールを選択し、設定を行って下さい。
 

@@ -277,7 +277,7 @@ Android の方でも、同様の方法で Flavor (`development`, `staging`, or `
 
 まず、`development`, `staging`, `production` のそれぞれの Firebase プロジェクトに Android の設定を追加します。Project Settings > Your apps に進んで「Add App」をクリックしましょう。
 
-[add-firebase-to-android](../add-firebase-to-android.png "add-firebase-to-android.png")
+![add-firebase-to-android](../screenshots/add-firebase-to-android.png "add-firebase-to-android.png")
 
 Android package name には、`development`, `staging`, `production` について、それぞれ
 
@@ -426,7 +426,7 @@ android {
 
 ```
 
-さらに、[対応する Github リポジトリのファイル](https://github.com/kboyflutteruniv/recipe-app/blob/main/android/app/build.gradle) を参考に、`defaultConfig {...}`, `SigningConfig {...}`, `buildTypes {...}`, `flavorDimension`, `productFlavors {...}` などを `android {...}` の中に加筆・編集していきます。
+さらに、[/android/app/build.gradle](https://github.com/KosukeSaigusa/recipe-app/blob/main/android/app/build.gradle) を参考に、`defaultConfig {...}`, `SigningConfig {...}`, `buildTypes {...}`, `flavorDimension`, `productFlavors {...}` などを `android {...}` の中に加筆・編集していきます。
 
 ```
 ...
