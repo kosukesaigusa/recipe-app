@@ -32,7 +32,7 @@ Runner/GeneratedPluginRegistrant.*
 !default.perspectivev3
 
 # Firebase config files
-Runner/GoogeService-Info.plist
-Firebase/GoogleService-Info-Development.plist
-Firebase/GoogleService-Info-Staging.plist
-Firebase/GoogleService-Info-Production.plist
+Runner/GoogleService-Info.plist
+Runner/Firebase/GoogleService-Info-Development.plist
+Runner/Firebase/GoogleService-Info-Staging.plist
+Runner/Firebase/GoogleService-Info-Production.plist

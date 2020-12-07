@@ -12,6 +12,4 @@ debug_key.properties
 release_key.properties
 
 # Firebase config files
-app/src/development/google-service.json
-app/src/staging/google-service.json
-app/src/production/google-service.json
+app/src/**/google-services.json
