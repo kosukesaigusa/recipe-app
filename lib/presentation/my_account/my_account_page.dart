@@ -248,6 +248,7 @@ class MyAccountPage extends StatelessWidget {
                                             MaterialPageRoute(
                                               builder: (context) =>
                                                   LinkAnonymousUserPage(),
+                                              fullscreenDialog: true,
                                             ),
                                           );
                                           await model.fetchMyAccount();
