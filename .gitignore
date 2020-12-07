@@ -1,3 +1,7 @@
+# Firebase config files
+GoogeService-Info*plist
+google-service.json
+
 # Miscellaneous
 *.lock
 *.class
