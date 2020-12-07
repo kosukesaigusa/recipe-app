@@ -38,7 +38,7 @@ Flutter, Firebase, Firebase Authentification, Cloud Storage, Cloud Functions, Do
 ## 本リポジトリを Flutter, Firebase の学習の参考にする方へ
 
 * アプリを構成する主なコードは [`recipe-app/lib`](https://github.com/KosukeSaigusa/recipe-app/tree/main/lib) 以下に配置されています。
-* 環境構築は、[`recipe-app/information/setup` の README](https://github.com/KosukeSaigusa/recipe-app/tree/main/information/setup) を参考に、ご自身で Firebase プロジェクトを `development`, `staging`, `production` の 3 つに分けて作成し、必要な箇所は各人が決める Bundle ID や Pckage ID で適宜読み替えて行って下さい。
+* 環境構築は、[`recipe-app/information/setup/README.md`](https://github.com/KosukeSaigusa/recipe-app/tree/main/information/setup) を参考に、ご自身で Firebase プロジェクトを `development`, `staging`, `production` の 3 つに分けて作成し、必要な箇所は各人が決める Bundle ID や Pckage ID で適宜読み替えて行って下さい。
 * Firestore の DB（コレクション）の構成およびエンティティの概要は [`recipe-app/information/schema/schema.yaml`](https://github.com/KosukeSaigusa/recipe-app/blob/main/information/schema/schema.yaml) を参考にして下さい。
-* Docker を用いたローカルでの Firebase CLI の環境構築は、[`recipe-app/firebase/` の README](https://github.com/KosukeSaigusa/recipe-app/tree/main/firebase) を参考にして下さい。
+* Docker を用いたローカルでの Firebase CLI の環境構築は、[`recipe-app/firebase/README.md`](https://github.com/KosukeSaigusa/recipe-app/tree/main/firebase) を参考にして下さい。
 * Firestore の Security Rules は、[`recipe-app/firebase/firestore.rules`](https://github.com/KosukeSaigusa/recipe-app/blob/main/firebase/firestore.rules) を参考にして下さい。
