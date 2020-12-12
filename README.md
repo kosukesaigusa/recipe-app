@@ -3,7 +3,7 @@
 Flutter & Firebase 製のレシピ管理・投稿アプリ
 
 * [iOS 版 App Store リンク](https://apps.apple.com/jp/app/%E3%82%B7%E3%83%B3%E3%83%97%E3%83%AB%E3%81%AA%E3%83%AC%E3%82%B7%E3%83%94/id1543341359?l=ja) ※
-* Android 版（Google Play Store へ申請中）
+* [Android 版 Google Play Store リンク](https://play.google.com/store/apps/details?id=com.kosukesaigusa.recipe)
 
 ※ Apple 側の問題で環境によって iOS 版 App Store リンクが 403 エラーを返すことが度々あります。その際は、iOS の App Store で「シンプルなレシピ」と検索するか、[Market with the App Store リンク](https://tools.applemediaservices.com/app/1543341359?country=jp) もご確認下さい。
 
