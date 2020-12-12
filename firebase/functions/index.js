@@ -14,12 +14,13 @@ exports.onCreateUser = functions.firestore.document('/users/{userId}')
     .onCreate(async (snapshot, context) => {
         const user = snapshot.data();
         const userId = context.params.userId;
+        const slackUri = functions.config().slack.uri
+        const project = functions.config().environment.project
         functions.logger.log("user.userId=%s created a new user", userId);
-
-        const message = `【通知：新規ユーザー登録】\n• ユーザーID：${userId}\n• メールアドレス：${user.email}`;
+        const message = `【通知：新規ユーザー登録 (${project})】\n• ユーザーID：${userId}`;
 
         request.post({
-            uri: functions.config().slack.uri,
+            uri: slackUri,
             headers: { 'Content-type': 'application/json' },
             json: {
                 'text': message, 
@@ -32,11 +33,13 @@ exports.onCreateContact = functions.firestore.document('/contacts/{contactId}')
     .onCreate(async (snapshot, context) => {
         const contact = snapshot.data();
         const contactId = context.params.contactId;
+        const slackUri = functions.config().slack.uri
+        const project = functions.config().environment.project
         functions.logger.log("contact.contactId=%s created a new contact", contactId);
-        const message = `【通知：お問い合わせ】\n• お問い合わせID：${contactId}\n • ユーザーID：${contact.userId}\n• メールアドレス：${contact.email}\n• カテゴリー：${contact.category}\n• 内容：${contact.content}`;
+        const message = `【通知：お問い合わせ (${project})】\n• お問い合わせID：${contactId}\n • ユーザーID：${contact.userId}\n• メールアドレス：${contact.email}\n• カテゴリー：${contact.category}\n• 内容：${contact.content}`;
 
         request.post({
-            uri: functions.config().slack.uri,
+            uri: slackUri,
             headers: { 'Content-type': 'application/json' },
             json: { 
                 'text': message, 

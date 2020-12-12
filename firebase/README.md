@@ -291,3 +291,17 @@ firebase deploy --only functions --project=<デプロイ先のプロジェクト
 ```
 
 とすることができます。
+
+## その他のメモ
+
+Cloud functions に設定済みの環境変数を確認：
+
+```
+firebase functions:config:get
+```
+
+Cloud functions に環境変数を設定（サービス名：`slack`, キー：`uri`, 参考：[Google 公式](https://firebase.google.com/docs/functions/config-env?hl=ja)）：
+
+```
+firebase functions:config:set slack.uri=https://hooks.slack.com/services/XXX
+```
