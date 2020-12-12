@@ -19,12 +19,12 @@ Flutter & Firebase 製のレシピ管理・投稿アプリ
 
 ## 機能や実装内容の一覧
 
-Flutter, Firebase, Firebase Authentification, Cloud Storage, Cloud Functions, Docker などを使用して、下記のようなアプリの各機能等の実装を行いました。
+Flutter, Firebase, Firebase Authentication, Cloud Storage, Cloud Functions, Docker などを使用して、下記のようなアプリの各機能等の実装を行いました。
 
 * アプリの UI の実装に必要な様々な Flutter ウィジェットの実装
 * `Provider`, `ChangeNotifier` を用いた `Stateless` ウィジェットによる状態管理
 * `development`, `staging`, `production` の 3 つの Flavor と `debug`, `release` の 2 つのビルドモードに応じた各環境および Firebase プロジェクトで、 iOS, Android の両方のビルドを行うための環境構築
-* 認証機能 (Firebase Authentification)
+* 認証機能 (Firebase Authentication)
 * 画像を含むレシピの投稿, 更新, 削除機能
 * 投稿する画像のトリミング・圧縮機能
 * レシピの検索機能（N-gram を用いたサードパーティを使わない Firestore による全文検索機能の実装）
