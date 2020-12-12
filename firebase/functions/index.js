@@ -19,9 +19,9 @@ exports.onCreateUser = functions.firestore.document('/users/{userId}')
         const message = `【通知：新規ユーザー登録】\n• ユーザーID：${userId}\n• メールアドレス：${user.email}`;
 
         request.post({
-            uri: "https://hooks.slack.com/services/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",
+            uri: functions.config().slack.uri,
             headers: { 'Content-type': 'application/json' },
-            json: { 
+            json: {
                 'text': message, 
             }
         });
@@ -36,7 +36,7 @@ exports.onCreateContact = functions.firestore.document('/contacts/{contactId}')
         const message = `【通知：お問い合わせ】\n• お問い合わせID：${contactId}\n • ユーザーID：${contact.userId}\n• メールアドレス：${contact.email}\n• カテゴリー：${contact.category}\n• 内容：${contact.content}`;
 
         request.post({
-            uri: "https://hooks.slack.com/services/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",
+            uri: functions.config().slack.uri,
             headers: { 'Content-type': 'application/json' },
             json: { 
                 'text': message, 

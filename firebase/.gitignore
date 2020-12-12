@@ -1,3 +1,6 @@
+# Environmental variables
+.runtimeconfig.json
+
 # Logs
 logs
 *.log
