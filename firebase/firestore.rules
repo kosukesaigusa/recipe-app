@@ -3,13 +3,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // 何らかの方法で認証が済んでいること
-    function isAnyAuthentificated() {
+    function isAnyAuthenticated() {
       return request.auth != null;
     }
 
     // 認証が済んでいるのが本人であること
-    function isUserAuthentificated(userId) {
-      return isAnyAuthentificated() && userId == request.auth.uid;
+    function isUserAuthenticated(userId) {
+      return isAnyAuthenticated() && userId == request.auth.uid;
     }
 
     // ユーザーデータのスキーマ検証
@@ -74,8 +74,8 @@ service cloud.firestore {
 
     // /users
     match /users/{userId} {
-      allow get: if isAnyAuthentificated();
-      allow create: if isUserAuthentificated(userId)
+      allow get: if isAnyAuthenticated();
+      allow create: if isUserAuthenticated(userId)
         // スキーマ検証
         && isValidUser(request.resource.data)
         // バリデーション
@@ -87,7 +87,7 @@ service cloud.firestore {
         && request.resource.data.recipeCount < 10000
         && request.resource.data.userId == userId
       ;
-      allow update: if isUserAuthentificated(userId) 
+      allow update: if isUserAuthenticated(userId) 
         // スキーマ検証
         && isValidUser(request.resource.data)
         // バリデーション
@@ -110,19 +110,19 @@ service cloud.firestore {
 
       // /users/{userId}/user_info
       match /user_info/{userInfoId} {
-        allow get: if isUserAuthentificated(userId);
-        allow create: if isUserAuthentificated(userId)
+        allow get: if isUserAuthenticated(userId);
+        allow create: if isUserAuthenticated(userId)
           && 'email' in request.resource.data && (request.resource.data.email is string || request.resource.data.email == null)
         ;
-        allow update: if isUserAuthentificated(userId)
+        allow update: if isUserAuthenticated(userId)
           && 'email' in request.resource.data && (request.resource.data.email is string || request.resource.data.email == null)
         ;
       }
 
       // /users/{userId}/recipes
       match /recipes/{recipeId} {
-        allow read: if isUserAuthentificated(userId); 
-        allow create: if isUserAuthentificated(userId)
+        allow read: if isUserAuthenticated(userId); 
+        allow create: if isUserAuthenticated(userId)
           // スキーマ検証
           && isValidRecipe(request.resource.data)
           // バリデーション
@@ -136,7 +136,7 @@ service cloud.firestore {
           && request.resource.data.reference.size() < 1000
           && request.resource.data.updatedAt == request.time
           && request.resource.data.userId == userId;
-        allow update: if isUserAuthentificated(userId) 
+        allow update: if isUserAuthenticated(userId) 
           // スキーマ検証
           && isValidRecipe(request.resource.data)
           // バリデーション
@@ -151,13 +151,13 @@ service cloud.firestore {
           && request.resource.data.documentId == resource.data.documentId
           && request.resource.data.userId == resource.data.userId
         ;
-        allow delete: if isUserAuthentificated(userId);
+        allow delete: if isUserAuthenticated(userId);
       }
 
       // /users/{userId}/favorite_recipes
       match /favorite_recipes/{recipeId} {
-        allow read: if isUserAuthentificated(userId);
-        allow create: if isUserAuthentificated(userId)
+        allow read: if isUserAuthenticated(userId);
+        allow create: if isUserAuthenticated(userId)
           // スキーマ検証
           && isValidFavoriteRecipe(request.resource.data)
           // バリデーション
@@ -170,7 +170,7 @@ service cloud.firestore {
           && request.resource.data.reference.size() >= 0
           && request.resource.data.reference.size() < 1000
         ;
-        allow update: if isUserAuthentificated(userId)
+        allow update: if isUserAuthenticated(userId)
           // スキーマ検証
           && isValidFavoriteRecipe(request.resource.data)
           // バリデーション
@@ -186,15 +186,15 @@ service cloud.firestore {
           && request.resource.data.likedAt == resource.data.likedAt
           && request.resource.data.userId == resource.data.userId
         ;
-        allow delete: if isUserAuthentificated(userId);
+        allow delete: if isUserAuthenticated(userId);
       }
       
     }
 
     // /public_recipes
     match /public_recipes/{recipeId} {
-      allow read: if isAnyAuthentificated();
-      allow create: if isAnyAuthentificated()
+      allow read: if isAnyAuthenticated();
+      allow create: if isAnyAuthenticated()
         // スキーマ検証
         && isValidRecipe(request.resource.data)
         // バリデーション
@@ -210,7 +210,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time
         && request.resource.data.userId == request.auth.uid
       ;
-      allow update: if isAnyAuthentificated()
+      allow update: if isAnyAuthenticated()
         // スキーマ検証
         && isValidRecipe(request.resource.data)
         // バリデーション
@@ -225,14 +225,14 @@ service cloud.firestore {
         && request.resource.data.documentId == resource.data.documentId
         && request.resource.data.userId == resource.data.userId
       ; 
-      allow delete: if isAnyAuthentificated()
+      allow delete: if isAnyAuthenticated()
         && resource.data.userId == request.auth.uid
       ;
     }
 
     // /contacts
     match /contacts/{contactId} {
-      allow create: if isAnyAuthentificated()
+      allow create: if isAnyAuthenticated()
         && isValidContact(request.resource.data)
         && request.resource.data.category in ['不具合の報告', '機能追加の要望', '不適切な内容や画像の報告', 'その他']
         && request.resource.data.content.size() > 0
