@@ -474,6 +474,8 @@ android {
             signingConfig signingConfigs.release
         }
     }
+    
+    flavorDimensions "app"
 
     productFlavors {
         development {
